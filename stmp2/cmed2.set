@@ -1,0 +1,15 @@
+cancel data/all
+
+let cvar="mean_net_sw_vis_dif_flx"
+let  var= mean_net_sw_vis_dif_flx
+
+!cmeps
+set dat "rtgen.237361/tmp/cpld_fv3_384_mom6_cice_2d_cmeps_bmark/field_ocn_import_`cvar`.nc"
+!nems
+set dat "rtgen.67350/tmp/cpld_fv3_384_mom6_cice_2d_bmark/field_ocn_import_`cvar`.nc"
+
+pal light_centered
+let levstr="(-inf)(-20,20,2)(inf)"
+
+let diff=var[d=2]-var[d=1]
+shade/lev=`levstr` diff[k=2]

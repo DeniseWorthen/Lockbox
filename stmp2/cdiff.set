@@ -1,0 +1,27 @@
+cancel data/all
+
+let iyear="2012"
+let imon="01"
+let iday="10"
+
+let cdir="`iyear``imon`0100"
+!let cdir="`iyear`"
+let cdate="`iyear`-`imon`-`iday`-00000"
+
+!set dat "$RT4/S2S_cmeps/rtgen.120073/tmp/cpld_fv3_384_mom6_cice_2d_cmeps_bmark/history/iceh_06h.`cdate`.nc"
+!set dat "$RT2/S2S_names/rtgen.78897/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/iceh_06h.`cdate`.nc"
+set dat "$RT4/S2S_cmeps/2012010100_10d/tmp/cpld_fv3_384_mom6_cice_2d_cmeps_bmark/ocn_2012_01_10_21.nc"
+set dat "$RT2/S2S_names/2012010100_10d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/ocn_2012_01_10_21.nc"
+
+!set dat "S2S_tod/`cdir`_1d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/iceh_inst.`cdate`.nc"
+!set dat "S2S_huge/`cdir`_1d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/iceh_inst.`cdate`.nc"
+
+let levstr="(-inf)(-1,1,.1)(inf)"
+pal light_centered
+
+let var=sst_h
+let diff=var[d=2]-var[d=1]
+let avar=sst_h[x=@ave]
+let adiff=avar[d=2]-avar[d=1]
+
+shade/lev=`levstr` diff

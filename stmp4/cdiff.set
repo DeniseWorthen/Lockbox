@@ -1,0 +1,22 @@
+cancel data/all
+
+let iyear="2012"
+let imon="01"
+let iday="10"
+
+!let cdir="`iyear``imon`0100"
+let cdir="`iyear`"
+let cdate="`iyear`-`imon`-`iday`-00000"
+
+set dat "S2S_cmeps/2012010100_11d_fail/tmp/cpld_fv3_384_mom6_cice_cmeps_`iyear``imon`0100/history/iceh_06h.`cdate`.nc"
+set dat "S2S_nems/2012010100_12d/tmp/cpld_fv3_384_mom6_cice_`iyear``imon`0100/history/iceh_06h.`cdate`.nc"
+
+let levstr="(-inf)(-1,1,.1)(inf)"
+pal light_centered
+
+let var=sst_h
+let diff=var[d=2]-var[d=1]
+let avar=sst_h[x=@ave]
+let adiff=avar[d=2]-avar[d=1]
+
+shade/lev=`levstr` diff

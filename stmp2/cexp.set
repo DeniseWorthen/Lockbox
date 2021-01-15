@@ -1,0 +1,14 @@
+cancel dat/all
+
+let rtsrc="rt_42364"
+!let hour="00"
+let hour="12"
+
+set data "`rtsrc`/datm_12h_cfsr/field_atm_exporta_2011-10-01T`hour`:00:00.nc"
+set data "`rtsrc`/datm_12h_cfsr/DATM_INPUT/cfsr.20111001`hour`.nc"
+!set data "`rtsrc`/datm_restart_cfsr/field_atm_exporta_2011-10-01T`hour`:00:00.nc"
+!set data "`rtsrc`/datm_restart_cfsr/DATM_INPUT/cfsr.20111001`hour`.nc"
+
+shade INST_TEMP_HEIGHT_LOWEST[d=1,k=1,i=1:1760,j=1:880]-TMP_HYBLEV1[d=2,l=1,i=1:1760,j=1:880]
+mess
+shade INST_TEMP_HEIGHT2m[d=1,k=1,i=1:1760,j=1:880]-T2m[d=2,l=1,i=1:1760,j=1:880]

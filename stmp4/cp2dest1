@@ -1,0 +1,44 @@
+#!/bin/bash
+
+src="
+dest="
+
+cp $src/20120101.010000.coupler.res.nc  $dest/coupler.res.nc
+cp $src/20120101.010000.fv_core.res.nc  $dest/fv_core.res.nc
+cp $src/20120101.010000.fv_core.res.tile1.nc  $dest/fv_core.res.tile1.nc
+cp $src/20120101.010000.fv_core.res.tile2.nc  $dest/fv_core.res.tile2.nc
+cp $src/20120101.010000.fv_core.res.tile3.nc  $dest/fv_core.res.tile3.nc
+cp $src/20120101.010000.fv_core.res.tile4.nc  $dest/fv_core.res.tile4.nc
+cp $src/20120101.010000.fv_core.res.tile5.nc  $dest/fv_core.res.tile5.nc
+cp $src/20120101.010000.fv_core.res.tile6.nc  $dest/fv_core.res.tile6.nc
+cp $src/20120101.010000.fv_srf_wnd.res.tile1.nc  $dest/fv_srf_wnd.res.tile1.nc
+cp $src/20120101.010000.fv_srf_wnd.res.tile2.nc  $dest/fv_srf_wnd.res.tile2.nc
+cp $src/20120101.010000.fv_srf_wnd.res.tile3.nc  $dest/fv_srf_wnd.res.tile3.nc
+cp $src/20120101.010000.fv_srf_wnd.res.tile4.nc  $dest/fv_srf_wnd.res.tile4.nc
+cp $src/20120101.010000.fv_srf_wnd.res.tile5.nc  $dest/fv_srf_wnd.res.tile5.nc
+cp $src/20120101.010000.fv_srf_wnd.res.tile6.nc  $dest/fv_srf_wnd.res.tile6.nc
+cp $src/20120101.010000.fv_tracer.res.tile1.nc  $dest/fv_tracer.res.tile1.nc
+cp $src/20120101.010000.fv_tracer.res.tile2.nc  $dest/fv_tracer.res.tile2.nc
+cp $src/20120101.010000.fv_tracer.res.tile3.nc  $dest/fv_tracer.res.tile3.nc
+cp $src/20120101.010000.fv_tracer.res.tile4.nc  $dest/fv_tracer.res.tile4.nc
+cp $src/20120101.010000.fv_tracer.res.tile5.nc  $dest/fv_tracer.res.tile5.nc
+cp $src/20120101.010000.fv_tracer.res.tile6.nc  $dest/fv_tracer.res.tile6.nc
+cp $src/20120101.010000.phy_data.tile1.nc  $dest/phy_data.tile1.nc
+cp $src/20120101.010000.phy_data.tile2.nc  $dest/phy_data.tile2.nc
+cp $src/20120101.010000.phy_data.tile3.nc  $dest/phy_data.tile3.nc
+cp $src/20120101.010000.phy_data.tile4.nc  $dest/phy_data.tile4.nc
+cp $src/20120101.010000.phy_data.tile5.nc  $dest/phy_data.tile5.nc
+cp $src/20120101.010000.phy_data.tile6.nc  $dest/phy_data.tile6.nc
+cp $src/20120101.010000.sfc_data.tile1.nc  $dest/sfc_data.tile1.nc
+cp $src/20120101.010000.sfc_data.tile2.nc  $dest/sfc_data.tile2.nc
+cp $src/20120101.010000.sfc_data.tile3.nc  $dest/sfc_data.tile3.nc
+cp $src/20120101.010000.sfc_data.tile4.nc  $dest/sfc_data.tile4.nc
+cp $src/20120101.010000.sfc_data.tile5.nc  $dest/sfc_data.tile5.nc
+cp $src/20120101.010000.sfc_data.tile6.nc  $dest/sfc_data.tile6.nc
+
+cp $src/MOM.res.2012-01-01-01-00-00.nc $dest/MOM.res.nc
+cp $src/MOM.res.2012-01-01-01-00-00_1.nc $dest/MOM.res_1.nc
+cp $src/MOM.res.2012-01-01-01-00-00_2.nc $dest/MOM.res_2.nc
+cp $src/MOM.res.2012-01-01-01-00-00_3.nc $dest/MOM.res_3.nc
+
+

@@ -1,0 +1,20 @@
+cancel data/all
+
+!let cvar="sea_surface_temperature"
+!let var=sea_surface_temperature
+let cvar="mean_laten_heat_flx_atm_into_ice"
+let var=mean_laten_heat_flx_atm_into_ice
+
+set data "$dev/field_med_from_ice_`cvar`.nc"
+set data "$test/field_med_from_ice_2012-01-01T01:07:30.nc"
+statistics var[d=1,k=10]-var[d=2,k=1]
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+cancel data/all
+let cvar="sea_surface_temperature"
+let var=sea_surface_temperature
+
+set data "$dev/field_med_to_ice_`cvar`.nc"
+set data "$test/field_med_to_ice_2012-01-01T00:37:30.nc"
+statistics var[d=1,k=5]-var[d=2,k=1]

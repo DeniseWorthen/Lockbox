@@ -1,0 +1,13 @@
+
+set data nems.20120101.nc
+set data cmeps.20120101.nc
+show data
+let hvar=if abs(geolat) le 50 then sst
+let gvar=sst
+
+plot/vlim=18.45:18.80:.01 nolab gvar[x=@ave,y=@ave,d=1],gvar[x=@ave,y=@ave,d=2]
+!plot/vlim=18.:19:.1/nolab gvar[x=@ave,y=@ave,d=1],gvar[x=@ave,y=@ave,d=2]
+mess
+
+plot/nolab hvar[x=@ave,y=@ave,d=1],hvar[x=@ave,y=@ave,d=2]
+!plot/vlim=22:23:.1/nolab hvar[x=@ave,y=@ave,d=1],hvar[x=@ave,y=@ave,d=2]

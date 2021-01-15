@@ -1,0 +1,50 @@
+cancel data/all
+
+let iyear="2012"
+let imon="01"
+let iday="02"
+
+let cdate="`iyear`-`imon`-`iday`-21"
+
+set dat "S2S_cmeps/2012010100_11d_fail/tmp/cpld_fv3_384_mom6_cice_2d_cmeps_bmark/ocn_`iyear`_`imon`_`iday`_21.nc"
+set dat "S2S_nems/2012010100_12d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/ocn_`iyear`_`imon`_`iday`_21.nc"
+let mask=if wet_c[d=1] eq 0 then 1
+
+let levstr="(-inf)(-1,1,.1)(inf)"
+pal light_centered
+
+let var=sst
+let diff=var[d=2]-var[d=1]
+shade/lev=`levstr`/title="SST (cmeps-nems)" diff
+shade/over/pal=grey/nolab mask
+mess
+
+let var=latent
+let levstr="(-inf)(-20,20,2)(inf)"
+shade/lev=`levstr`/title="Latent Heat Flux (cmeps-nems)" diff
+shade/over/pal=grey/nolab mask
+mess
+
+let var=sensible
+let levstr="(-inf)(-20,20,2)(inf)"
+shade/lev=`levstr`/title="Sensible Heat Flux (cmeps-nems)" diff
+shade/over/pal=grey/nolab mask
+mess
+
+let var=sw
+let levstr="(-inf)(-20,20,2)(inf)"
+shade/lev=`levstr`/title="Shortwave (cmeps-nems)" diff
+shade/over/pal=grey/nolab mask
+mess
+
+let var=lw
+let levstr="(-inf)(-20,20,2)(inf)"
+shade/lev=`levstr`/title="Longwave (cmeps-nems)" diff
+shade/over/pal=grey/nolab mask
+mess
+
+let var=lwlatsens
+let levstr="(-inf)(-20,20,2)(inf)"
+shade/lev=`levstr`/title="Longwave (cmeps-nems)" diff
+shade/over/pal=grey/nolab mask
+mess

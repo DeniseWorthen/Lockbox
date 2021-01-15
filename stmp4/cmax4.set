@@ -1,0 +1,20 @@
+cancel data/all
+cancel mode logo
+
+let iyear="2012"
+
+let imon="01"
+set view ul
+go cmax.set
+
+let imon="04"
+set view ur
+go cmax.set
+
+let imon="07"
+set view ll
+go cmax.set
+
+let imon="10"
+set view lr
+go cmax.set

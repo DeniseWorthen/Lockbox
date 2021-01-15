@@ -1,0 +1,20 @@
+cancel data/all
+
+let iyear="2012"
+!let imon="01"
+let cdir="`iyear`"
+
+set dat "S2S_nems/ice_`iyear``imon`.nc"
+set dat "S2S_cmeps/ice_`iyear``imon`.nc"
+
+let levstr="(-inf)(-1,1,.1)(inf)"
+pal light_centered
+
+let var=sst_h
+let diff=var[d=2]-var[d=1]
+let amax=sst_h[x=@max,y=@max]
+let avar=sst_h[x=@ave]
+let adiff=avar[d=2]-avar[d=1]
+
+plot/l=2:140 amax[d=1],amax[d=2]
+!shade/lev=`levstr` diff
