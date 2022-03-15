@@ -28,6 +28,14 @@ program testvars
   integer    ,target            :: dimid4(4)
   integer    ,pointer           :: dimid(:)
 
+  real, dimension(nx*ny) :: dw
+  real, dimension(nx*ny,0:noswll) :: phs
+
+  interface writevar
+     module procedure write_var
+     module procedure write_var_s
+  end interface
+
   ! dims: x,y = nx,ny
   !         s = noswll
   !         b = 'bedforms', currently 3
@@ -120,9 +128,13 @@ program testvars
    if(p_axis)ierr = nf90_def_dim(ncid,'np'    ,len_p,ptid)
    if(k_axis)ierr = nf90_def_dim(ncid,'freq'  ,len_k,ktid)
 
+   ! define time axis
+   ierr = nf90_put_att(ncid, timid, 'units'   , trim(time_origin))
+   ierr = nf90_put_att(ncid, timid, 'calendar', trim(calendar_name))
+
+   ! define the variables
    dimid3(1:2) = (/xtid, ytid/)
    dimid4(1:2) = (/xtid, ytid/)
-   ! define the variables
    do n = 1,nout
       if(scan(trim(outvars(n)%dims),'s') > 0) then
        dimid4(3:4) = (/stid, timid/)
@@ -151,12 +163,54 @@ program testvars
     end do
       ierr = nf90_enddef(ncid)
 
-   !do j = 1,nogrp
-   ! do i = 1,maxvars
-   !  if(gridoutdefs(j,i)%validout) then
-   !   if(trim(gridoutdefs(j,i)%varname) .eq. 'WX')call write_var(trim(fname), trim(gridoutdefs(j,i)%varname), trim(..dims), DW)
-   !   if(trim(gridoutdefs(j,i)%varname) .eq. 'CX')call write_var(trim(fname), trim(gridoutdefs(j,i)%varname), trim(..dims), CX)
-   !   if(trim(gridoutdefs(j,i)%varname) .eq. 'CY')call write_var(trim(fname), trim(gridoutdefs(j,i)%varname), trim(..dims), CY)
+    ! write the variables
+    ierr = nf90_inq_varid(ncid, 'time', timid)
+    ierr = nf90_put_var(ncid, timid, elapsed_secs)
+    do n = 1,nout
+      vname = trim(outvars(n)%varname)
+      if(vname .eq. 'DW')call write_var(trim(fname), vname, DW)
 
+      if(vname .eq. 'PHS')call write_var(trim(fname), vname, PHS)
+    end do
+    ierr = nf90_close(ncid)
+
+    subroutine write_var(fname, vname, var)
+
+    character(len=*), intent(in) :: fname
+    real, dimension(nsea), intent(in) :: var
+    character(len=*), intent(in) :: vname
+
+    real, dimension(nx,ny) :: var2d
+    var2d = undef
+    do i = 1,nsea
+     var2d(mapsta....) = var(i)
+    end do
+
+    ierr = nf90_open(trim(fname), nc_write, ncid)
+    ierr = nf90_inq_varid(ncid, trim(vname), varid)
+    ierr = nf90_put_varid(ncid, varid, var2d)
+    ierr = nf90_close(ncid)
+
+    end subroutine write_var
+
+    subroutine write_var_s(fname, vname, var)
+
+    character(len=*), intent(in) :: fname
+    real, dimension(nsea,0:noswll), intent(in) :: var
+    character(len=*), intent(in) :: vname
+
+    real, dimension(nx,ny,0:nswll) :: var3d
+    var2d = undef
+    do i = 1,nsea
+     var3d(mapsta....) = var(i)
+    end do
+
+    ierr = nf90_open(trim(fname), nc_write, ncid)
+    ierr = nf90_inq_varid(ncid, trim(vname), varid)
+    ierr = nf90_put_varid(ncid, varid, var3d)
+    ierr = nf90_close(ncid)
+
+    end subroutine write_var
+ 
 
 end program testvars
