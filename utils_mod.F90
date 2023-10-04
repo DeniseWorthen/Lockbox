@@ -1,6 +1,7 @@
 module utils_mod
 
   use netcdf
+  use ocnvars, only : vardefs
 
   implicit none
 
@@ -11,9 +12,15 @@ module utils_mod
      module procedure getfield3d
   end interface getfield
 
+  interface packarrays
+     module procedure packarrays2d
+     module procedure packarrays3d
+  end interface packarrays
+
   interface remap
      module procedure remap2d
      module procedure remap3d
+     module procedure remap4d
   end interface remap
 
   interface getvecpair
@@ -22,12 +29,100 @@ module utils_mod
   end interface getvecpair
 
   public getfield
-  public getvecpair
+  public packarrays
   public remap
 
   logical :: debug = .true.
 
-  contains
+contains
+
+  subroutine packarrays2d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, fields)
+
+    character(len=*), intent(in)  :: filesrc,wgtsdir
+    real,             intent(in)  :: cosrot(:),sinrot(:)
+    type(vardefs),    intent(in)  :: vars(:)
+    integer,          intent(in)  :: dims(:)
+    real,             intent(out) :: fields(:,:)
+
+    ! local variables
+    integer :: n, nn
+    real, allocatable, dimension(:,:)   :: vecpair
+    character(len=20) :: subname = 'packarrays2d'
+
+    fields=0.0
+
+    if (debug)print '(a)','enter '//trim(subname)
+    ! obtain vector pairs
+    do n = 1,dims(3)
+       if (trim(vars(n)%var_grid) == 'Cu') then
+          allocate(vecpair(dims(1)*dims(2),2))
+          call getvecpair(trim(filesrc), trim(wgtsdir), cosrot, sinrot, &
+               trim(vars(n)%input_var_name), trim(vars(n)%var_grid),    &
+               trim(vars(n)%var_pair), trim(vars(n)%var_pair_grid),     &
+               dims=(/dims(1),dims(2)/), vecpair=vecpair)
+       end if
+    end do
+
+    ! create packed array
+    nn = 0
+    do n = 1,dims(3)
+       if (len_trim(vars(n)%var_pair) == 0) then
+          nn = nn + 1
+          call getfield(trim(filesrc), trim(vars(n)%input_var_name), dims=(/dims(1),dims(2)/), &
+               field=fields(:,nn))
+       else ! fill with vector pairs
+          nn = nn+1
+          if (trim(vars(n)%var_grid) == 'Cu')fields(:,nn) = vecpair(:,1)
+          if (trim(vars(n)%var_grid) == 'Cv')fields(:,nn) = vecpair(:,2)
+       end if
+    end do
+    if (debug)print '(a)','exit '//trim(subname)
+
+  end subroutine packarrays2d
+
+  subroutine packarrays3d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, fields)
+
+    character(len=*), intent(in)  :: filesrc,wgtsdir
+    real,             intent(in)  :: cosrot(:),sinrot(:)
+    type(vardefs),    intent(in)  :: vars(:)
+    integer,          intent(in)  :: dims(:)
+    real,             intent(out) :: fields(:,:,:)
+
+    ! local variables
+    integer :: n, nn
+    real, allocatable, dimension(:,:,:)   :: vecpair
+    character(len=20) :: subname = 'packarrays3d'
+
+    fields=0.0
+
+    if (debug)print '(a)','enter '//trim(subname)
+    ! obtain vector pairs
+    do n = 1,dims(3)
+       if (trim(vars(n)%var_grid) == 'Cu') then
+          allocate(vecpair(dims(1)*dims(2),dims(3),2))
+          call getvecpair(trim(filesrc), trim(wgtsdir), cosrot, sinrot, &
+               trim(vars(n)%input_var_name), trim(vars(n)%var_grid),    &
+               trim(vars(n)%var_pair), trim(vars(n)%var_pair_grid),     &
+               dims=(/dims(1),dims(2),dims(3)/), vecpair=vecpair)
+       end if
+    end do
+
+    ! create packed array
+    nn = 0
+    do n = 1,dims(4)
+       if (len_trim(vars(n)%var_pair) == 0) then
+          nn = nn + 1
+          call getfield(trim(filesrc), trim(vars(n)%input_var_name), dims=(/dims(1),dims(2),dims(3)/), &
+               field=fields(:,:,nn))
+       else ! fill with vector pairs
+          nn = nn+1
+          if (trim(vars(n)%var_grid) == 'Cu')fields(:,:,nn) = vecpair(:,:,1)
+          if (trim(vars(n)%var_grid) == 'Cv')fields(:,:,nn) = vecpair(:,:,2)
+       end if
+    end do
+    if (debug)print '(a)','exit '//trim(subname)
+
+  end subroutine packarrays3d
 
   subroutine getvecpair2d(fname, wdir, cosrot, sinrot, vname1, vgrid1, &
        vname2, vgrid2, dims, vecpair)
@@ -45,7 +140,7 @@ module utils_mod
     character(len=240) :: wgtsfile
     character(len=20) :: subname = 'getvecpair2d'
 
-    if (debug)print *,'enter '//trim(subname)
+    if (debug)print '(a)','enter '//trim(subname)
 
     wgtsfile = trim(wdir)//'tripole.mx025.'//vgrid1//'.to.Ct.bilinear.nc'
     call getfield(fname, vname1, dims=dims, field=vecpair(:,1), wgts=trim(wgtsfile))
@@ -60,7 +155,7 @@ module utils_mod
     vecpair(:,1) = urot(:)
     vecpair(:,2) = vrot(:)
 
-    if (debug) print *,'exit '//trim(subname)
+    if (debug) print '(a)','exit '//trim(subname)
 
   end subroutine getvecpair2d
 
@@ -80,7 +175,7 @@ module utils_mod
     character(len=240) :: wgtsfile
     character(len=20) :: subname = 'getfield3d'
 
-    if (debug)print *,'enter '//trim(subname)
+    if (debug)print '(a)','enter '//trim(subname)
 
     wgtsfile = trim(wdir)//'tripole.mx025.'//vgrid1//'.to.Ct.bilinear.nc'
     call getfield(fname, vname1, dims=dims, field=vecpair(:,:,1), wgts=trim(wgtsfile))
@@ -96,7 +191,7 @@ module utils_mod
        vecpair(:,k,1) = urot(:)
        vecpair(:,k,2) = vrot(:)
     end do
-    if (debug) print *,'exit '//trim(subname)
+    if (debug) print '(a)','exit '//trim(subname)
 
   end subroutine getvecpair3d
 
@@ -113,7 +208,7 @@ module utils_mod
     real, allocatable :: atmp(:)
     character(len=20) :: subname = 'getfield2d'
 
-    if (debug)print *,'enter '//trim(subname)//' variable '//vname
+    if (debug)print '(a)','enter '//trim(subname)//' variable '//vname
 
     allocate(a2d(dims(1),dims(2)))
     allocate(atmp(dims(1)*dims(2)))
@@ -131,7 +226,7 @@ module utils_mod
     else
        field = atmp
     end if
-    if (debug) print *,'exit '//trim(subname)//' variable '//vname
+    if (debug) print '(a)','exit '//trim(subname)//' variable '//vname
 
   end subroutine getfield2d
 
@@ -148,7 +243,7 @@ module utils_mod
     real, allocatable :: atmp(:,:)
     character(len=20) :: subname = 'getfield3d'
 
-    if (debug)print *,'enter '//trim(subname)//' variable '//vname
+    if (debug)print '(a)','enter '//trim(subname)//' variable '//vname
 
     allocate(a3d(dims(1),dims(2),dims(3)))
     allocate(atmp(dims(1)*dims(2),dims(3)))
@@ -166,15 +261,15 @@ module utils_mod
     else
        field = atmp
     end if
-    if (debug) print *,'exit '//trim(subname)//' variable '//vname
+    if (debug) print '(a)','exit '//trim(subname)//' variable '//vname
 
   end subroutine getfield3d
 
   subroutine remap2d(fname, src_field, dst_field)
 
-    character(len=*),   intent(in)  :: fname
-    real, dimension(:), intent(in)  :: src_field
-    real, dimension(:), intent(out) :: dst_field
+    character(len=*), intent(in)  :: fname
+    real,             intent(in)  :: src_field(:)
+    real,             intent(out) :: dst_field(:)
 
     ! local variables
     integer :: ncid, rc, id
@@ -186,7 +281,7 @@ module utils_mod
     real(kind=8), allocatable, dimension(:) :: S
     character(len=20) :: subname = 'remap2d'
 
-    if (debug)print *,'enter '//trim(subname)
+    if (debug)print '(a)','enter '//trim(subname)
 
     ! retrieve the weights
     rc = nf90_open(trim(fname), nf90_nowrite, ncid)
@@ -214,21 +309,19 @@ module utils_mod
        ii = row(i); jj = col(i)
        dst_field(ii) = dst_field(ii) + S(i)*src_field(jj)
     enddo
-    deallocate(col,row,S)
-
-    if (debug) print *,'exit '//trim(subname)
+    if (debug) print '(a)','exit '//trim(subname)
 
   end subroutine remap2d
 
   subroutine remap3d(fname, nk, src_field, dst_field)
-    character(len=*),     intent(in)  :: fname
-    integer,              intent(in)  :: nk
-    real, dimension(:,:), intent(in)  :: src_field
-    real, dimension(:,:), intent(out) :: dst_field
+    character(len=*), intent(in)  :: fname
+    integer,          intent(in)  :: nk
+    real,             intent(in)  :: src_field(:,:)
+    real,             intent(out) :: dst_field(:,:)
 
     ! local variables
     integer :: ncid, rc, id
-    integer :: i,ii,jj,k
+    integer :: i,ii,jj
     integer :: n_a, n_b, n_s
     ! not real, but get_var(ncid, id, col) seg faults if col is int
     ! see https://github.com/Unidata/netcdf-fortran/issues/413
@@ -236,9 +329,7 @@ module utils_mod
     real(kind=8), allocatable, dimension(:) :: S
     character(len=20) :: subname = 'remap3d'
 
-    if (debug)print *,'enter '//trim(subname)//' weights = '//trim(fname)
-    !print *,size(src_field,1),size(src_field,2)
-    !print *,size(dst_field,1),size(dst_field,2)
+    if (debug)print '(a)','enter '//trim(subname)//' weights = '//trim(fname)
 
     ! retrieve the weights
     rc = nf90_open(trim(fname), nf90_nowrite, ncid)
@@ -252,7 +343,6 @@ module utils_mod
     allocate(col(1:n_s))
     allocate(row(1:n_s))
     allocate(  S(1:n_s))
-    !print *,'n_s = ',n_s,' n_a = ',n_a,' n_b = ',n_b
 
     rc = nf90_inq_varid(ncid, 'col', id)
     rc = nf90_get_var(ncid,     id, col)
@@ -263,14 +353,59 @@ module utils_mod
     rc = nf90_close(ncid)
 
     dst_field = 0.0
-    do k = 1,nk
-       do i = 1,n_s
-          ii = row(i); jj = col(i)
-          dst_field(ii,k) = dst_field(ii,k) + S(i)*src_field(jj,k)
-       enddo
-    end do
-    deallocate(col,row,S)
+    do i = 1,n_s
+       ii = row(i); jj = col(i)
+       dst_field(ii,:) = dst_field(ii,:) + S(i)*src_field(jj,:)
+    enddo
+    if (debug) print '(a)','exit '//trim(subname)
 
-    if (debug) print *,'exit '//trim(subname)
   end subroutine remap3d
+
+  subroutine remap4d(fname, nk, nflds, src_field, dst_field)
+    character(len=*), intent(in)  :: fname
+    integer,          intent(in)  :: nk, nflds
+    real,             intent(in)  :: src_field(:,:,:)
+    real,             intent(out) :: dst_field(:,:,:)
+
+    ! local variables
+    integer :: ncid, rc, id
+    integer :: i,ii,jj
+    integer :: n_a, n_b, n_s
+    ! not real, but get_var(ncid, id, col) seg faults if col is int
+    ! see https://github.com/Unidata/netcdf-fortran/issues/413
+    real(kind=4), allocatable, dimension(:) :: col, row
+    real(kind=8), allocatable, dimension(:) :: S
+    character(len=20) :: subname = 'remap4d'
+
+    if (debug)print '(a)','enter '//trim(subname)//' weights = '//trim(fname)
+
+    ! retrieve the weights
+    rc = nf90_open(trim(fname), nf90_nowrite, ncid)
+    rc = nf90_inq_dimid(ncid, 'n_s', id)
+    rc = nf90_inquire_dimension(ncid, id, len=n_s)
+    rc = nf90_inq_dimid(ncid, 'n_a', id)
+    rc = nf90_inquire_dimension(ncid, id, len=n_a)
+    rc = nf90_inq_dimid(ncid, 'n_b', id)
+    rc = nf90_inquire_dimension(ncid, id, len=n_b)
+
+    allocate(col(1:n_s))
+    allocate(row(1:n_s))
+    allocate(  S(1:n_s))
+
+    rc = nf90_inq_varid(ncid, 'col', id)
+    rc = nf90_get_var(ncid,     id, col)
+    rc = nf90_inq_varid(ncid, 'row', id)
+    rc = nf90_get_var(ncid,     id, row)
+    rc = nf90_inq_varid(ncid,   'S', id)
+    rc = nf90_get_var(ncid,      id,  S)
+    rc = nf90_close(ncid)
+
+    dst_field = 0.0
+    do i = 1,n_s
+       ii = row(i); jj = col(i)
+       dst_field(ii,:,:) = dst_field(ii,:,:) + S(i)*src_field(jj,:,:)
+    enddo
+    if (debug) print '(a)','exit '//trim(subname)
+
+  end subroutine remap4d
 end module utils_mod
