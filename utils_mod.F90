@@ -28,20 +28,27 @@ module utils_mod
      module procedure getvecpair3d
   end interface getvecpair
 
+  interface dumpnc
+     module procedure dumpnc2d
+     module procedure dumpnc3d
+  end interface dumpnc
+
   public getfield
   public packarrays
   public remap
+  public dumpnc
 
   logical :: debug = .true.
 
 contains
 
-  subroutine packarrays2d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, fields)
+  subroutine packarrays2d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, nflds, fields)
 
     character(len=*), intent(in)  :: filesrc,wgtsdir
     real,             intent(in)  :: cosrot(:),sinrot(:)
     type(vardefs),    intent(in)  :: vars(:)
     integer,          intent(in)  :: dims(:)
+    integer,          intent(in)  :: nflds
     real,             intent(out) :: fields(:,:)
 
     ! local variables
@@ -53,7 +60,7 @@ contains
 
     if (debug)print '(a)','enter '//trim(subname)
     ! obtain vector pairs
-    do n = 1,dims(3)
+    do n = 1,nflds
        if (trim(vars(n)%var_grid) == 'Cu') then
           allocate(vecpair(dims(1)*dims(2),2))
           call getvecpair(trim(filesrc), trim(wgtsdir), cosrot, sinrot, &
@@ -65,7 +72,7 @@ contains
 
     ! create packed array
     nn = 0
-    do n = 1,dims(3)
+    do n = 1,nflds
        if (len_trim(vars(n)%var_pair) == 0) then
           nn = nn + 1
           call getfield(trim(filesrc), trim(vars(n)%input_var_name), dims=(/dims(1),dims(2)/), &
@@ -80,12 +87,13 @@ contains
 
   end subroutine packarrays2d
 
-  subroutine packarrays3d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, fields)
+  subroutine packarrays3d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, nflds, fields)
 
     character(len=*), intent(in)  :: filesrc,wgtsdir
     real,             intent(in)  :: cosrot(:),sinrot(:)
     type(vardefs),    intent(in)  :: vars(:)
     integer,          intent(in)  :: dims(:)
+    integer,          intent(in)  :: nflds
     real,             intent(out) :: fields(:,:,:)
 
     ! local variables
@@ -109,7 +117,7 @@ contains
 
     ! create packed array
     nn = 0
-    do n = 1,dims(4)
+    do n = 1,nflds
        if (len_trim(vars(n)%var_pair) == 0) then
           nn = nn + 1
           call getfield(trim(filesrc), trim(vars(n)%input_var_name), dims=(/dims(1),dims(2),dims(3)/), &
@@ -257,7 +265,7 @@ contains
     atmp(:,:) = reshape(a3d, (/dims(1)*dims(2),dims(3)/))
     if(present(wgts)) then
        where(atmp .eq. fval)atmp = 0.0
-       call remap(trim(wgts), nk=dims(3), src_field=atmp, dst_field=field)
+       call remap(trim(wgts), dim3=dims(3), src_field=atmp, dst_field=field)
     else
        field = atmp
     end if
@@ -313,9 +321,9 @@ contains
 
   end subroutine remap2d
 
-  subroutine remap3d(fname, nk, src_field, dst_field)
+  subroutine remap3d(fname, dim3, src_field, dst_field)
     character(len=*), intent(in)  :: fname
-    integer,          intent(in)  :: nk
+    integer,          intent(in)  :: dim3
     real,             intent(in)  :: src_field(:,:)
     real,             intent(out) :: dst_field(:,:)
 
@@ -408,4 +416,70 @@ contains
     if (debug) print '(a)','exit '//trim(subname)
 
   end subroutine remap4d
+
+  subroutine dumpnc2d(fname, vname, dims, nflds, field)
+
+    character(len=*), intent(in) :: fname, vname
+    integer,          intent(in) :: dims(:)
+    integer,          intent(in) :: nflds
+    real,             intent(in) :: field(:,:)
+
+    ! local variable
+    integer           :: ncid, varid, rc, idimid, jdimid, fdimid
+    real, allocatable :: a3d(:,:,:)
+    character(len=20) :: subname = 'dumpnc2d'
+
+    if (debug)print '(a)','enter '//trim(subname)//' variable '//vname
+    print *,dims
+    print *,size(field,1),size(field,2)
+    allocate(a3d(dims(1),dims(2),nflds))
+
+    rc = nf90_create(trim(fname), nf90_clobber, ncid)
+    rc = nf90_def_dim(ncid, 'nx', dims(1), idimid)
+    rc = nf90_def_dim(ncid, 'ny', dims(2), jdimid)
+    rc = nf90_def_dim(ncid, 'nf', dims(3), fdimid)
+    rc = nf90_def_var(ncid, vname, nf90_float, (/idimid,jdimid,fdimid/), varid)
+    rc = nf90_enddef(ncid)
+
+    a3d(:,:,:) =  reshape(field(1:dims(1)*dims(2),1:nflds), (/dims(1),dims(2),nflds/))
+    rc = nf90_put_var(ncid, varid, a3d)
+    rc = nf90_close(ncid)
+
+    if (debug)print '(a)','exit '//trim(subname)//' variable '//vname
+
+  end subroutine dumpnc2d
+
+  subroutine dumpnc3d(fname, vname, dims, nflds, field)
+
+    character(len=*), intent(in) :: fname, vname
+    integer,          intent(in) :: dims(:)
+    integer,          intent(in) :: nflds
+    real,             intent(in) :: field(:,:,:)
+
+    ! local variable
+    integer           :: n, ncid, varid, rc, idimid, jdimid, kdimid, fdimid
+    real, allocatable :: a4d(:,:,:,:)
+    character(len=20) :: subname = 'dumpnc3d'
+
+    if (debug)print '(a)','enter '//trim(subname)//' variable '//vname
+    print *,dims
+    print *,size(field,1),size(field,2),size(field,3)
+    allocate(a4d(dims(1),dims(2),dims(3),nflds))
+
+    rc = nf90_create(trim(fname), nf90_clobber, ncid)
+    rc = nf90_def_dim(ncid, 'nx', dims(1), idimid)
+    rc = nf90_def_dim(ncid, 'ny', dims(2), jdimid)
+    rc = nf90_def_dim(ncid, 'nk', dims(3), kdimid)
+    rc = nf90_def_dim(ncid, 'nf', nflds,   fdimid)
+    rc = nf90_def_var(ncid, vname, nf90_float, (/idimid,jdimid,kdimid,fdimid/), varid)
+    rc = nf90_enddef(ncid)
+
+    do n = 1,nflds
+       a4d(:,:,:,n) =  reshape(field(1:dims(1)*dims(2),1:dims(3),n), (/dims(1),dims(2),dims(3)/))
+    end do
+    rc = nf90_put_var(ncid, varid, a4d)
+    rc = nf90_close(ncid)
+
+    if (debug)print '(a)','exit '//trim(subname)//' variable '//vname
+  end subroutine dumpnc3d
 end module utils_mod

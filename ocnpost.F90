@@ -39,7 +39,8 @@ program ocnpost
 
   integer :: i,j,k,n,nn,nvalid
   integer :: rc,ncid,varid,dimid
-  integer :: nbilin2d, nbilin3d, nconsd
+  integer :: nbilin2d, nbilin3d, nconsd2d
+  integer :: indx_to, indx_spd
 
   character(len= 40) :: timeunit, timecal
   character(len= 20) :: vname, vunit
@@ -97,22 +98,22 @@ program ocnpost
   ! mapping type; these can be remapped as packed arrays
   ! --------------------------------
 
-  nbilin2d = 0; nbilin3d = 0; nconsd = 0
+  nbilin2d = 0; nbilin3d = 0; nconsd2d = 0
   do n = 1,nvalid
      if (trim(ovars(n)%var_remapmethod)  == 'bilinear') then
         if (ovars(n)%var_dimen == 2) nbilin2d = nbilin2d + 1
         if (ovars(n)%var_dimen == 3) nbilin3d = nbilin3d + 1
      end if
-     if (trim(ovars(n)%var_remapmethod)  == 'conserve')nconsd = nconsd + 1  !no 3d variables w/ conservative mapping
+     if (trim(ovars(n)%var_remapmethod)  == 'conserve')nconsd2d = nconsd2d + 1  !no 3d variables w/ conservative mapping
   end do
-  if (debug) print '(3(a,i4))','bilin 2d ',nbilin2d,' bilin 3d ',nbilin3d,' conserv 2d ',nconsd
+  if (debug) print '(3(a,i4))','bilin 2d ',nbilin2d,' bilin 3d ',nbilin3d,' conserv 2d ',nconsd2d
 
   allocate(bilin2d(nxt*nyt,nbilin2d))
   allocate(bilin3d(nxt*nyt,nlevs,nbilin3d))
-  allocate(consd2d(nxt*nyt,nconsd))
+  allocate(consd2d(nxt*nyt,nconsd2d))
 
   allocate(b2d(1:nbilin2d))
-  allocate(c2d(1:nconsd))
+  allocate(c2d(1:nconsd2d))
   allocate(b3d(1:nbilin3d))
 
   ! --------------------------------
@@ -146,7 +147,7 @@ program ocnpost
              '  ',trim(b3d(n)%var_pair),'  ', trim(b3d(n)%var_pair_grid)
      end do
      print *,'2D fields mapped conserv'
-     do n = 1,nconsd
+     do n = 1,nconsd2d
         print '(i6,4(a,a))',n,'  ',trim(c2d(n)%input_var_name),'  ',trim(c2d(n)%var_grid), &
              '  ',trim(c2d(n)%var_pair),'  ', trim(c2d(n)%var_pair_grid)
      end do
@@ -157,43 +158,15 @@ program ocnpost
   ! --------------------------------
 
   ! 2D bilin
-  call packarrays(trim(filesrc), trim(wgtsdir), cosrot, sinrot, b2d, dims=(/nxt,nyt,nbilin2d/), fields=bilin2d)
+  call packarrays(trim(filesrc), trim(wgtsdir), cosrot, sinrot, b2d, dims=(/nxt,nyt/), nflds=nbilin2d, fields=bilin2d)
   ! 2D conserv
-  call packarrays(trim(filesrc), trim(wgtsdir), cosrot, sinrot, c2d, dims=(/nxt,nyt,nconsd/), fields=consd2d)
+  call packarrays(trim(filesrc), trim(wgtsdir), cosrot, sinrot, c2d, dims=(/nxt,nyt/), nflds=nconsd2d, fields=consd2d)
   ! 3D bilin
-  call packarrays(trim(filesrc), trim(wgtsdir), cosrot, sinrot, b3d, dims=(/nxt,nyt,nlevs,nbilin3d/), fields=bilin3d)
+  call packarrays(trim(filesrc), trim(wgtsdir), cosrot, sinrot, b3d, dims=(/nxt,nyt,nlevs/), nflds=nbilin3d, fields=bilin3d)
 
-  if (debug) then
-     fout = 'bilin2d.nc'
-     rc = nf90_create(trim(fout), nf90_clobber, ncid)
-     rc = nf90_def_dim(ncid, 'nx', nxt,     idimid)
-     rc = nf90_def_dim(ncid, 'ny', nyt,     jdimid)
-     rc = nf90_def_dim(ncid, 'nk', nbilin2d, kdimid)
-     rc = nf90_def_var(ncid, 'bilin2d', nf90_float, (/idimid,jdimid,kdimid/), varid)
-     rc = nf90_enddef(ncid)
-     allocate(tmp3d(nxt,nyt,nbilin2d))
-     tmp3d(:,:,:) =  reshape(bilin2d,(/nxt,nyt,nbilin2d/))
-     rc = nf90_put_var(ncid, varid, tmp3d)
-     rc = nf90_close(ncid)
-     print *,'wrote ',trim(fout)
-     deallocate(tmp3d)
-  end if
-
-  if (debug) then
-     fout = 'consd2d.nc'
-     rc = nf90_create(trim(fout), nf90_clobber, ncid)
-     rc = nf90_def_dim(ncid, 'nx', nxt,     idimid)
-     rc = nf90_def_dim(ncid, 'ny', nyt,     jdimid)
-     rc = nf90_def_dim(ncid, 'nk', nconsd, kdimid)
-     rc = nf90_def_var(ncid, 'consd2d', nf90_float, (/idimid,jdimid,kdimid/), varid)
-     rc = nf90_enddef(ncid)
-     allocate(tmp3d(nxt,nyt,nconsd))
-     tmp3d(:,:,:) =  reshape(consd2d,(/nxt,nyt,nconsd/))
-     rc = nf90_put_var(ncid, varid, tmp3d)
-     rc = nf90_close(ncid)
-     print *,'wrote ',trim(fout)
-     deallocate(tmp3d)
-  end if
+  if (debug) call dumpnc('bilin2d.nc', 'bilin2d', dims=(/nxt,nyt/)      , nflds=nbilin2d, field=bilin2d)
+  if (debug) call dumpnc('consd.nc'  ,   'consd', dims=(/nxt,nyt/)      , nflds=nconsd2d, field=consd2d)
+  if (debug) call dumpnc('bilin3d.nc', 'bilin3d', dims=(/nxt,nyt,nlevs/), nflds=nbilin3d, field=bilin3d)
 
   ! --------------------------------
   ! remap packed arrays. this is the first
@@ -202,53 +175,62 @@ program ocnpost
 
   dstgrid = '0p25'
   allocate(rgb2d(nxr*nyr,nbilin2d))
-  allocate(rgc2d(nxr*nyr,nconsd))
+  allocate(rgc2d(nxr*nyr,nconsd2d))
   allocate(rgb3d(nxr*nyr,nlevs,nbilin3d))
 
   wgtsfile = trim(wgtsdir)//'tripole.mx025.Ct.to.rect.'//trim(dstgrid)//'.bilinear.nc'
   print '(a)','remapping 2D fields bilinear with '//trim(wgtsfile)
-  call remap(trim(wgtsfile), nk=nbilin2d, src_field=bilin2d, dst_field=rgb2d)
+  call remap(trim(wgtsfile), dim3=nbilin2d, src_field=bilin2d, dst_field=rgb2d)
 
-  if (debug) then
-     fout = 'rgbilin2d.nc'
-     rc = nf90_create(trim(fout), nf90_clobber, ncid)
-     rc = nf90_def_dim(ncid, 'nx', nxr,     idimid)
-     rc = nf90_def_dim(ncid, 'ny', nyr,     jdimid)
-     rc = nf90_def_dim(ncid, 'nk', nbilin2d, kdimid)
-     rc = nf90_def_var(ncid, 'bilin2d', nf90_float, (/idimid,jdimid,kdimid/), varid)
-     rc = nf90_enddef(ncid)
-     allocate(tmp3d(nxr,nyr,nbilin2d))
-     tmp3d(:,:,:) =  reshape(bilin2d,(/nxt,nyt,nbilin2d/))
-     rc = nf90_put_var(ncid, varid, tmp3d)
-     rc = nf90_close(ncid)
-     print *,'wrote ',trim(fout)
-     deallocate(tmp3d)
-  end if
+  ! if (debug) then
+  !    fout = 'rgbilin2d.nc'
+  !    rc = nf90_create(trim(fout), nf90_clobber, ncid)
+  !    rc = nf90_def_dim(ncid, 'nx', nxr,     idimid)
+  !    rc = nf90_def_dim(ncid, 'ny', nyr,     jdimid)
+  !    rc = nf90_def_dim(ncid, 'nk', nbilin2d, kdimid)
+  !    rc = nf90_def_var(ncid, 'bilin2d', nf90_float, (/idimid,jdimid,kdimid/), varid)
+  !    rc = nf90_enddef(ncid)
+  !    allocate(tmp3d(nxr,nyr,nbilin2d))
+  !    tmp3d(:,:,:) =  reshape(bilin2d,(/nxt,nyt,nbilin2d/))
+  !    rc = nf90_put_var(ncid, varid, tmp3d)
+  !    rc = nf90_close(ncid)
+  !    print *,'wrote ',trim(fout)
+  !    deallocate(tmp3d)
+  ! end if
 
   wgtsfile = trim(wgtsdir)//'tripole.mx025.Ct.to.rect.'//trim(dstgrid)//'.conserve.nc'
   print '(a)','remapping 2D fields conserv with '//trim(wgtsfile)
-  call remap(trim(wgtsfile), nk=nconsd, src_field=consd2d, dst_field=rgc2d)
+  call remap(trim(wgtsfile), dim3=nconsd2d, src_field=consd2d, dst_field=rgc2d)
 
-  if (debug) then
-     fout = 'rgcons2d.nc'
-     rc = nf90_create(trim(fout), nf90_clobber, ncid)
-     rc = nf90_def_dim(ncid, 'nx', nxr,     idimid)
-     rc = nf90_def_dim(ncid, 'ny', nyr,     jdimid)
-     rc = nf90_def_dim(ncid, 'nk', nconsd, kdimid)
-     rc = nf90_def_var(ncid, 'consd', nf90_float, (/idimid,jdimid,kdimid/), varid)
-     rc = nf90_enddef(ncid)
-     allocate(tmp3d(nxr,nyr,nconsd))
-     tmp3d(:,:,:) =  reshape(consd2d,(/nxt,nyt,nconsd/))
-     rc = nf90_put_var(ncid, varid, tmp3d)
-     rc = nf90_close(ncid)
-     print *,'wrote ',trim(fout)
-     deallocate(tmp3d)
-  end if
+  wgtsfile = trim(wgtsdir)//'tripole.mx025.Ct.to.rect.'//trim(dstgrid)//'.bilinear.nc'
+  print '(a)','remapping 3D fields bilinear with '//trim(wgtsfile)
+  call remap(trim(wgtsfile), nk=nlevs, nflds=nbilin3d, src_field=bilin3d, dst_field=rgb3d)
+
+  if (debug) call dumpnc('rgbilin2d.nc', 'rgbilin2d', dims=(/nxr,nyr/)      , nflds=nbilin2d, field=rgb2d)
+  if (debug) call dumpnc('rgconsd2d.nc', 'rgconsd2d', dims=(/nxr,nyr/)      , nflds=nconsd2d, field=rgc2d)
+  if (debug) call dumpnc('rgbilin3d.nc', 'rgbilin3d', dims=(/nxt,nyt,nlevs/), nflds=nbilin3d, field=rgb3d)
+
+  ! if (debug) then
+  !    fout = 'rgcons2d.nc'
+  !    rc = nf90_create(trim(fout), nf90_clobber, ncid)
+  !    rc = nf90_def_dim(ncid, 'nx', nxr,     idimid)
+  !    rc = nf90_def_dim(ncid, 'ny', nyr,     jdimid)
+  !    rc = nf90_def_dim(ncid, 'nk', nconsd, kdimid)
+  !    rc = nf90_def_var(ncid, 'consd', nf90_float, (/idimid,jdimid,kdimid/), varid)
+  !    rc = nf90_enddef(ncid)
+  !    allocate(tmp3d(nxr,nyr,nconsd))
+  !    tmp3d(:,:,:) =  reshape(consd2d,(/nxt,nyt,nconsd/))
+  !    rc = nf90_put_var(ncid, varid, tmp3d)
+  !    rc = nf90_close(ncid)
+  !    print *,'wrote ',trim(fout)
+  !    deallocate(tmp3d)
+  ! end if
 
   !wgtsfile = trim(wgtsdir)//'tripole.mx025.Ct.to.rect.'//trim(dstgrid)//'.bilinear.nc'
   !print '(a)','remapping 3D fields bilinear with '//trim(wgtsfile)
   !call remap(trim(wgtsfile), nk=nlevs, nflds=nbilin3d, src_field=bilin3d, dst_field=rgb3d)
 
+#ifdef test
   ! --------------------------------
   ! regrid the 3D mask to obtain the interpolation mask.
   ! mask3d contain 1's on land and 0's at valid points.
@@ -423,7 +405,7 @@ program ocnpost
  end do
 #endif
  rc = nf90_close(ncid)
-
+#endif
  print *,'all done!'
 
 end program ocnpost
