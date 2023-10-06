@@ -18,9 +18,9 @@ module utils_mod
   end interface packarrays
 
   interface remap
+     module procedure remap1d
      module procedure remap2d
      module procedure remap3d
-     module procedure remap4d
   end interface remap
 
   interface getvecpair
@@ -42,6 +42,9 @@ module utils_mod
 
 contains
 
+  !----------------------------------------------------------
+  ! pack 2D fields into arrays by mapping type
+  !----------------------------------------------------------
   subroutine packarrays2d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, nflds, fields)
 
     character(len=*), intent(in)  :: filesrc,wgtsdir
@@ -86,6 +89,9 @@ contains
     if (debug)print '(a)','exit '//trim(subname)
 
   end subroutine packarrays2d
+  !----------------------------------------------------------
+  ! pack 3D fields into arrays by mapping type
+  !----------------------------------------------------------
 
   subroutine packarrays3d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, nflds, fields)
 
@@ -132,6 +138,9 @@ contains
 
   end subroutine packarrays3d
 
+  !----------------------------------------------------------
+  ! obtain 2D vector pairs mapped to Ct and rotated to EW
+  !----------------------------------------------------------
   subroutine getvecpair2d(fname, wdir, cosrot, sinrot, vname1, vgrid1, &
        vname2, vgrid2, dims, vecpair)
 
@@ -166,6 +175,9 @@ contains
     if (debug) print '(a)','exit '//trim(subname)
 
   end subroutine getvecpair2d
+  !----------------------------------------------------------
+  ! obtain 3D vector pairs, mapped to Ct and rotated to EW
+  !----------------------------------------------------------
 
   subroutine getvecpair3d(fname, wdir, cosrot, sinrot, vname1, vgrid1, &
        vname2, vgrid2, dims, vecpair)
@@ -203,6 +215,9 @@ contains
 
   end subroutine getvecpair3d
 
+  !----------------------------------------------------------
+  ! obtain a 2D field and return a 1-D vector array
+  !----------------------------------------------------------
   subroutine getfield2d(fname, vname, dims, field, wgts)
     character(len=*),           intent(in)  :: fname, vname
     integer,                    intent(in)  :: dims(:)
@@ -221,9 +236,12 @@ contains
     allocate(a2d(dims(1),dims(2)))
     allocate(atmp(dims(1)*dims(2)))
 
-    rc = nf90_open(trim(fname), nf90_nowrite, ncid)
-    rc = nf90_inq_varid(ncid, trim(vname), varid)
+    rc = nf90_open(fname, nf90_nowrite, ncid)
+    call handle_err(rc,' nf90_open '//fname)
+    rc = nf90_inq_varid(ncid, vname, varid)
+    call handle_err(rc,' get variable ID '// vname)
     rc = nf90_get_var(ncid, varid, a2d)
+    call handle_err(rc,' get variable'// vname)
     rc = nf90_get_att(ncid, varid, '_FillValue', fval)
     rc = nf90_close(ncid)
 
@@ -237,6 +255,9 @@ contains
     if (debug) print '(a)','exit '//trim(subname)//' variable '//vname
 
   end subroutine getfield2d
+  !----------------------------------------------------------
+  ! obtain a 3D field and return a 2-D vector array
+  !----------------------------------------------------------
 
   subroutine getfield3d(fname, vname, dims, field, wgts)
     character(len=*),           intent(in)  :: fname, vname
@@ -256,9 +277,12 @@ contains
     allocate(a3d(dims(1),dims(2),dims(3)))
     allocate(atmp(dims(1)*dims(2),dims(3)))
 
-    rc = nf90_open(trim(fname), nf90_nowrite, ncid)
-    rc = nf90_inq_varid(ncid, trim(vname), varid)
+    rc = nf90_open(fname, nf90_nowrite, ncid)
+    call handle_err(rc,' nf90_open '//fname)
+    rc = nf90_inq_varid(ncid, vname, varid)
+    call handle_err(rc,' get variable ID '// vname)
     rc = nf90_get_var(ncid, varid, a3d)
+    call handle_err(rc,' get variable'// vname)
     rc = nf90_get_att(ncid, varid, '_FillValue', fval)
     rc = nf90_close(ncid)
 
@@ -273,7 +297,10 @@ contains
 
   end subroutine getfield3d
 
-  subroutine remap2d(fname, src_field, dst_field)
+  !----------------------------------------------------------
+  ! remap a 1-D vector array
+  !----------------------------------------------------------
+  subroutine remap1d(fname, src_field, dst_field)
 
     character(len=*), intent(in)  :: fname
     real,             intent(in)  :: src_field(:)
@@ -293,6 +320,7 @@ contains
 
     ! retrieve the weights
     rc = nf90_open(trim(fname), nf90_nowrite, ncid)
+    call handle_err(rc,' nf90_open '//fname)
     rc = nf90_inq_dimid(ncid, 'n_s', id)
     rc = nf90_inquire_dimension(ncid, id, len=n_s)
     rc = nf90_inq_dimid(ncid, 'n_a', id)
@@ -315,15 +343,18 @@ contains
     dst_field = 0.0
     do i = 1,n_s
        ii = row(i); jj = col(i)
-       dst_field(ii) = dst_field(ii) + S(i)*src_field(jj)
+       dst_field(ii) = dst_field(ii) + S(i)*real(src_field(jj),8)
     enddo
     if (debug) print '(a)','exit '//trim(subname)
 
-  end subroutine remap2d
+  end subroutine remap1d
 
-  subroutine remap3d(fname, dim3, src_field, dst_field)
+  !----------------------------------------------------------
+  ! remap a packed field of either nflds or nlevs
+  !----------------------------------------------------------
+  subroutine remap2d(fname, dim2, src_field, dst_field)
     character(len=*), intent(in)  :: fname
-    integer,          intent(in)  :: dim3
+    integer,          intent(in)  :: dim2
     real,             intent(in)  :: src_field(:,:)
     real,             intent(out) :: dst_field(:,:)
 
@@ -341,6 +372,7 @@ contains
 
     ! retrieve the weights
     rc = nf90_open(trim(fname), nf90_nowrite, ncid)
+    call handle_err(rc,' nf90_open '//fname)
     rc = nf90_inq_dimid(ncid, 'n_s', id)
     rc = nf90_inquire_dimension(ncid, id, len=n_s)
     rc = nf90_inq_dimid(ncid, 'n_a', id)
@@ -363,13 +395,16 @@ contains
     dst_field = 0.0
     do i = 1,n_s
        ii = row(i); jj = col(i)
-       dst_field(ii,:) = dst_field(ii,:) + S(i)*src_field(jj,:)
+       dst_field(ii,:) = dst_field(ii,:) + S(i)*real(src_field(jj,:),8)
     enddo
     if (debug) print '(a)','exit '//trim(subname)
 
-  end subroutine remap3d
+  end subroutine remap2d
 
-  subroutine remap4d(fname, nk, nflds, src_field, dst_field)
+  !----------------------------------------------------------
+  ! remap a field packed array of nk levels and nflds fields
+  !----------------------------------------------------------
+  subroutine remap3d(fname, nk, nflds, src_field, dst_field)
     character(len=*), intent(in)  :: fname
     integer,          intent(in)  :: nk, nflds
     real,             intent(in)  :: src_field(:,:,:)
@@ -389,6 +424,7 @@ contains
 
     ! retrieve the weights
     rc = nf90_open(trim(fname), nf90_nowrite, ncid)
+    call handle_err(rc,' nf90_open '//fname)
     rc = nf90_inq_dimid(ncid, 'n_s', id)
     rc = nf90_inquire_dimension(ncid, id, len=n_s)
     rc = nf90_inq_dimid(ncid, 'n_a', id)
@@ -411,11 +447,14 @@ contains
     dst_field = 0.0
     do i = 1,n_s
        ii = row(i); jj = col(i)
-       dst_field(ii,:,:) = dst_field(ii,:,:) + S(i)*src_field(jj,:,:)
+       dst_field(ii,:,:) = dst_field(ii,:,:) + S(i)*real(src_field(jj,:,:),8)
     enddo
     if (debug) print '(a)','exit '//trim(subname)
 
-  end subroutine remap4d
+  end subroutine remap3d
+  !----------------------------------------------------------
+  ! write a bare netcdf file of a 2D packed field
+  !----------------------------------------------------------
 
   subroutine dumpnc2d(fname, vname, dims, nflds, field)
 
@@ -448,6 +487,9 @@ contains
     if (debug)print '(a)','exit '//trim(subname)//' variable '//vname
 
   end subroutine dumpnc2d
+  !----------------------------------------------------------
+  ! write a bare netcdf file of a packed 3D field
+  !----------------------------------------------------------
 
   subroutine dumpnc3d(fname, vname, dims, nflds, field)
 
@@ -482,4 +524,15 @@ contains
 
     if (debug)print '(a)','exit '//trim(subname)//' variable '//vname
   end subroutine dumpnc3d
+  !----------------------------------------------------------
+  ! handle netcdf errors
+  !----------------------------------------------------------
+  subroutine handle_err(ierr,string)
+    integer         , intent(in) :: ierr
+    character(len=*), intent(in) :: string
+    if (ierr /= nf90_noerr) then
+      write(ndse,*) "*** ERROR ***: ",trim(string),':',trim(nf90_strerror(ierr))
+      stop
+    end if
+  end subroutine handle_err
 end module utils_mod
