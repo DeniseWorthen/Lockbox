@@ -65,7 +65,7 @@ contains
     ! obtain vector pairs
     do n = 1,nflds
        if (trim(vars(n)%var_grid) == 'Cu') then
-          allocate(vecpair(dims(1)*dims(2),2))
+          allocate(vecpair(dims(1)*dims(2),2)); vecpair = 0.0
           call getvecpair(trim(filesrc), trim(wgtsdir), cosrot, sinrot, &
                trim(vars(n)%input_var_name), trim(vars(n)%var_grid),    &
                trim(vars(n)%var_pair), trim(vars(n)%var_pair_grid),     &
@@ -89,10 +89,10 @@ contains
     if (debug)print '(a)','exit '//trim(subname)
 
   end subroutine packarrays2d
+
   !----------------------------------------------------------
   ! pack 3D fields into arrays by mapping type
   !----------------------------------------------------------
-
   subroutine packarrays3d(filesrc, wgtsdir, cosrot, sinrot, vars, dims, nflds, fields)
 
     character(len=*), intent(in)  :: filesrc,wgtsdir
@@ -113,7 +113,7 @@ contains
     ! obtain vector pairs
     do n = 1,dims(3)
        if (trim(vars(n)%var_grid) == 'Cu') then
-          allocate(vecpair(dims(1)*dims(2),dims(3),2))
+          allocate(vecpair(dims(1)*dims(2),dims(3),2)); vecpair = 0.0
           call getvecpair(trim(filesrc), trim(wgtsdir), cosrot, sinrot, &
                trim(vars(n)%input_var_name), trim(vars(n)%var_grid),    &
                trim(vars(n)%var_pair), trim(vars(n)%var_pair_grid),     &
@@ -175,10 +175,10 @@ contains
     if (debug) print '(a)','exit '//trim(subname)
 
   end subroutine getvecpair2d
+
   !----------------------------------------------------------
   ! obtain 3D vector pairs, mapped to Ct and rotated to EW
   !----------------------------------------------------------
-
   subroutine getvecpair3d(fname, wdir, cosrot, sinrot, vname1, vgrid1, &
        vname2, vgrid2, dims, vecpair)
 
@@ -233,8 +233,8 @@ contains
 
     if (debug)print '(a)','enter '//trim(subname)//' variable '//vname
 
-    allocate(a2d(dims(1),dims(2)))
-    allocate(atmp(dims(1)*dims(2)))
+    allocate(a2d(dims(1),dims(2))); a2d = 0.0
+    allocate(atmp(dims(1)*dims(2))); atmp = 0.0
 
     rc = nf90_open(fname, nf90_nowrite, ncid)
     call handle_err(rc,' nf90_open '//fname)
@@ -255,10 +255,10 @@ contains
     if (debug) print '(a)','exit '//trim(subname)//' variable '//vname
 
   end subroutine getfield2d
+
   !----------------------------------------------------------
   ! obtain a 3D field and return a 2-D vector array
   !----------------------------------------------------------
-
   subroutine getfield3d(fname, vname, dims, field, wgts)
     character(len=*),           intent(in)  :: fname, vname
     integer,                    intent(in)  :: dims(:)
@@ -274,8 +274,8 @@ contains
 
     if (debug)print '(a)','enter '//trim(subname)//' variable '//vname
 
-    allocate(a3d(dims(1),dims(2),dims(3)))
-    allocate(atmp(dims(1)*dims(2),dims(3)))
+    allocate(a3d(dims(1),dims(2),dims(3))); a3d = 0.0
+    allocate(atmp(dims(1)*dims(2),dims(3))); atmp = 0.0
 
     rc = nf90_open(fname, nf90_nowrite, ncid)
     call handle_err(rc,' nf90_open '//fname)
@@ -328,9 +328,9 @@ contains
     rc = nf90_inq_dimid(ncid, 'n_b', id)
     rc = nf90_inquire_dimension(ncid, id, len=n_b)
 
-    allocate(col(1:n_s))
-    allocate(row(1:n_s))
-    allocate(  S(1:n_s))
+    allocate(col(1:n_s)); col = 0.0
+    allocate(row(1:n_s)); row = 0.0
+    allocate(  S(1:n_s)); S = 0.0
 
     rc = nf90_inq_varid(ncid, 'col', id)
     rc = nf90_get_var(ncid,     id, col)
@@ -353,6 +353,7 @@ contains
   ! remap a packed field of either nflds or nlevs
   !----------------------------------------------------------
   subroutine remap2d(fname, dim2, src_field, dst_field)
+
     character(len=*), intent(in)  :: fname
     integer,          intent(in)  :: dim2
     real,             intent(in)  :: src_field(:,:)
@@ -380,9 +381,9 @@ contains
     rc = nf90_inq_dimid(ncid, 'n_b', id)
     rc = nf90_inquire_dimension(ncid, id, len=n_b)
 
-    allocate(col(1:n_s))
-    allocate(row(1:n_s))
-    allocate(  S(1:n_s))
+    allocate(col(1:n_s)); col = 0.0
+    allocate(row(1:n_s)); row = 0.0
+    allocate(  S(1:n_s)); S = 0.0
 
     rc = nf90_inq_varid(ncid, 'col', id)
     rc = nf90_get_var(ncid,     id, col)
@@ -405,6 +406,7 @@ contains
   ! remap a field packed array of nk levels and nflds fields
   !----------------------------------------------------------
   subroutine remap3d(fname, nk, nflds, src_field, dst_field)
+
     character(len=*), intent(in)  :: fname
     integer,          intent(in)  :: nk, nflds
     real,             intent(in)  :: src_field(:,:,:)
@@ -432,9 +434,9 @@ contains
     rc = nf90_inq_dimid(ncid, 'n_b', id)
     rc = nf90_inquire_dimension(ncid, id, len=n_b)
 
-    allocate(col(1:n_s))
-    allocate(row(1:n_s))
-    allocate(  S(1:n_s))
+    allocate(col(1:n_s)); col = 0.0
+    allocate(row(1:n_s)); row = 0.0
+    allocate(  S(1:n_s)); S = 0.0
 
     rc = nf90_inq_varid(ncid, 'col', id)
     rc = nf90_get_var(ncid,     id, col)
@@ -452,10 +454,10 @@ contains
     if (debug) print '(a)','exit '//trim(subname)
 
   end subroutine remap3d
+
   !----------------------------------------------------------
   ! write a bare netcdf file of a 2D packed field
   !----------------------------------------------------------
-
   subroutine dumpnc2d(fname, vname, dims, nflds, field)
 
     character(len=*), intent(in) :: fname, vname
@@ -471,7 +473,7 @@ contains
     if (debug)print '(a)','enter '//trim(subname)//' variable '//vname
     print *,dims
     print *,size(field,1),size(field,2)
-    allocate(a3d(dims(1),dims(2),nflds))
+    allocate(a3d(dims(1),dims(2),nflds)); a3d = 0.0
 
     rc = nf90_create(trim(fname), nf90_clobber, ncid)
     rc = nf90_def_dim(ncid, 'nx', dims(1), idimid)
@@ -487,10 +489,10 @@ contains
     if (debug)print '(a)','exit '//trim(subname)//' variable '//vname
 
   end subroutine dumpnc2d
+
   !----------------------------------------------------------
   ! write a bare netcdf file of a packed 3D field
   !----------------------------------------------------------
-
   subroutine dumpnc3d(fname, vname, dims, nflds, field)
 
     character(len=*), intent(in) :: fname, vname
@@ -506,7 +508,7 @@ contains
     if (debug)print '(a)','enter '//trim(subname)//' variable '//vname
     print *,dims
     print *,size(field,1),size(field,2),size(field,3)
-    allocate(a4d(dims(1),dims(2),dims(3),nflds))
+    allocate(a4d(dims(1),dims(2),dims(3),nflds)); a4d = 0.0
 
     rc = nf90_create(trim(fname), nf90_clobber, ncid)
     rc = nf90_def_dim(ncid, 'nx', dims(1), idimid)
@@ -524,10 +526,12 @@ contains
 
     if (debug)print '(a)','exit '//trim(subname)//' variable '//vname
   end subroutine dumpnc3d
+
   !----------------------------------------------------------
   ! handle netcdf errors
   !----------------------------------------------------------
   subroutine handle_err(ierr,string)
+
     integer         , intent(in) :: ierr
     character(len=*), intent(in) :: string
     if (ierr /= nf90_noerr) then
