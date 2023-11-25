@@ -4,21 +4,6 @@
 !> This module contains the CCPP-compliant GFS near-surface sea temperature scheme.
 module sfc_nst
 
-  use machine , only : kind_phys, kp => kind_phys
-  use funcphys, only : fpvs
-  use date_def, only : idate
-  use module_nst_water_prop, only : get_dtzm_point
-  use module_nst_parameters, only : t0k,cp_w,omg_m,omg_sh,  &
-       sigma_r,solar_time_6am,ri_c,z_w_max,delz,wd_max,     &
-       rad2deg,const_rot,tau_min,tw_max,sst_max
-  use module_nst_water_prop, only : solar_time_from_julian, &
-       density,rhocoef,compjd,grv, sw_ps_9b
-  use nst_module, only : cool_skin,dtm_1p,cal_w,cal_ttop,   &
-       convdepth,dtm_1p_fca,dtm_1p_tla,                     &
-       dtm_1p_mwa,dtm_1p_mda,dtm_1p_mta,                    &
-       dtl_reset
-  !
-  implicit none
 contains
 
   !>\defgroup gfs_nst_main_mod GFS Near-Surface Sea Temperature Module
@@ -33,14 +18,13 @@ contains
        ( im, hvap, cp, hfus, jcal, eps, epsm1, rvrdm1, rd, rhw0,  &  ! --- inputs:
        pi, tgice, sbc, ps, u1, v1, t1, q1, tref, cm, ch,          &
        lseaspray, fm, fm10,                                       &
-       prsl1, prslki, prsik1, prslk1, wet, use_lake_model, xlon,  &
-       sinlat, stress,                                            &
+       prsl1, prslki, prsik1, prslk1,  xlon,  sinlat, stress,     &
        sfcemis, dlwflx, sfcnsw, rain, timestep, kdt, solhr,xcosz, &
        wind, flag_iter, flag_guess, nstf_name1, nstf_name4,       &
-       nstf_name5, lprnt, ipr, thsfc_loc,                         &
+       nstf_name5, thsfc_loc,                                     &
        tskin, tsurf, xt, xs, xu, xv, xz, zm, xtts, xzts, dt_cool, &  ! --- input/output:
        z_c,   c_0,   c_d,   w_0, w_d, d_conv, ifd, qrain,         &
-       qsurf, gflux, cmm, chh, evap, hflx, ep, errmsg, errflg     &  ! --- outputs:
+       qsurf, gflux, cmm, chh, evap, hflx, ep     &  ! --- outputs:
        )
     !
     ! ===================================================================== !
@@ -53,10 +37,10 @@ contains
     !       inputs:                                                         !
     !          ( im, ps, u1, v1, t1, q1, tref, cm, ch,                      !
     !            lseaspray, fm, fm10,                                       !
-    !            prsl1, prslki, wet, use_lake_model, xlon, sinlat, stress,  !
+    !            prsl1, prslki,  xlon, sinlat, stress,                      !
     !            sfcemis, dlwflx, sfcnsw, rain, timestep, kdt,solhr,xcosz,  !
     !            wind,  flag_iter, flag_guess, nstf_name1, nstf_name4,      !
-    !            nstf_name5, lprnt, ipr, thsfc_loc,                         !
+    !            nstf_name5, thsfc_loc,                                     !
     !       input/outputs:                                                  !
     !            tskin, tsurf, xt, xs, xu, xv, xz, zm, xtts, xzts, dt_cool, !
     !            z_c, c_0,   c_d,   w_0, w_d, d_conv, ifd, qrain,           !
@@ -103,9 +87,6 @@ contains
     !     prslki   - real,                                             im   !
     !     prsik1   - real,                                             im   !
     !     prslk1   - real,                                             im   !
-    !     wet      - logical, =T if any ocn/lake water (F otherwise)   im   !
-    !     use_lake_model- logical, =T if flake model is used for lake  im   !
-    !     icy      - logical, =T if any ice                            im   !
     !     xlon     - real, longitude         (radians)                 im   !
     !     sinlat   - real, sin of latitude                             im   !
     !     stress   - real, wind stress       (n/m**2)                  im   !
@@ -131,8 +112,6 @@ contains
     !                             2 = NSSTM on and coupled             1    !
     !                nstf_name4 : zsea1 in mm                          1    !
     !                nstf_name5 : zsea2 in mm                          1    !
-    !     lprnt    - logical, control flag for check print out         1    !
-    !     ipr      - integer, grid index for check print out           1    !
     !     thsfc_loc- logical, flag for reference pressure in theta     1    !
     !                                                                       !
     !  input/outputs:
@@ -168,11 +147,31 @@ contains
     !     ep       - real, potential evaporation                       im   !
     !                                                                       !
     ! ===================================================================== !
+    use machine , only : kind_phys
+    use funcphys, only : fpvs
+    use date_def, only : idate
+    use module_nst_water_prop, only: get_dtzm_point
+    use module_nst_parameters, only : t0k,cp_w,omg_m,omg_sh, &
+         sigma_r,solar_time_6am,ri_c,z_w_max,delz,wd_max,    &
+         rad2deg,const_rot,tau_min,tw_max,sst_max
+    use module_nst_water_prop, only: density,rhocoef,compjd,grv, sw_ps_9b
+    use nst_module, only : cool_skin,dtm_1p,cal_w,cal_ttop,  &
+         convdepth,dtm_1p_fca,dtm_1p_tla,                    &
+         dtm_1p_mwa,dtm_1p_mda,dtm_1p_mta,                   &
+         dtl_reset
+    !
+    implicit none
 
-
+    integer, parameter :: kp = kind_phys
+    !
+    !  ---  constant parameters:
+    real (kind=kind_phys), parameter :: f24   = 24.0_kp     ! hours/day
+    real (kind=kind_phys), parameter :: f1440 = 1440.0_kp   ! minutes/day
+    real (kind=kind_phys), parameter :: czmin = 0.0001_kp   ! cos(89.994)
+    real (kind=kind_phys), parameter :: zero  = 0.0_kp, one = 1.0_kp
 
     !  ---  inputs:
-    integer, intent(in) :: im, kdt, ipr, nstf_name1, nstf_name4, nstf_name5
+    integer, intent(in) :: im, kdt, nstf_name1, nstf_name4, nstf_name5
     real (kind=kind_phys), intent(in) :: hvap, cp, hfus, jcal, eps, &
          epsm1, rvrdm1, rd, rhw0, sbc, pi, tgice
     real (kind=kind_phys), dimension(:), intent(in) :: ps, u1, v1,  &
@@ -185,10 +184,8 @@ contains
     ! For sea spray effect
     logical, intent(in) :: lseaspray
     !
-    logical, dimension(:), intent(in) :: flag_iter, flag_guess, wet
-    integer, dimension(:), intent(in) :: use_lake_model
-    logical,                intent(in) :: lprnt
-    logical,                intent(in) :: thsfc_loc
+    logical, dimension(:), intent(in) :: flag_iter, flag_guess
+    logical,               intent(in) :: thsfc_loc
 
     !  ---  input/outputs:
     ! control variables of dtl system (5+2) and sl (2) and coefficients for d(tz)/d(ts) calculation
@@ -197,10 +194,8 @@ contains
          z_c, c_0, c_d, w_0, w_d, d_conv, ifd, qrain
 
     !  ---  outputs:
-    real (kind=kind_phys), dimension(:), intent(inout) :: qsurf, gflux, cmm, chh, evap, hflx, ep
-
-    character(len=*), intent(out) :: errmsg
-    integer,          intent(out) :: errflg
+    real (kind=kind_phys), dimension(:), intent(inout) ::        &
+         qsurf, gflux, cmm, chh, evap, hflx, ep
 
     !
     !     locals
@@ -213,45 +208,31 @@ contains
     !
     !    nstm related prognostic fields
     !
-    logical flag(im)
-    real (kind=kind_phys), dimension(im) :: xt_old, xs_old, xu_old, xv_old, xz_old, &
-         zm_old,xtts_old, xzts_old, ifd_old, tref_old, tskin_old, dt_cool_old,z_c_old
+    logical :: flag(im)
+    real (kind=kind_phys), dimension(im) ::                      &
+         xt_old, xs_old, xu_old, xv_old, xz_old,zm_old,xtts_old, &
+         xzts_old, ifd_old, tref_old, tskin_old, dt_cool_old,z_c_old
 
     real(kind=kind_phys) :: ulwflx(im), nswsfc(im)
-    !     real(kind=kind_phys) rig(im),
-    !    &                     ulwflx(im),dlwflx(im),
-    !    &                     slrad(im),nswsfc(im)
-    real(kind=kind_phys) :: alpha,beta,rho_w,f_nsol,sss,sep, cosa,sina,taux,tauy, &
-         grav,dz,t0,ttop0,ttop
+    real(kind=kind_phys) :: alpha,beta,rho_w,f_nsol,sss,sep, cosa,sina,taux,tauy,grav,dz,t0,ttop0,ttop
 
     real(kind=kind_phys) :: le,fc,dwat,dtmp,wetc,alfac,ustar_a,rich
     real(kind=kind_phys) :: rnl_ts,hs_ts,hl_ts,rf_ts,q_ts
     real(kind=kind_phys) :: fw,q_warm
     real(kind=kind_phys) :: t12,alon,tsea,sstc,dta,dtz
     real(kind=kind_phys) :: zsea1,zsea2,soltim
-    logical :: do_nst
 
     !  external functions called: iw3jdn
     integer :: iw3jdn
     !
     !  parameters for sea spray effect
     !
-    real (kind=kind_phys) :: f10m, u10m, v10m, ws10, ru10, qss1, &
-         bb1, hflxs, evaps, ptem
+    real (kind=kind_phys) :: f10m, u10m, v10m, ws10, ru10, qss1, bb1, hflxs, evaps, ptem
     !
-    !     real (kind=kind_phys), parameter :: alps=0.5, bets=0.5, gams=0.1,
-    !     real (kind=kind_phys), parameter :: alps=0.5, bets=0.5, gams=0.0,
-    !     real (kind=kind_phys), parameter :: alps=1.0, bets=1.0, gams=0.2,
-    real (kind=kind_phys), parameter :: alps=0.75,bets=0.75,gams=0.15, &
-         ws10cr=30., conlf=7.2e-9, consf=6.4e-8
+    real (kind=kind_phys), parameter :: alps=0.75,bets=0.75,gams=0.15, ws10cr=30., &
+         conlf=7.2e-9, consf=6.4e-8
     !
     !======================================================================================================
-    cc
-    ! Initialize CCPP error handling variables
-    errmsg = ''
-    errflg = 0
-
-    if (nstf_name1 == 0) return ! No NSST model used
 
     cpinv = one/cp
     hvapi = one/hvap
@@ -259,21 +240,9 @@ contains
 
     sss = 34.0_kp             ! temporarily, when sea surface salinity data is not ready
     !
-    ! flag for open water and where the iteration is on
-    !
-    do_nst = .false.
-    do i = 1, im
-       !       flag(i) = wet(i) .and. .not.icy(i) .and. flag_iter(i)
-       flag(i) = wet(i) .and. flag_iter(i) .and. use_lake_model(i)/=1
-       do_nst  = do_nst .or. flag(i)
-    enddo
-    if (.not. do_nst) return
-    !
     !  save nst-related prognostic fields for guess run
     !
     do i=1, im
-       !       if(wet(i) .and. .not.icy(i) .and. flag_guess(i)) then
-       if(wet(i) .and. flag_guess(i) .and. use_lake_model(i)/=1) then
           xt_old(i)      = xt(i)
           xs_old(i)      = xs(i)
           xu_old(i)      = xu(i)
@@ -286,7 +255,6 @@ contains
           tskin_old(i)   = tskin(i)
           dt_cool_old(i) = dt_cool(i)
           z_c_old(i)     = z_c(i)
-       endif
     enddo
 
 
@@ -336,9 +304,6 @@ contains
              hflx(i)    = rch(i) * (tsurf(i)/prsik1(i) - theta1(i))
           endif
 
-          !     if (lprnt .and. i == ipr) print *,' tskin=',tskin(i),' theta1=',
-          !    & theta1(i),' hflx=',hflx(i),' t1=',t1(i),'prslki=',prslki(i)
-          !    &,' tsurf=',tsurf(i)
        endif
     enddo
 
@@ -363,22 +328,19 @@ contains
           !
           !> - Calculate sensible heat flux (\a qrain) due to rainfall.
           !
-          le       = (2.501_kp-0.00237_kp*tsea)*1.0e6_kp
-          dwat     = 2.11e-5_kp*(t1(i)/t0k)**1.94_kp        ! water vapor diffusivity
-          dtmp     = (one+3.309e-3_kp*(t1(i)-t0k)-1.44e-6_kp*(t1(i)-t0k) &
-               * (t1(i)-t0k))*0.02411_kp/(rho_a(i)*cp)  ! heat diffusivity
+          le       = (2.501_kp-0.00237_kp*tsea)*1e6_kp
+          dwat     = 2.11e-5_kp*(t1(i)/t0k)**1.94_kp            ! water vapor diffusivity
+          dtmp     = (one+3.309e-3_kp*(t1(i)-t0k)-1.44e-6_kp*(t1(i)-t0k)
+          &             * (t1(i)-t0k))*0.02411_kp/(rho_a(i)*cp) ! heat diffusivity
           wetc     = 622.0_kp*le*qss(i)/(rd*t1(i)*t1(i))
-          alfac    = one / (one + (wetc*le*dwat)/(cp*dtmp)) ! wet bulb factor
+          alfac    = one / (one + (wetc*le*dwat)/(cp*dtmp))     ! wet bulb factor
           tem      = (1.0e3_kp * rain(i) / rho_w) * alfac * cp_w
           qrain(i) =  tem * (tsea-t1(i)+1.0e3_kp*(qss(i)-q0(i))*le/cp)
 
           !> - Calculate input non solar heat flux as upward = positive to models here
 
-          f_nsol   = hflx(i) + evap(i) + ulwflx(i) - dlwflx(i) + omg_sh*qrain(i)
-
-          !     if (lprnt .and. i == ipr) print *,' f_nsol=',f_nsol,' hflx=',
-          !    &hflx(i),' evap=',evap(i),' ulwflx=',ulwflx(i),' dlwflx=',dlwflx(i)
-          !    &,' omg_sh=',omg_sh,' qrain=',qrain(i)
+          f_nsol   = hflx(i) + evap(i) + ulwflx(i) - dlwflx(i)
+          &             + omg_sh*qrain(i)
 
           sep      = sss*(evap(i)/le-rain(i))/rho_w
           ustar_a  = sqrt(stress(i)/rho_a(i))          ! air friction velocity
@@ -395,9 +357,9 @@ contains
           !! (Fairfall et al. (1996) \cite fairall_et_al_1996).
           ! & calculate c_0, c_d
           !
-          call cool_skin(ustar_a,f_nsol,nswsfc(i),evap(i),sss,alpha,beta, &
-               rho_w,rho_a(i),tsea,q_ts,hl_ts,grav,le,                    &
-               dt_cool(i),z_c(i),c_0(i),c_d(i))
+          call cool_skin(ustar_a,f_nsol,nswsfc(i),evap(i),sss,alpha,beta
+          &,                  rho_w,rho_a(i),tsea,q_ts,hl_ts,grav,le
+          &,                  dt_cool(i),z_c(i),c_0(i),c_d(i))
 
           tem  = one / wndmag(i)
           cosa = u1(i)*tem
@@ -414,39 +376,22 @@ contains
              !
              !     calculate fcl thickness with current forcing and previous time's profile
              !
-             !     if (lprnt .and. i == ipr) print *,' beg xz=',xz(i)
-
              !> - Call convdepth() to calculate depth for convective adjustments.
              if ( f_nsol > zero .and. xt(i) > zero ) then
-                call convdepth(kdt,timestep,nswsfc(i),f_nsol,sss,sep,rho_w, &
-                     alpha,beta,xt(i),xs(i),xz(i),d_conv(i))
+                call convdepth(kdt,timestep,nswsfc(i),f_nsol,sss,sep,rho_w
+                &,                      alpha,beta,xt(i),xs(i),xz(i),d_conv(i))
              else
                 d_conv(i) = zero
              endif
 
-             !     if (lprnt .and. i == ipr) print *,' beg xz1=',xz(i)
-             !
-             !    determine rich: wind speed dependent (right now)
-             !
-             !           if ( wind(i) < 1.0 ) then
-             !             rich = 0.25 + 0.03*wind(i)
-             !           elseif ( wind(i) >= 1.0 .and. wind(i) < 1.5 ) then
-             !             rich = 0.25 + 0.1*wind(i)
-             !           elseif ( wind(i) >= 1.5 .and. wind(i) < 6.0 ) then
-             !             rich = 0.25 + 0.6*wind(i)
-             !           elseif ( wind(i) >= 6.0 ) then
-             !             rich = 0.25 + min(0.8*wind(i),0.50)
-             !           endif
-
              rich = ri_c
 
              !> - Call the diurnal thermocline layer model dtm_1p().
-             call dtm_1p(kdt,timestep,rich,taux,tauy,nswsfc(i),    &
-                  f_nsol,sss,sep,q_ts,hl_ts,rho_w,alpha,beta,alon, &
-                  sinlat(i),soltim,grav,le,d_conv(i),              &
-                  xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
+             call dtm_1p(kdt,timestep,rich,taux,tauy,nswsfc(i),
+             &                  f_nsol,sss,sep,q_ts,hl_ts,rho_w,alpha,beta,alon,
+             &                  sinlat(i),soltim,grav,le,d_conv(i),
+             &                  xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
 
-             !     if (lprnt .and. i == ipr) print *,' beg xz2=',xz(i)
 
              !  apply mda
              if ( xt(i) > zero ) then
@@ -456,10 +401,9 @@ contains
                 if ( xz(i) >= z_w_max ) then
                    !>   - If \a dtl thickness >= module_nst_parameters::z_w_max, call dtl_reset()
                    !! to reset xt/xs/x/xv to zero, and xz to module_nst_parameters::z_w_max.
-                   call dtl_reset(xt(i),xs(i),xu(i),xv(i),xz(i),xtts(i), xzts(i))
+                   call dtl_reset(xt(i),xs(i),xu(i),xv(i),xz(i),xtts(i),
+                   &                                                       xzts(i))
 
-                   !     if (lprnt .and. i == ipr) print *,' beg xz3=',xz(i),' z_w_max='
-                   !    &,z_w_max
                 endif
 
                 !  apply fca
@@ -470,11 +414,10 @@ contains
                    !! to reset xt/xs/x/xv to zero, and xz to module_nst_parameters::z_w_max().
                    call dtm_1p_fca(d_conv(i),xt(i),xtts(i),xz(i),xzts(i))
                    if ( xz(i) >= z_w_max ) then
-                      call dtl_reset (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
+                      call dtl_reset
+                      &              (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
                    endif
                 endif
-
-                !     if (lprnt .and. i == ipr) print *,' beg xz4=',xz(i)
 
                 !  apply tla
                 dz = min(xz(i),max(d_conv(i),delz))
@@ -488,32 +431,21 @@ contains
                 !>  - Call cal_ttop() to calculate the diurnal warming amount at the top layer with
                 !! thickness of \a dz.
                 if ( q_warm > zero ) then
-                   call cal_ttop(kdt,timestep,q_warm,rho_w,dz, xt(i),xz(i),ttop0)
-
-                   !     if (lprnt .and. i == ipr) print *,' d_conv=',d_conv(i),' delz=',
-                   !    &delz,' kdt=',kdt,' timestep=',timestep,' nswsfc=',nswsfc(i),
-                   !    &' f_nsol=',f_nsol,' rho_w=',rho_w,' dz=',dz,' xt=',xt(i),
-                   !    &' xz=',xz(i),' qrain=',qrain(i)
+                   call cal_ttop(kdt,timestep,q_warm,rho_w,dz,
+                   &                        xt(i),xz(i),ttop0)
 
                    ttop = ((xt(i)+xt(i))/xz(i))*(one-dz/((xz(i)+xz(i))))
-
-                   !     if (lprnt .and. i == ipr) print *,' beg xz4a=',xz(i)
-                   !    &,' ttop=',ttop,' ttop0=',ttop0,' xt=',xt(i),' dz=',dz
-                   !    &,' xznew=',(xt(i)+sqrt(xt(i)*(xt(i)-dz*ttop0)))/ttop0
 
                    !>  - Call dtm_1p_tla() to apply top layer adjustment.
                    if ( ttop > ttop0 ) then
                       call dtm_1p_tla(dz,ttop0,xt(i),xtts(i),xz(i),xzts(i))
 
-                      !     if (lprnt .and. i == ipr) print *,' beg xz4b=',xz(i),'z_w_max=',
-                      !    &z_w_max
                       if ( xz(i) >= z_w_max ) then
-                         ,call dtl_reset (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
+                         call dtl_reset
+                         &                   (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
                       endif
                    endif
                 endif           ! if ( q_warm > 0.0 ) then
-
-                !     if (lprnt .and. i == ipr) print *,' beg xz5=',xz(i)
 
                 !  apply mwa
                 !>  - Call dt_1p_mwa() to apply maximum warming adjustment.
@@ -521,11 +453,10 @@ contains
                 if ( t0 > tw_max ) then
                    call dtm_1p_mwa(xt(i),xtts(i),xz(i),xzts(i))
                    if ( xz(i) >= z_w_max ) then
-                      call dtl_reset (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
+                      call dtl_reset
+                      &                 (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
                    endif
                 endif
-
-                !     if (lprnt .and. i == ipr) print *,' beg xz6=',xz(i)
 
                 !  apply mta
                 !>  - Call dtm_1p_mta() to apply maximum temperature adjustment.
@@ -537,27 +468,24 @@ contains
                    !               write(*,'(a,f3.0,7f8.3)') 'mta, sstc,dta :',islimsk(i),
                    !    &          sstc,dta,tref(i),xt(i),xz(i),2.0*xt(i)/xz(i),dt_cool(i)
                    if ( xz(i) >= z_w_max ) then
-                      call dtl_reset (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
+                      call dtl_reset
+                      &                 (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
                    endif
                 endif
                 !
              endif             ! if ( xt(i) > 0.0 ) then
              !           reset dtl at midnight and when solar zenith angle > 89.994 degree
              if ( abs(soltim) < 2.0_kp*timestep ) then
-                call dtl_reset (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
+                call dtl_reset
+                &           (xt(i),xs(i),xu(i),xv(i),xz(i),xzts(i),xtts(i))
              endif
 
           endif             ! if (solar_time > solar_time_6am .and. ifd(i) == 0.0 ) then: too late to start the first day
 
-          !     if (lprnt .and. i == ipr) print *,' beg xz7=',xz(i)
-
-          !     update tsurf  (when flag(i) .eqv. .true. )
           !>  - Call get_dtzm_point() to computes \a dtz and \a tsurf.
-          call get_dtzm_point(xt(i),xz(i),dt_cool(i),z_c(i), zsea1,zsea2,dtz)
+          call get_dtzm_point(xt(i),xz(i),dt_cool(i),z_c(i),
+          &                        zsea1,zsea2,dtz)
           tsurf(i) = max(tgice, tref(i) + dtz )
-
-          !     if (lprnt .and. i == ipr) print *,' tsurf=',tsurf(i),' tref=',
-          !    &tref(i),' xz=',xz(i),' dt_cool=',dt_cool(i)
 
           !>  - Call cal_w() to calculate \a w_0 and \a w_d.
           if ( xt(i) > zero ) then
@@ -582,8 +510,6 @@ contains
 
     ! restore nst-related prognostic fields for guess run
     do i=1, im
-       !       if (wet(i) .and. .not.icy(i)) then
-       if (wet(i) .and. use_lake_model(i)/=1) then
           if (flag_guess(i)) then    ! when it is guess of
              xt(i)      = xt_old(i)
              xs(i)      = xs_old(i)
@@ -606,10 +532,7 @@ contains
                 tskin(i) = tsurf(i)
              endif               ! if nstf_name1 > 1 then
           endif                 ! if flag_guess(i) then
-       endif                   ! if wet(i) .and. .not.icy(i) then
     enddo
-
-    !     if (lprnt .and. i == ipr) print *,' beg xz8=',xz(i)
 
     if ( nstf_name1 > 1 ) then
        !> - Calculate latent and sensible heat flux over open water with updated tskin
@@ -665,8 +588,6 @@ contains
           evap(i) = evap(i) * tem * hvapi
        endif
     enddo
-    !
-    !     if (lprnt) print *,' tskin=',tskin(ipr)
 
     return
   end subroutine sfc_nst_run
