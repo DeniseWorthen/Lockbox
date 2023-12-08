@@ -4,7 +4,8 @@ cmd=~/cime/tools/cprnc/cprnc
 
 set -x
 
-rt="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_172770"
+rt=/scratch1/NCEPDEV/climate/Jiande.Wang/working/scratch/GFDL-PR-1113/MED
+#rt="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_172770"
 #rt="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT"
 
 #fname="DATM_CFSR.cpl.hi.2011-10-01-25200.nc"
