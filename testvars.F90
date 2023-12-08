@@ -62,7 +62,7 @@ program testvars
      !print '(4a,l)',trim(gridoutdefs(j,i)%tag)
      if(len_trim(gridoutdefs(j,i)%tag) > 0)then
        n = n+1
-       !print *,trim(gridoutdefs(j,i)%tag),trim(gridoutdefs(j,i)%varname), trim(gridoutdefs(j,i)%long_name)
+       !print *,trim(gridoutdefs(j,i)%tag),trim(gridoutdefs(j,i)%var_name), trim(gridoutdefs(j,i)%long_name)
      end if
     enddo
     print *,'group ',j,' variables ',n
@@ -103,7 +103,7 @@ program testvars
    nout = n
    print *,'number of requested output variables ',nout
    do n = 1,nout
-    print *,n,'  ',trim(outvars(n)%tag),' ',trim(outvars(n)%varname),'  ',trim(outvars(n)%dims)
+    print *,n,'  ',trim(outvars(n)%tag),' ',trim(outvars(n)%var_name),'  ',trim(outvars(n)%dims)
    end do
    
    ! define the dimensions required
@@ -156,7 +156,7 @@ program testvars
        dimid => dimid3
       end if
 
-      ierr = nf90_def_var(ncid, trim(outvars(n)%varname), nf90_float, dimid, varid)
+      ierr = nf90_def_var(ncid, trim(outvars(n)%var_name), nf90_float, dimid, varid)
       ierr = nf90_put_att(ncid, varid, 'units'     , trim(outvars(n)%unit_name))
       ierr = nf90_put_att(ncid, varid, 'long_name' , trim(outvars(n)%long_name))
       ierr = nf90_put_att(ncid, varid, '_FillValue', undef)
@@ -167,7 +167,7 @@ program testvars
     ierr = nf90_inq_varid(ncid, 'time', timid)
     ierr = nf90_put_var(ncid, timid, elapsed_secs)
     do n = 1,nout
-      vname = trim(outvars(n)%varname)
+      vname = trim(outvars(n)%var_name)
       if(vname .eq. 'DW')call write_var(trim(fname), vname, DW)
 
       if(vname .eq. 'PHS')call write_var(trim(fname), vname, PHS)

@@ -1,32 +1,73 @@
-#CDF=/apps/netcdf/4.6.1/intel/16.1.150/
-#CDF=/apps/netcdf/4.7.0/intel/18.0.5.274
-CDF=/glade/u/apps/ch/modulefiles/default/intel/19.1.1/netcdf/4.8.1
+# GNU Makefile template for user ESMF application
 
-#####################################################################
-# compiler options
-#####################################################################
-#FOPT = -O2
-FOPT = -C
-#FOPT = -convert big_endian
-#FOPT = -p
+################################################################################
+################################################################################
+## This Makefile must be able to find the "esmf.mk" Makefile fragment in the  ##
+## 'include' line below. Following the ESMF User's Guide, a complete ESMF     ##
+## installation should ensure that a single environment variable "ESMFMKFILE" ##
+## is made available on the system. This variable should point to the         ##
+## "esmf.mk" file.                                                            ##
+##                                                                            ##
+## This example Makefile uses the "ESMFMKFILE" environment variable.          ##
+##                                                                            ##
+## If you notice that this Makefile cannot find variable ESMFMKFILE then      ##
+## please contact the person responsible for the ESMF installation on your    ##
+## system.                                                                    ##
+## As a work-around you can simply hardcode the path to "esmf.mk" in the      ##
+## include line below. However, doing so will render this Makefile a lot less ##
+## flexible and non-portable.                                                 ##
+################################################################################
 
-F90 = ifort
-#F90 = ifort -warn
+ifneq ($(origin ESMFMKFILE), environment)
+$(error Environment variable ESMFMKFILE was not set.)
+endif
 
-#####################################################################
-#
-#####################################################################
+include $(ESMFMKFILE)
 
-optall = $(opt1) $(opt2) $(opt3) $(opt4)
+localFopt = -check bounds -fpe0 -ftrapuv -fPIC -check uninit
 
-OBJS = vartypedefs.o testvars.o
+################################################################################
+################################################################################
 
-istat: $(OBJS)
-		$(F90) $(FOPT) -o istat $(OBJS) -L$(CDF)/lib -lnetcdff -lnetcdf
+.SUFFIXES: .f90 .F90 .c .C
 
-%.o: %.F90
-		$(F90) $(FOPT) $(optall) -c -I$(CDF)/include $<
-		cpp $(optall) -I$(CDF)/include $*.F90>$*.i
+%.o : %.f90
+	$(ESMF_F90COMPILER) -c $(ESMF_F90COMPILEOPTS) $(ESMF_F90COMPILEPATHS) $(ESMF_F90COMPILEFREENOCPP) $<
 
+%.o : %.F90
+	$(ESMF_F90COMPILER) -c $(localFopt) $(ESMF_F90COMPILEOPTS) $(ESMF_F90COMPILEPATHS) $(ESMF_F90COMPILEFREECPP) $(ESMF_F90COMPILECPPFLAGS) -DESMF_VERSION_MAJOR=$(ESMF_VERSION_MAJOR) $<
+
+%.o : %.c
+	$(ESMF_CXXCOMPILER) -c $(ESMF_CXXCOMPILEOPTS) $(ESMF_CXXCOMPILEPATHSLOCAL) $(ESMF_CXXCOMPILEPATHS) $(ESMF_CXXCOMPILECPPFLAGS) $<
+
+%.o : %.C
+	$(ESMF_CXXCOMPILER) -c $(ESMF_CXXCOMPILEOPTS) $(ESMF_CXXCOMPILEPATHSLOCAL) $(ESMF_CXXCOMPILEPATHS) $(ESMF_CXXCOMPILECPPFLAGS) $<
+
+
+# -----------------------------------------------------------------------------
+test: alarmlist.o
+	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) $(ESMF_F90LINKPATHS) $(ESMF_F90LINKRPATHS) -o $@ $^ $(ESMF_F90ESMFLINKLIBS)
+
+# module dependencies:
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+.PHONY: dust clean distclean info edit
+dust:
+	rm -f PET*.ESMF_LogFile *.nc *.stdout
 clean:
-		/bin/rm -f istat *.o *.i *.mod
+	rm -f rhtest *.o *.mod
+distclean: dust clean
+
+info:
+	@echo ==================================================================
+	@echo ESMFMKFILE=$(ESMFMKFILE)
+	@echo ==================================================================
+	@cat $(ESMFMKFILE)
+	@echo ==================================================================
+
+edit:
+	nedit test.F90
+
+run:
+	mpirun -np 4 ./test
