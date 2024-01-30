@@ -15,6 +15,7 @@ else
   tag=".nodd"
 fi
 
-cpp ${opts} $fname.F90 > $fname${tag}.cpp.F90
+awkstr='length($0) > 0 && $0 !~ /^[#] / { print $0 } '
+cpp ${opts} $fname.F90 | awk "${awkstr}" > $fname${tag}.cpp.F90
 
-emacs -l ~/.emacs2 -nw $fname${tag}.cpp.F90
+#emacs -l ~/.emacs2 -nw $fname${tag}.cpp.F90
