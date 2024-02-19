@@ -12,33 +12,38 @@
 !>
 module wav_step_mod
 
-  !use w3wavemd,  only : w3gath, w3scat
-  !use w3servmd,  only : print_memcheck
-  !use w3updtmd,  only : w3dzxy
+  use w3parall,  only : init_get_isea
+  use w3pro3md,  only : w3ktp3, w3xyp3
+  use w3profsmd, only : w3xypug
+  use w3servmd,  only : print_memcheck
+  use w3srcemd,  only : w3srce
   use w3timemd,  only : dsec21
+  use w3triamd,  only : ug_gradients
+  use w3updtmd,  only : w3dzxy
+  use w3wavemd,  only : w3gath, w3scat
   use constants, only : undef, dera, radius, lpdlib, srce_direct
 
-  use w3adatmd, only : iappro
-  use w3adatmd, only : cx, cy, dtdyn, fcut, u10, u10d, as, tauox, tauoy
-  use w3adatmd, only : dw, cg, wn, dcdx, dcdy, dddx, dddy, dcxdx, dcxdy
-  use w3adatmd, only : dcydx, dcydy, cflthmax, cflkmax, tauwix, tauwiy
-  use w3adatmd, only : tauwnx, tauwny, phiaw, charn, tws, phioc, phibbl
-  use w3adatmd, only : whitecap, bedforms, taubbl, tauice, alpha, phice
-  use w3adatmd, only : tauocx, tauocy, wnmean
+  use w3adatmd,  only : iappro
+  use w3adatmd,  only : cx, cy, dtdyn, fcut, u10, u10d, as, tauox, tauoy
+  use w3adatmd,  only : dw, cg, wn, dcdx, dcdy, dddx, dddy, dcxdx, dcxdy
+  use w3adatmd,  only : dcydx, dcydy, cflthmax, cflkmax, tauwix, tauwiy
+  use w3adatmd,  only : tauwnx, tauwny, phiaw, charn, tws, phioc, phibbl
+  use w3adatmd,  only : whitecap, bedforms, taubbl, tauice, alpha, phice
+  use w3adatmd,  only : tauocx, tauocy, wnmean
 
-  use w3gdatmd, only : mapsf, mapfs, gtype, ungtype, iobp, cthg0s
-  use w3gdatmd, only : flcth, flck, flcx, flcy, flagll, flsou, flagst
-  use w3gdatmd, only : fsrefraction, fsfreqshift
-  use w3gdatmd, only : nk, nspec, nsea, nseal, nx, ny, mapsta
-  use w3gdatmd, only : clats, dmin, trnx, trny
-  use w3gdatmd, only : dtcfli, dth
+  use w3gdatmd,  only : mapsf, mapfs, gtype, ungtype, iobp, cthg0s
+  use w3gdatmd,  only : flcth, flck, flcx, flcy, flagll, flsou, flagst
+  use w3gdatmd,  only : fsrefraction, fsfreqshift
+  use w3gdatmd,  only : nk, nspec, nsea, nseal, nx, ny, mapsta
+  use w3gdatmd,  only : clats, dmin, trnx, trny
+  use w3gdatmd,  only : dtcfli, dth
 
-  use w3odatmd, only : iaproc, naplog, ndso
+  use w3odatmd,  only : iaproc, naplog, ndso
 
-  use w3wdatmd, only : va, ust, ustdir, ice, iceh, icef, icedmax, berg
-  use w3wdatmd, only : fpis, rhoair, asf
+  use w3wdatmd,  only : va, ust, ustdir, ice, iceh, icef, icedmax, berg
+  use w3wdatmd,  only : fpis, rhoair, asf
 #ifdef W3_MPI
-  use w3adatmd, only : mpibuf, nrqsg1, nrqsg2, irqsg1
+  use w3adatmd,  only : mpibuf, nrqsg1, nrqsg2, irqsg1
 #endif
 
   implicit none

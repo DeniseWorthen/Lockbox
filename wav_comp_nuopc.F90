@@ -1142,6 +1142,7 @@ contains
       call wmwave ( tend )
     else
       !call w3wave ( 1, odat, timen )
+      call w3step(timen)
     end if
 #else
     !call w3wave ( 1, odat, timen )
