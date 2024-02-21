@@ -12,38 +12,41 @@
 !>
 module wav_step_mod
 
-  use w3parall,  only : init_get_isea
-  use w3pro3md,  only : w3ktp3, w3xyp3
-  use w3profsmd, only : w3xypug
-  use w3servmd,  only : print_memcheck
-  use w3srcemd,  only : w3srce
-  use w3timemd,  only : dsec21
-  use w3triamd,  only : ug_gradients
-  use w3updtmd,  only : w3dzxy
-  use w3wavemd,  only : w3gath, w3scat
-  use constants, only : undef, dera, radius, lpdlib, srce_direct
+  use w3parall   ,  only: init_get_isea
+  use w3pro3md   ,  only: w3ktp3, w3xyp3
+  use w3profsmd  ,  only: w3xypug
+  use w3servmd   ,  only: print_memcheck
+  use w3srcemd   ,  only: w3srce
+  use w3timemd   ,  only: dsec21
+  use w3triamd   ,  only: ug_gradients
+  use w3updtmd   ,  only: w3dzxy
+  use w3wavemd   ,  only: w3gath, w3scat
+  use constants  ,  only: undef, dera, radius, lpdlib, srce_direct, tpi
 
-  use w3adatmd,  only : iappro
-  use w3adatmd,  only : cx, cy, dtdyn, fcut, u10, u10d, as, tauox, tauoy
-  use w3adatmd,  only : dw, cg, wn, dcdx, dcdy, dddx, dddy, dcxdx, dcxdy
-  use w3adatmd,  only : dcydx, dcydy, cflthmax, cflkmax, tauwix, tauwiy
-  use w3adatmd,  only : tauwnx, tauwny, phiaw, charn, tws, phioc, phibbl
-  use w3adatmd,  only : whitecap, bedforms, taubbl, tauice, alpha, phice
-  use w3adatmd,  only : tauocx, tauocy, wnmean
+  use w3adatmd   ,  only: iappro
+  use w3adatmd   ,  only: cx, cy, dtdyn, fcut, u10, u10d, ua, ud, as, tauox, tauoy
+  use w3adatmd   ,  only: dw, cg, wn, dcdx, dcdy, dddx, dddy, dcxdx, dcxdy
+  use w3adatmd   ,  only: dcydx, dcydy, cflthmax, cflkmax, tauwix, tauwiy
+  use w3adatmd   ,  only: tauwnx, tauwny, phiaw, charn, tws, phioc, phibbl
+  use w3adatmd   ,  only: whitecap, bedforms, taubbl, tauice, alpha, phice
+  use w3adatmd   ,  only: tauocx, tauocy, wnmean
 
-  use w3gdatmd,  only : mapsf, mapfs, gtype, ungtype, iobp, cthg0s
-  use w3gdatmd,  only : flcth, flck, flcx, flcy, flagll, flsou, flagst
-  use w3gdatmd,  only : fsrefraction, fsfreqshift
-  use w3gdatmd,  only : nk, nspec, nsea, nseal, nx, ny, mapsta
-  use w3gdatmd,  only : clats, dmin, trnx, trny
-  use w3gdatmd,  only : dtcfli, dth
+  use w3gdatmd   ,  only: mapsf, mapfs, gtype, ungtype, iobp, cthg0s
+  use w3gdatmd   ,  only: flcth, flck, flcx, flcy, flagll, flsou, flagst
+  use w3gdatmd   ,  only: fsrefraction, fsfreqshift
+  use w3gdatmd   ,  only: nk, nspec, nsea, nseal, nx, ny, mapsta
+  use w3gdatmd   ,  only: clats, dmin, trnx, trny
+  use w3gdatmd   ,  only: dtcfli, dth, rwindc
 
-  use w3odatmd,  only : iaproc, naplog, ndso
+  use w3idatmd   ,  only: flcur, flwind
+  use w3idatmd   ,  only: wx0, wy0, dt0
 
-  use w3wdatmd,  only : va, ust, ustdir, ice, iceh, icef, icedmax, berg
-  use w3wdatmd,  only : fpis, rhoair, asf
+  use w3odatmd   ,  only: iaproc, naplog, ndso
+
+  use w3wdatmd   ,  only: va, ust, ustdir, ice, iceh, icef, icedmax, berg
+  use w3wdatmd   ,  only: fpis, rhoair, asf
 #ifdef W3_MPI
-  use w3adatmd,  only : mpibuf, nrqsg1, nrqsg2, irqsg1
+  use w3adatmd   ,  only: mpibuf, nrqsg1, nrqsg2, irqsg1
 #endif
 
   implicit none
@@ -186,7 +189,7 @@ contains
     !          FAC, VGX, VGY, FACK, FACTH,          &
     !          FACX, XXX, REFLEC(4),                &
     !          DELX, DELY, DELA, DEPTH, D50, PSIC
-    real :: vgx, vgy
+    real :: vgx, vgy, uxr, uyr
     real :: dtg, dt, fac, fack, facth, facx
     real :: d50, dela, delx, dely, depth, psic
 
@@ -280,6 +283,29 @@ contains
     ALLOCATE(CIK(NSEAL))
 #endif
     ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+
+    !--------------------------------------------------------------------
+    ! local parameter initialization
+    !--------------------------------------------------------------------
+
+    tauwx = 0.0
+    tauwy = 0.0
+    field = 0.0
+#ifdef W3_REFRX
+    cik = 0.0
+#endif
+    if ( flcold ) then
+      dtdyn = 0.
+      fcut  = sig(nk) * tpiinv
+    end if
+
+    ugdtupdate = .false.
+    if (flagll) then
+      facx   =  1./(dera * radius)
+    else
+      facx   =  1.
+    end if
+
     !
     ! IF ( PRESENT(STAMP) ) THEN
     !   TSTAMP = STAMP
@@ -294,39 +320,71 @@ contains
     ! END IF
     !FLDDIR = ITIME .EQ. 0 .AND. ( FLCTH .OR. FSREFRACTION .OR. FLCK .OR. FSFREQSHIFT )
     flddir = FLCTH .OR. FSREFRACTION .OR. FLCK .OR. FSFREQSHIFT
-    !
-    ! 0.b Subroutine tracing
-    !
-    !
-    !
-    !IF ( FLDDIR ) THEN
-    IF (GTYPE .EQ. UNGTYPE) THEN
-      CALL UG_GRADIENTS(DW, DDDX, DDDY)
-    ELSE
-      CALL W3DZXY(DW(1:UBOUND(DW,1)),'m',DDDX,DDDY)
-    END IF
-    FLDDIR = .FALSE.
-    !END IF
+
+    ! 'loop over timesteps'
+#ifdef w3_pdlib
+    ! copy old values
+    do ip=1,nseal
+      do ispec=1,nspec
+        vaold(ispec,ip)=va(ispec,ip)
+      end do
+    end do
+#endif
+    ! what is inflags1(10)??
+
+    !--------------------------------------------------------------------
+    ! update fields
+    !--------------------------------------------------------------------
+
+    do isea=1, nsea
+      ix = mapsf(isea,1)
+      iy = mapsf(isea,2)
+      ua(isea) = sqrt ( wx0(ix,iy)**2 + wy0(ix,iy)**2 )
+
+      if ( ua(isea) .gt. 1.e-7) then
+        ud(isea)    = mod ( tpi + atan2(wy0(ix,iy),wx0(ix,iy)) , tpi )
+      else
+        ud(isea) = 0.0
+      end if
+      as(isea) = dt0(ix,iy)
+    end do
+#ifdef  W3_RWND
+    if ( flcur ) then
+      do isea=1, nsea
+        uxr = ua(isea)*cos(ud(isea)) - rwindc*cx(isea)
+        uyr = ua(isea)*sin(ud(isea)) - rwindc*cy(isea)
+        u10 (isea) = max ( 0.001 , sqrt(uxr**2 + uyr**2) )
+        u10d(isea) = mod ( tpi + atan2(uyr,uxr) , tpi )
+      end do
+    else
+#endif
+      do isea=1, nsea
+        u10 (isea) = max ( ua(isea) , 0.001 )
+        u10d(isea) = ud(isea)
+      end do
+#ifdef W3_RWND
+    end if
+#endif
+
+    ! set ice,icef,iceh values
+
+    ! maps and derivatives
+    call w3map3
+    call w3utrn ( trnx, trny )
+    call w3mapt
+
+    if (gtype .eq. ungtype) then
+      call ug_gradients(dw, dddx, dddy)
+    else
+      call w3dzxy(dw(1:ubound(dw,1)),'m',dddx,dddy)
+    end if
 
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 12')
     !
     ! Calculate PHASE SPEED GRADIENT.
-    DCDX = 0.
-    DCDY = 0.
-#ifdef W3_REFRX
-    CIK  = 0.
-    !
-    IF (GTYPE .NE. UNGTYPE) THEN
-      DO IK=0,NK+1
-        CIK = SIG(IK) / WN(IK,1:NSEA)
-        CALL W3DZXY(CIK,'m/s',DCDX(IK,:,:),DCDY(IK,:,:))
-      END DO
-    ELSE
-      WRITE (NDSE,1040)
-      CALL EXTCDE(2)
-      ! CALL UG_GRADIENTS(CMN, DCDX, DCDY) !/ Stefan, to be confirmed!
-    END IF
-#endif
+    !DCDX = 0.
+    !DCDY = 0.
+    dtg = dtmax
     !
     !
     !FLIWND = .FALSE.
@@ -421,6 +479,7 @@ contains
     ! 3.6 Perform Propagation = = = = = = = = = = = = = = = = = = = = = = =
     ! 3.6.1 Preparations
     !
+    print *,'XXX ',dtg,dtcfli
     NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
     !
     FACTH  = DTG / (DTH*REAL(NTLOC))

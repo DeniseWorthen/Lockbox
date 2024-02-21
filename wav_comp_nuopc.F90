@@ -110,6 +110,8 @@ module wav_comp_nuopc
   character(*), parameter :: u_FILE_u = &                  !< a character string for an ESMF log message
        __FILE__
 
+  logical :: use_w3wavemd
+
   !===============================================================================
 contains
   !===============================================================================
@@ -361,6 +363,15 @@ contains
       multigrid=(trim(cvalue)=="true")
     end if
     write(logmsg,'(A,l)') trim(subname)//': Wave multigrid setting is ',multigrid
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    use_w3wavemd = .false.
+    call NUOPC_CompAttributeGet(gcomp, name='use_w3wavemd', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+      use_w3wavemd=(trim(cvalue)=="true")
+    end if
+    write(logmsg,'(A,l)') trim(subname)//': Wave use_w3wavemd setting is ',use_w3wavemd
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
     ! Determine wave-ice coupling
@@ -997,7 +1008,7 @@ contains
     ! Run WW3
     !------------------------
 
-    !use w3wavemd          , only : w3wave
+    use w3wavemd          , only : w3wave
     use wav_step_mod       , only : w3step
 
     use w3wdatmd          , only : time, w3setw
@@ -1141,12 +1152,14 @@ contains
     if (multigrid) then
       call wmwave ( tend )
     else
-      !call w3wave ( 1, odat, timen )
-      call w3step(timen)
+      if (use_w3wavemd) then
+        call w3wave ( 1, odat, timen )
+      else
+        call w3step(timen)
+      end if
     end if
 #else
-    !call w3wave ( 1, odat, timen )
-    call w3step(timen)
+    call w3wave ( 1, odat, timen )
 #endif
     if(profile_memory) call ESMF_VMLogMemInfo("Exiting  WW3 Run : ")
 
