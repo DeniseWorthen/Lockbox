@@ -12,41 +12,46 @@
 !>
 module wav_step_mod
 
-  use w3parall   ,  only: init_get_isea
-  use w3pro3md   ,  only: w3ktp3, w3xyp3
-  use w3profsmd  ,  only: w3xypug
-  use w3servmd   ,  only: print_memcheck
-  use w3srcemd   ,  only: w3srce
-  use w3timemd   ,  only: dsec21
-  use w3triamd   ,  only: ug_gradients
-  use w3updtmd   ,  only: w3dzxy
-  use w3wavemd   ,  only: w3gath, w3scat
-  use constants  ,  only: undef, dera, radius, lpdlib, srce_direct, tpi
+  use w3parall   ,  only : init_get_isea
+  use w3pro3md   ,  only : w3ktp3, w3xyp3
+  use w3profsmd  ,  only : w3xypug
+  use w3servmd   ,  only : print_memcheck
+  use w3srcemd   ,  only : w3srce
+  use w3timemd   ,  only : dsec21
+  use w3triamd   ,  only : ug_gradients
+  use w3updtmd   ,  only : w3dzxy, w3utrn
+  use w3wavemd   ,  only : w3gath, w3scat
+  use w3pro3md   ,  only : w3map3, w3mapt
+  use w3iogoncdmd,  only : w3iogoncd
+  use w3iogomd   ,  only : w3outg
+  use constants  ,  only : undef, dera, radius, lpdlib, srce_direct, tpi, tpiinv
 
-  use w3adatmd   ,  only: iappro
-  use w3adatmd   ,  only: cx, cy, dtdyn, fcut, u10, u10d, ua, ud, as, tauox, tauoy
-  use w3adatmd   ,  only: dw, cg, wn, dcdx, dcdy, dddx, dddy, dcxdx, dcxdy
-  use w3adatmd   ,  only: dcydx, dcydy, cflthmax, cflkmax, tauwix, tauwiy
-  use w3adatmd   ,  only: tauwnx, tauwny, phiaw, charn, tws, phioc, phibbl
-  use w3adatmd   ,  only: whitecap, bedforms, taubbl, tauice, alpha, phice
-  use w3adatmd   ,  only: tauocx, tauocy, wnmean
+  use w3adatmd   ,  only : iappro, flcold
+  use w3adatmd   ,  only : cx, cy, dtdyn, fcut, u10, u10d, ua, ud, as, tauox, tauoy
+  use w3adatmd   ,  only : dw, cg, wn, dcdx, dcdy, dddx, dddy, dcxdx, dcxdy
+  use w3adatmd   ,  only : dcydx, dcydy, cflthmax, cflkmax, tauwix, tauwiy
+  use w3adatmd   ,  only : tauwnx, tauwny, phiaw, charn, tws, phioc, phibbl
+  use w3adatmd   ,  only : whitecap, bedforms, taubbl, tauice, alpha, phice
+  use w3adatmd   ,  only : tauocx, tauocy, wnmean
 
-  use w3gdatmd   ,  only: mapsf, mapfs, gtype, ungtype, iobp, cthg0s
-  use w3gdatmd   ,  only: flcth, flck, flcx, flcy, flagll, flsou, flagst
-  use w3gdatmd   ,  only: fsrefraction, fsfreqshift
-  use w3gdatmd   ,  only: nk, nspec, nsea, nseal, nx, ny, mapsta
-  use w3gdatmd   ,  only: clats, dmin, trnx, trny
-  use w3gdatmd   ,  only: dtcfli, dth, rwindc
+  use w3gdatmd   ,  only : mapsf, mapfs, gtype, ungtype, iobp, cthg0s
+  use w3gdatmd   ,  only : flcth, flck, flcx, flcy, flagll, flsou, flagst
+  use w3gdatmd   ,  only : fsrefraction, fsfreqshift
+  use w3gdatmd   ,  only : sig, nk, nspec, nsea, nseal, nx, ny, mapsta
+  use w3gdatmd   ,  only : clats, dmin, trnx, trny
+  use w3gdatmd   ,  only : dtmax, dtcfli, dth, rwindc
 
-  use w3idatmd   ,  only: flcur, flwind
-  use w3idatmd   ,  only: wx0, wy0, dt0
+  use w3idatmd   ,  only : flcur, flwind
+  use w3idatmd   ,  only : wx0, wy0, dt0
 
-  use w3odatmd   ,  only: iaproc, naplog, ndso
+  use w3odatmd   ,  only : iaproc, naplog, napout, naperr, napfld, naprst, ndso
+  use w3odatmd   ,  only : nrqgo, irqgo, nrqgo2, irqgo2
+  use w3odatmd   ,  only : histwr, rstwr, user_netcdf_grdout
 
-  use w3wdatmd   ,  only: va, ust, ustdir, ice, iceh, icef, icedmax, berg
-  use w3wdatmd   ,  only: fpis, rhoair, asf
+  use w3wdatmd   ,  only : va, ust, ustdir, ice, iceh, icef, icedmax, berg
+  use w3wdatmd   ,  only : fpis, rhoair, asf
 #ifdef W3_MPI
-  use w3adatmd   ,  only: mpibuf, nrqsg1, nrqsg2, irqsg1
+  use w3adatmd   ,  only : mpibuf, nrqsg1, nrqsg2, irqsg1
 #endif
 
   implicit none
@@ -122,7 +127,7 @@ module wav_step_mod
 ! #endif
 
 !     use w3iogoncdmd   , only : w3iogoncd
-!     use w3odatmd      , only : histwr, rstwr, user_netcdf_grdout
+
 contains
   !/ ------------------------------------------------------------------- /
   !>
@@ -160,6 +165,7 @@ contains
     integer :: isea, jsea, ispec, it, itloc, itloch, ix, iy, ixrel, j
     integer :: refled(6)
     integer :: ntloc
+    logical :: flgmpi(0:8)
 
     !     INTEGER                 :: IP
     !     INTEGER                 :: TCALC(2), IT, IT0, NT, ITEST,        &
@@ -217,7 +223,7 @@ contains
     !          SKIP_O, FLAG_O, FLDDIR, READBC,      &
     !          FLAG0 = .FALSE., FLOUTG, FLPFLD,     &
     !          FLPART, LOCAL, FLOUTG2
-    logical :: flddir
+    logical :: flddir, flmap
     !     !
     ! #ifdef W3_IC3
     !     REAL                    :: FIXEDVISC,FIXEDDENS,FIXEDELAS
@@ -257,7 +263,7 @@ contains
     !     logical :: do_sf_output
     !     logical :: do_coupler_output
     !     logical :: do_wavefield_separation_output
-    !     logical :: do_startall
+         logical :: do_startall
     !     logical :: do_w3outg
 
     !/ ------------------------------------------------------------------- /
@@ -274,20 +280,23 @@ contains
     !IF ( IWDATA .NE. IMOD ) CALL W3SETW ( IMOD, NDSE, NDST )
     !IF ( IADATA .NE. IMOD ) CALL W3SETA ( IMOD, NDSE, NDST )
     !IF ( IIDATA .NE. IMOD ) CALL W3SETI ( IMOD, NDSE, NDST )
-#ifdef W3_UOST
-    CALL UOST_SETGRID(IMOD)
+#ifdef w3_uost
+    call uost_setgrid(imod)
 #endif
     !
-    ALLOCATE(TAUWX(NSEAL), TAUWY(NSEAL))
-#ifdef W3_REFRX
-    ALLOCATE(CIK(NSEAL))
+    allocate(tauwx(nseal), tauwy(nseal))
+#ifdef w3_refrx
+    allocate(cik(nseal))
 #endif
-    ALLOCATE ( FIELD(1-NY:NY*(NX+2)) )
+    allocate ( field(1-ny:ny*(nx+2)) )
 
+    print *,'XXX ',naplog,napout,naperr,napfld,naprst
     !--------------------------------------------------------------------
     ! local parameter initialization
     !--------------------------------------------------------------------
 
+    flmap = .true.
+    flgmpi = .false.
     tauwx = 0.0
     tauwy = 0.0
     field = 0.0
@@ -301,9 +310,9 @@ contains
 
     ugdtupdate = .false.
     if (flagll) then
-      facx   =  1./(dera * radius)
+      facx =  1./(dera * radius)
     else
-      facx   =  1.
+      facx =  1.
     end if
 
     !
@@ -330,7 +339,7 @@ contains
       end do
     end do
 #endif
-    ! what is inflags1(10)??
+    ! what is inflags1(10)?? False, whatever it is, flcx,flcy true
 
     !--------------------------------------------------------------------
     ! update fields
@@ -368,11 +377,12 @@ contains
 
     ! set ice,icef,iceh values
 
-    ! maps and derivatives
+    ! maps and derivatives (need flmap?)
     call w3map3
     call w3utrn ( trnx, trny )
     call w3mapt
 
+    ! if fldir true, then do this
     if (gtype .eq. ungtype) then
       call ug_gradients(dw, dddx, dddy)
     else
@@ -381,551 +391,555 @@ contains
 
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 12')
     !
-    ! Calculate PHASE SPEED GRADIENT.
-    !DCDX = 0.
-    !DCDY = 0.
+    ! calculate phase speed gradient.
+    dcdx = 0.
+    dcdy = 0.
     dtg = dtmax
     !
     !
-    !FLIWND = .FALSE.
-    !FLFRST = .FALSE.
+    !fliwnd = .false.
+    !flfrst = .false.
     !
-#ifdef W3_PDLIB
-    IF (IT .eq. 0) THEN
-      DTGpre = 1.
-    ELSE
-      DTGpre = DTG
-    END IF
-    IF (LPDLIB .and. FLSOU .and. FSSOURCE) THEN
-      !$OMP PARALLEL DO PRIVATE (JSEA,ISEA,IX,IY) SCHEDULE (DYNAMIC,1)
-      D50=0.0002
-      REFLEC(:)=0.
-      REFLED(:)=0
-      PSIC=0.
+#ifdef w3_pdlib
+    if (it .eq. 0) then
+      dtgpre = 1.
+    else
+      dtgpre = dtg
+    end if
+    if (lpdlib .and. flsou .and. fssource) then
+      !!$omp parallel do private (jsea,isea,ix,iy) schedule (dynamic,1)
+      d50=0.0002
+      reflec(:)=0.
+      refled(:)=0
+      psic=0.
 
-      IF (LSLOC) THEN
-        B_JAC     = 0.
-        ASPAR_JAC = 0.
-      ELSE
-        VSTOT = 0.
-        VDTOT = 0.
-      ENDIF
+      if (lsloc) then
+        b_jac     = 0.
+        aspar_jac = 0.
+      else
+        vstot = 0.
+        vdtot = 0.
+      endif
 
-      DO JSEA = 1, NP
+      do jsea = 1, np
 
-        CALL INIT_GET_ISEA(ISEA, JSEA)
+        call init_get_isea(isea, jsea)
 
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
-        DELA=1.
-        DELX=1.
-        DELY=1.
+        ix     = mapsf(isea,1)
+        iy     = mapsf(isea,2)
+        dela=1.
+        delx=1.
+        dely=1.
 
-#ifdef W3_REF1
-        IF (GTYPE.EQ.RLGTYPE) THEN
-          DELX=SX*CLATS(ISEA)/FACX
-          DELY=SY/FACX
-          DELA=DELX*DELY
-        END IF
-        IF (GTYPE.EQ.CLGTYPE) THEN
-          ! Maybe what follows works also for RLGTYPE ... to be verified
-          DELX=HPFAC(IY,IX)/ FACX
-          DELY=HQFAC(IY,IX)/ FACX
-          DELA=DELX*DELY
-        END IF
-        REFLEC=REFLC(:,ISEA)
-        REFLEC(4)=BERG(ISEA)*REFLEC(4)
-        REFLED=REFLD(:,ISEA)
+#ifdef w3_ref1
+        if (gtype.eq.rlgtype) then
+          delx=sx*clats(isea)/facx
+          dely=sy/facx
+          dela=delx*dely
+        end if
+        if (gtype.eq.clgtype) then
+          ! maybe what follows works also for rlgtype ... to be verified
+          delx=hpfac(iy,ix)/ facx
+          dely=hqfac(iy,ix)/ facx
+          dela=delx*dely
+        end if
+        reflec=reflc(:,isea)
+        reflec(4)=berg(isea)*reflec(4)
+        refled=refld(:,isea)
 #endif
 
-#ifdef W3_BT4
-        D50=SED_D50(ISEA)
-        PSIC=SED_PSIC(ISEA)
+#ifdef w3_bt4
+        d50=sed_d50(isea)
+        psic=sed_psic(isea)
 #endif
         !
-        CALL W3SRCE(srce_imp_pre, IT, ISEA, JSEA, IX, IY, IMOD, &
-             VAold(:,JSEA), VA(:,JSEA),                         &
-             VSioDummy, VDioDummy, SHAVETOT(JSEA),              &
-             ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                   &
-             CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),   &
-             U10D(ISEA),                                        &
-#ifdef W3_FLX5
-             TAUA(ISEA), TAUADIR(ISEA),                         &
+        call w3srce(srce_imp_pre, it, isea, jsea, ix, iy, imod, &
+             vaold(:,jsea), va(:,jsea),                         &
+             vsiodummy, vdiodummy, shavetot(jsea),              &
+             alpha(1:nk,jsea), wn(1:nk,isea),                   &
+             cg(1:nk,isea), clats(isea), dw(isea), u10(isea),   &
+             u10d(isea),                                        &
+#ifdef w3_flx5
+             taua(isea), tauadir(isea),                         &
 #endif
-             AS(ISEA), UST(ISEA),                               &
-             USTDIR(ISEA), CX(ISEA), CY(ISEA),                  &
-             ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                 &
-             ICEDMAX(ISEA),                                     &
-             REFLEC, REFLED, DELX, DELY, DELA,                  &
-             TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),              &
-             FPIS(ISEA), DTDYN(JSEA),                           &
-             FCUT(JSEA), DTGpre, TAUWX(JSEA), TAUWY(JSEA),      &
-             TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),            &
-             TAUWIY(JSEA), TAUWNX(JSEA),                        &
-             TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),           &
-             TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
-             PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),             &
-             TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),          &
-             RHOAIR(ISEA), ASF(ISEA))
-        IF (.not. LSLOC) THEN
-          VSTOT(:,JSEA) = VSioDummy
-          VDTOT(:,JSEA) = VDioDummy
-        ENDIF
-      END DO ! JSEA
-    END IF ! PDLIB
+             as(isea), ust(isea),                               &
+             ustdir(isea), cx(isea), cy(isea),                  &
+             ice(isea), iceh(isea), icef(isea),                 &
+             icedmax(isea),                                     &
+             reflec, refled, delx, dely, dela,                  &
+             trnx(iy,ix), trny(iy,ix), berg(isea),              &
+             fpis(isea), dtdyn(jsea),                           &
+             fcut(jsea), dtgpre, tauwx(jsea), tauwy(jsea),      &
+             tauox(jsea), tauoy(jsea), tauwix(jsea),            &
+             tauwiy(jsea), tauwnx(jsea),                        &
+             tauwny(jsea),  phiaw(jsea), charn(jsea),           &
+             tws(jsea), phioc(jsea), tmp1, d50, psic, tmp2,     &
+             phibbl(jsea), tmp3, tmp4, phice(jsea),             &
+             tauocx(jsea), tauocy(jsea), wnmean(jsea),          &
+             rhoair(isea), asf(isea))
+        if (.not. lsloc) then
+          vstot(:,jsea) = vsiodummy
+          vdtot(:,jsea) = vdiodummy
+        endif
+      end do ! jsea
+    end if ! pdlib
 #endif
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 14')
     !
     ! 3.6 Perform Propagation = = = = = = = = = = = = = = = = = = = = = = =
     ! 3.6.1 Preparations
     !
-    print *,'XXX ',dtg,dtcfli
-    NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
+    print *,'xxx ',dtg,dtcfli
+    ntloc  = 1 + int( dtg/dtcfli - 0.001 )
     !
-    FACTH  = DTG / (DTH*REAL(NTLOC))
-    FACK   = DTG / REAL(NTLOC)
+    facth  = dtg / (dth*real(ntloc))
+    fack   = dtg / real(ntloc)
 
-    TTEST(1) = TIME(1)
-    TTEST(2) = 0
-    DTTEST = DSEC21(TTEST,TIME)
-    ITLOCH = ( NTLOC + 1 - MOD(NINT(DTTEST/DTG),2) ) / 2
+    ttest(1) = time(1)
+    ttest(2) = 0
+    dttest = dsec21(ttest,time)
+    itloch = ( ntloc + 1 - mod(nint(dttest/dtg),2) ) / 2
+    print *,'yyy ',ntloc,facth,fack,itloch
     !
     ! 3.6.2 Intra-spectral part 1
     !
-    IF ( FLCTH .OR. FLCK ) THEN
-      DO ITLOC=1, ITLOCH
+    if ( flcth .or. flck ) then
+      do itloc=1, itloch
         !
-        !$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DEPTH,IXrel)
-        !$OMP DO SCHEDULE (DYNAMIC,1)
+        !!$omp parallel private (jsea,isea,ix,iy,depth,ixrel)
+        !!$omp do schedule (dynamic,1)
         !
-        DO JSEA=1, NSEAL
-          CALL INIT_GET_ISEA(ISEA, JSEA)
-          IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2)
+        do jsea=1, nseal
+          call init_get_isea(isea, jsea)
+          ix     = mapsf(isea,1)
+          iy     = mapsf(isea,2)
 
-          IF ( GTYPE .EQ. UNGTYPE ) THEN
-            IF (LPDLIB) THEN
-#ifdef W3_PDLIB
-              IF (IOBP_LOC(JSEA) .NE. 1) CYCLE
+          if ( gtype .eq. ungtype ) then
+            if (lpdlib) then
+#ifdef w3_pdlib
+              if (iobp_loc(jsea) .ne. 1) cycle
 #endif
-            ELSE
-              IF (IOBP(ISEA) .NE. 1) CYCLE
-            ENDIF
-          ENDIF
+            else
+              if (iobp(isea) .ne. 1) cycle
+            endif
+          endif
 
-          IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
-            DEPTH  = MAX ( DMIN , DW(ISEA) )
-            IF (LPDLIB) THEN
-              IXrel = JSEA
-            ELSE
-              IXrel = IX
-            END IF
+          if ( mapsta(iy,ix) .eq. 1 ) then
+            depth  = max ( dmin , dw(isea) )
+            if (lpdlib) then
+              ixrel = jsea
+            else
+              ixrel = ix
+            end if
             !
-            J = 1
+            j = 1
             !
-#ifdef W3_PR1
-            CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
-                 CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
-                 DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
-                 CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
-                 DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
-                 DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+#ifdef w3_pr1
+            call w3ktp1 ( isea, facth, fack, cthg0s(isea),       &
+                 cg(:,isea), wn(:,isea), depth,                  &
+                 dddx(iy,ixrel), dddy(iy,ixrel), cx(isea),       &
+                 cy(isea), dcxdx(iy,ixrel), dcxdy(iy,ixrel),     &
+                 dcydx(iy,ixrel), dcydy(iy,ixrel),               &
+                 dcdx(:,iy,ixrel), dcdy(:,iy,ixrel), va(:,jsea))
 #endif
-#ifdef W3_PR2
-            CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
-                 CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
-                 DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
-                 CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
-                 DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
-                 DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+#ifdef w3_pr2
+            call w3ktp2 ( isea, facth, fack, cthg0s(isea),       &
+                 cg(:,isea), wn(:,isea), depth,                  &
+                 dddx(iy,ixrel), dddy(iy,ixrel), cx(isea),       &
+                 cy(isea), dcxdx(iy,ixrel), dcxdy(iy,ixrel),     &
+                 dcydx(iy,ixrel), dcydy(iy,ixrel),               &
+                 dcdx(:,iy,ixrel), dcdy(:,iy,ixrel), va(:,jsea))
 #endif
-#ifdef W3_PR3
-            CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
-                 CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
-                 DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
-                 CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
-                 DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
-                 DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
-                 CFLTHMAX(JSEA), CFLKMAX(JSEA) )
+#ifdef w3_pr3
+            call w3ktp3 ( isea, facth, fack, cthg0s(isea),       &
+                 cg(:,isea), wn(:,isea), depth,                  &
+                 dddx(iy,ixrel), dddy(iy,ixrel), cx(isea),       &
+                 cy(isea), dcxdx(iy,ixrel), dcxdy(iy,ixrel),     &
+                 dcydx(iy,ixrel), dcydy(iy,ixrel),               &
+                 dcdx(:,iy,ixrel), dcdy(:,iy,ixrel), va(:,jsea), &
+                 cflthmax(jsea), cflkmax(jsea) )
 #endif
           end if
-        END DO
+        end do
         !
-        !$OMP END DO
-        !$OMP END PARALLEL
+        !!$omp end do
+        !!$omp end parallel
         !
-      END DO
-    END IF
+      end do
+    end if
 
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 16')
 
+    print *,'yyy here0'
     !
     ! 3.6.3 Longitude-latitude
     !       (time step correction in routine)
     !
-    IF (GTYPE .EQ. UNGTYPE) THEN
-      IF (FLAGLL) THEN
-        FACX   =  1./(DERA * RADIUS)
-      ELSE
-        FACX   =  1.
-      END IF
-    END IF
+    if (gtype .eq. ungtype) then
+      if (flagll) then
+        facx   =  1./(dera * radius)
+      else
+        facx   =  1.
+      end if
+    end if
 
-    IF (LPDLIB) THEN
-#ifdef W3_PDLIB
-      IF (FLCX .or. FLCY) THEN
-        IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
-          DO ISPEC=1,NSPEC
-            CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-          END DO
-        END IF
-      END IF
-      IF (FSTOTALIMP .and. (IT .ne. 0)) THEN
-        CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-      ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
-        CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-      ENDIF
+    if (lpdlib) then
+#ifdef w3_pdlib
+      if (flcx .or. flcy) then
+        if (.not. fstotalimp .and. .not. fstotalexp) then
+          do ispec=1,nspec
+            call pdlib_w3xypug ( ispec, facx, facx, dtg, vgx, vgy, ugdtupdate )
+          end do
+        end if
+      end if
+      if (fstotalimp .and. (it .ne. 0)) then
+        call pdlib_w3xypug_block_implicit(imod, facx, facx, dtg, vgx, vgy, ugdtupdate )
+      else if(fstotalexp .and. (it .ne. 0)) then
+        call pdlib_w3xypug_block_explicit(imod, facx, facx, dtg, vgx, vgy, ugdtupdate )
+      endif
 #endif
-    ELSE
-      IF (FLCX .or. FLCY) THEN
-#ifdef W3_MPI
-        IF ( NRQSG1 .GT. 0 ) THEN
-          CALL MPI_STARTALL (NRQSG1, IRQSG1(1,1), IERR_MPI)
-          CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
-        END IF
+    else
+      if (flcx .or. flcy) then
+#ifdef w3_mpi
+        if ( nrqsg1 .gt. 0 ) then
+          call mpi_startall (nrqsg1, irqsg1(1,1), ierr_mpi)
+          call mpi_startall (nrqsg1, irqsg1(1,2), ierr_mpi)
+        end if
 #endif
-        ! Initialize FIELD variable
-        FIELD = 0.
-        DO ISPEC=1, NSPEC
-          IF ( IAPPRO(ISPEC) .EQ. IAPROC ) THEN
-            IF (.NOT.LPDLIB ) THEN
-              CALL W3GATH ( ISPEC, FIELD )
-            END IF
+        ! initialize field variable
+        field = 0.
+        do ispec=1, nspec
+          if ( iappro(ispec) .eq. iaproc ) then
+            if (.not.lpdlib ) then
+              print *,'yyy start gath'
+              call w3gath ( ispec, field )
+              print *,'yyy done gath'
+            end if
             !
-            IF (GTYPE .EQ. UNGTYPE) THEN
-              IX = 1
-#ifdef W3_MPI
-              IF (.NOT. LPDLIB) THEN
+            if (gtype .eq. ungtype) then
+              ix = 1
+#ifdef w3_mpi
+              if (.not. lpdlib) then
 #endif
-#ifdef W3_PR1
-                CALL W3XYPUG ( ISPEC, FACX, FACX, DTG, FIELD, VGX, VGY, UGDTUPDATE )
+#ifdef w3_pr1
+                call w3xypug ( ispec, facx, facx, dtg, field, vgx, vgy, ugdtupdate )
 #endif
-#ifdef W3_PR2
-                CALL W3XYPUG ( ISPEC, FACX, FACX, DTG, FIELD, VGX, VGY, UGDTUPDATE )
+#ifdef w3_pr2
+                call w3xypug ( ispec, facx, facx, dtg, field, vgx, vgy, ugdtupdate )
 #endif
-#ifdef W3_PR3
-                CALL W3XYPUG ( ISPEC, FACX, FACX, DTG, FIELD, VGX, VGY, UGDTUPDATE )
+#ifdef w3_pr3
+                call w3xypug ( ispec, facx, facx, dtg, field, vgx, vgy, ugdtupdate )
 #endif
-#ifdef W3_MPI
-              END IF
+#ifdef w3_mpi
+              end if
 #endif
-            ELSE
-              IX = 1
-#ifdef W3_PR1
-              CALL W3XYP1 ( ISPEC, DTG, MAPSTA, FIELD, VGX, VGY )
+            else
+              ix = 1
+#ifdef w3_pr1
+              call w3xyp1 ( ispec, dtg, mapsta, field, vgx, vgy )
 #endif
-#ifdef W3_PR2
-              CALL W3XYP2 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+#ifdef w3_pr2
+              call w3xyp2 ( ispec, dtg, mapsta, mapfs, field, vgx, vgy )
 #endif
-#ifdef W3_PR3
-              CALL W3XYP3 ( ISPEC, DTG, MAPSTA, MAPFS, FIELD, VGX, VGY )
+#ifdef w3_pr3
+              call w3xyp3 ( ispec, dtg, mapsta, mapfs, field, vgx, vgy )
 #endif
-            END IF
-            IF (.NOT.LPDLIB ) THEN
-              CALL W3SCAT ( ISPEC, MAPSTA, FIELD )
-            END IF
-          END IF
-        END DO
+            end if
+            if (.not.lpdlib ) then
+              call w3scat ( ispec, mapsta, field )
+            end if
+          end if
+        end do
         !
-#ifdef W3_MPI
-        IF ( NRQSG1 .GT. 0 ) THEN
-          ALLOCATE ( STATCO(MPI_STATUS_SIZE,NRQSG1) )
-          CALL MPI_WAITALL (NRQSG1, IRQSG1(1,1), STATCO, IERR_MPI)
-          CALL MPI_WAITALL (NRQSG1, IRQSG1(1,2), STATCO, IERR_MPI)
-          DEALLOCATE ( STATCO )
-        END IF
+        print *,'yyy here 01'
+#ifdef w3_mpi
+        if ( nrqsg1 .gt. 0 ) then
+          allocate ( statco(mpi_status_size,nrqsg1) )
+          call mpi_waitall (nrqsg1, irqsg1(1,1), statco, ierr_mpi)
+          call mpi_waitall (nrqsg1, irqsg1(1,2), statco, ierr_mpi)
+          deallocate ( statco )
+        end if
 #endif
-      end if !IF (FLCX .or. FLCY) THEN
-    end if ! IF (LPDLIB) THEN
+      end if !if (flcx .or. flcy) then
+    end if ! if (lpdlib) then
+    print *,'yyy here 1'
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 17')
         !
         !
         ! 3.6.4 Intra-spectral part 2
         !
-        IF ( FLCTH .OR. FLCK ) THEN
-          DO ITLOC=ITLOCH+1, NTLOC
+        if ( flcth .or. flck ) then
+          do itloc=itloch+1, ntloc
             !
-            !$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DEPTH,IXrel)
-            !$OMP DO SCHEDULE (DYNAMIC,1)
+            !!$omp parallel private (jsea,isea,ix,iy,depth,ixrel)
+            !!$omp do schedule (dynamic,1)
             !
-            DO JSEA = 1, NSEAL
+            do jsea = 1, nseal
 
-              CALL INIT_GET_ISEA(ISEA, JSEA)
-              IX     = MAPSF(ISEA,1)
-              IY     = MAPSF(ISEA,2)
-              DEPTH  = MAX ( DMIN , DW(ISEA) )
+              call init_get_isea(isea, jsea)
+              ix     = mapsf(isea,1)
+              iy     = mapsf(isea,2)
+              depth  = max ( dmin , dw(isea) )
 
-              IF ( GTYPE .EQ. UNGTYPE ) THEN
-                IF (LPDLIB) THEN
-#ifdef W3_PDLIB
-                  IF (IOBP_LOC(JSEA) .NE. 1) CYCLE
+              if ( gtype .eq. ungtype ) then
+                if (lpdlib) then
+#ifdef w3_pdlib
+                  if (iobp_loc(jsea) .ne. 1) cycle
 #endif
-                ELSE
-                  IF (IOBP(ISEA) .NE. 1) CYCLE
-                ENDIF
-              ENDIF
+                else
+                  if (iobp(isea) .ne. 1) cycle
+                endif
+              endif
 
-              IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
-                IF (LPDLIB) THEN
-                  IXrel = JSEA
-                ELSE
-                  IXrel = IX
-                END IF
-                J = 1
-#ifdef W3_PR1
-                CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
-                     CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
-                     DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
-                     CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
-                     DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
-                     DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+              if ( mapsta(iy,ix) .eq. 1 ) then
+                if (lpdlib) then
+                  ixrel = jsea
+                else
+                  ixrel = ix
+                end if
+                j = 1
+#ifdef w3_pr1
+                call w3ktp1 ( isea, facth, fack, cthg0s(isea),       &
+                     cg(:,isea), wn(:,isea), depth,                  &
+                     dddx(iy,ixrel), dddy(iy,ixrel), cx(isea),       &
+                     cy(isea), dcxdx(iy,ixrel), dcxdy(iy,ixrel),     &
+                     dcydx(iy,ixrel), dcydy(iy,ixrel),               &
+                     dcdx(:,iy,ixrel), dcdy(:,iy,ixrel), va(:,jsea))
 #endif
-#ifdef W3_PR2
-                CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
-                     CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
-                     DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
-                     CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
-                     DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
-                     DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
+#ifdef w3_pr2
+                call w3ktp2 ( isea, facth, fack, cthg0s(isea),       &
+                     cg(:,isea), wn(:,isea), depth,                  &
+                     dddx(iy,ixrel), dddy(iy,ixrel), cx(isea),       &
+                     cy(isea), dcxdx(iy,ixrel), dcxdy(iy,ixrel),     &
+                     dcydx(iy,ixrel), dcydy(iy,ixrel),               &
+                     dcdx(:,iy,ixrel), dcdy(:,iy,ixrel), va(:,jsea))
 #endif
-#ifdef W3_PR3
-                CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
-                     CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
-                     DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
-                     CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
-                     DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
-                     DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
-                     CFLTHMAX(JSEA), CFLKMAX(JSEA) )
+#ifdef w3_pr3
+                call w3ktp3 ( isea, facth, fack, cthg0s(isea),       &
+                     cg(:,isea), wn(:,isea), depth,                  &
+                     dddx(iy,ixrel), dddy(iy,ixrel), cx(isea),       &
+                     cy(isea), dcxdx(iy,ixrel), dcxdy(iy,ixrel),     &
+                     dcydx(iy,ixrel), dcydy(iy,ixrel),               &
+                     dcdx(:,iy,ixrel), dcdy(:,iy,ixrel), va(:,jsea), &
+                     cflthmax(jsea), cflkmax(jsea) )
 #endif
-              END IF
-            END DO
+              end if
+            end do
             !
-            !$OMP END DO
-            !$OMP END PARALLEL
+            !!$omp end do
+            !!$omp end parallel
             !
-          END DO
-        END IF
+          end do
+        end if
         !
-        UGDTUPDATE = .FALSE.
+        ugdtupdate = .false.
+        print *,'yyy here 2'
         !
-        ! 3.6 End propapgation  = = = = = = = = = = = = = = = = = = = = = = = =
+        ! 3.6 end propapgation  = = = = = = = = = = = = = = = = = = = = = = = =
 
         ! 3.7 Calculate and integrate source terms.
         !
-370     CONTINUE
-        IF ( FLSOU ) THEN
-          D50=0.0002
-          REFLEC(:)=0.
-          REFLED(:)=0
-          PSIC=0.
+370     continue
+        if ( flsou ) then
+          d50=0.0002
+          reflec(:)=0.
+          refled(:)=0
+          psic=0.
           !
-          !$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DELA,DELX,DELY,        &
-          !$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3,TMP4)
-          !$OMP DO SCHEDULE (DYNAMIC,1)
+          !!$omp parallel private (jsea,isea,ix,iy,dela,delx,dely,        &
+          !!$omp&                  reflec,refled,d50,psic,tmp1,tmp2,tmp3,tmp4)
+          !!$omp do schedule (dynamic,1)
           !
-          DO JSEA=1, NSEAL
-            CALL INIT_GET_ISEA(ISEA, JSEA)
-            IX     = MAPSF(ISEA,1)
-            IY     = MAPSF(ISEA,2)
-            DELA=1.
-            DELX=1.
-            DELY=1.
-#ifdef W3_REF1
-            IF (GTYPE.EQ.RLGTYPE) THEN
-              DELX=SX*CLATS(ISEA)/FACX
-              DELY=SY/FACX
-              DELA=DELX*DELY
-            END IF
-            IF (GTYPE.EQ.CLGTYPE) THEN
-              ! Maybe what follows works also for RLGTYPE ... to be verified
-              DELX=HPFAC(IY,IX)/ FACX
-              DELY=HQFAC(IY,IX)/ FACX
-              DELA=DELX*DELY
-            END IF
+          do jsea=1, nseal
+            call init_get_isea(isea, jsea)
+            ix     = mapsf(isea,1)
+            iy     = mapsf(isea,2)
+            dela=1.
+            delx=1.
+            dely=1.
+#ifdef w3_ref1
+            if (gtype.eq.rlgtype) then
+              delx=sx*clats(isea)/facx
+              dely=sy/facx
+              dela=delx*dely
+            end if
+            if (gtype.eq.clgtype) then
+              ! maybe what follows works also for rlgtype ... to be verified
+              delx=hpfac(iy,ix)/ facx
+              dely=hqfac(iy,ix)/ facx
+              dela=delx*dely
+            end if
 #endif
-#ifdef W3_REF1
-            REFLEC=REFLC(:,ISEA)
-            REFLEC(4)=BERG(ISEA)*REFLEC(4)
-            REFLED=REFLD(:,ISEA)
+#ifdef w3_ref1
+            reflec=reflc(:,isea)
+            reflec(4)=berg(isea)*reflec(4)
+            refled=refld(:,isea)
 #endif
-#ifdef W3_BT4
-            D50=SED_D50(ISEA)
-            PSIC=SED_PSIC(ISEA)
+#ifdef w3_bt4
+            d50=sed_d50(isea)
+            psic=sed_psic(isea)
 #endif
-            IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA)) THEN
-              TMP1   = WHITECAP(JSEA,1:4)
-              TMP2   = BEDFORMS(JSEA,1:3)
-              TMP3   = TAUBBL(JSEA,1:2)
-              TMP4   = TAUICE(JSEA,1:2)
-#ifdef W3_PDLIB
-              IF (FSSOURCE) THEN
-                CALL W3SRCE(srce_imp_post,IT,ISEA,JSEA,IX,IY,IMOD,     &
-                     VAOLD(:,JSEA), VA(:,JSEA),                        &
-                     VSioDummy,VDioDummy,SHAVETOT(JSEA),               &
-                     ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                  &
-                     CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
-                     U10D(ISEA),                                       &
-#ifdef W3_FLX5
-                     TAUA(ISEA), TAUADIR(ISEA),                        &
+            if ( mapsta(iy,ix) .eq. 1 .and. flagst(isea)) then
+              tmp1   = whitecap(jsea,1:4)
+              tmp2   = bedforms(jsea,1:3)
+              tmp3   = taubbl(jsea,1:2)
+              tmp4   = tauice(jsea,1:2)
+#ifdef w3_pdlib
+              if (fssource) then
+                call w3srce(srce_imp_post,it,isea,jsea,ix,iy,imod,     &
+                     vaold(:,jsea), va(:,jsea),                        &
+                     vsiodummy,vdiodummy,shavetot(jsea),               &
+                     alpha(1:nk,jsea), wn(1:nk,isea),                  &
+                     cg(1:nk,isea), clats(isea), dw(isea), u10(isea),  &
+                     u10d(isea),                                       &
+#ifdef w3_flx5
+                     taua(isea), tauadir(isea),                        &
 #endif
-                     AS(ISEA), UST(ISEA),                              &
-                     USTDIR(ISEA), CX(ISEA), CY(ISEA),                 &
-                     ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
-                     ICEDMAX(ISEA),                                    &
-                     REFLEC, REFLED, DELX, DELY, DELA,                 &
-                     TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),             &
-                     FPIS(ISEA), DTDYN(JSEA),                          &
-                     FCUT(JSEA), DTG, TAUWX(JSEA), TAUWY(JSEA),        &
-                     TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),           &
-                     TAUWIY(JSEA), TAUWNX(JSEA),                       &
-                     TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),          &
-                     TWS(JSEA),PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
-                     PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),            &
-                     TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),         &
-                     RHOAIR(ISEA), ASF(ISEA))
-              ELSE
+                     as(isea), ust(isea),                              &
+                     ustdir(isea), cx(isea), cy(isea),                 &
+                     ice(isea), iceh(isea), icef(isea),                &
+                     icedmax(isea),                                    &
+                     reflec, refled, delx, dely, dela,                 &
+                     trnx(iy,ix), trny(iy,ix), berg(isea),             &
+                     fpis(isea), dtdyn(jsea),                          &
+                     fcut(jsea), dtg, tauwx(jsea), tauwy(jsea),        &
+                     tauox(jsea), tauoy(jsea), tauwix(jsea),           &
+                     tauwiy(jsea), tauwnx(jsea),                       &
+                     tauwny(jsea),  phiaw(jsea), charn(jsea),          &
+                     tws(jsea),phioc(jsea), tmp1, d50, psic, tmp2,     &
+                     phibbl(jsea), tmp3, tmp4, phice(jsea),            &
+                     tauocx(jsea), tauocy(jsea), wnmean(jsea),         &
+                     rhoair(isea), asf(isea))
+              else
 #endif
-                CALL W3SRCE(srce_direct, IT, ISEA, JSEA, IX, IY, IMOD, &
-                     VAoldDummy, VA(:,JSEA),                           &
-                     VSioDummy, VDioDummy, SHAVETOTioDummy,            &
-                     ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                  &
-                     CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
-                     U10D(ISEA),                                       &
-#ifdef W3_FLX5
-                     TAUA(ISEA), TAUADIR(ISEA),                        &
+                call w3srce(srce_direct, it, isea, jsea, ix, iy, imod, &
+                     vaolddummy, va(:,jsea),                           &
+                     vsiodummy, vdiodummy, shavetotiodummy,            &
+                     alpha(1:nk,jsea), wn(1:nk,isea),                  &
+                     cg(1:nk,isea), clats(isea), dw(isea), u10(isea),  &
+                     u10d(isea),                                       &
+#ifdef w3_flx5
+                     taua(isea), tauadir(isea),                        &
 #endif
-                     AS(ISEA), UST(ISEA),                              &
-                     USTDIR(ISEA), CX(ISEA), CY(ISEA),                 &
-                     ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
-                     ICEDMAX(ISEA),                                    &
-                     REFLEC, REFLED, DELX, DELY, DELA,                 &
-                     TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),             &
-                     FPIS(ISEA), DTDYN(JSEA),                          &
-                     FCUT(JSEA), DTG, TAUWX(JSEA), TAUWY(JSEA),        &
-                     TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),           &
-                     TAUWIY(JSEA), TAUWNX(JSEA),                       &
-                     TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),          &
-                     TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,     &
-                     PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),           &
-                     TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),         &
-                     RHOAIR(ISEA), ASF(ISEA))
-#ifdef W3_PDLIB
-              END IF
+                     as(isea), ust(isea),                              &
+                     ustdir(isea), cx(isea), cy(isea),                 &
+                     ice(isea), iceh(isea), icef(isea),                &
+                     icedmax(isea),                                    &
+                     reflec, refled, delx, dely, dela,                 &
+                     trnx(iy,ix), trny(iy,ix), berg(isea),             &
+                     fpis(isea), dtdyn(jsea),                          &
+                     fcut(jsea), dtg, tauwx(jsea), tauwy(jsea),        &
+                     tauox(jsea), tauoy(jsea), tauwix(jsea),           &
+                     tauwiy(jsea), tauwnx(jsea),                       &
+                     tauwny(jsea),  phiaw(jsea), charn(jsea),          &
+                     tws(jsea), phioc(jsea), tmp1, d50, psic,tmp2,     &
+                     phibbl(jsea), tmp3, tmp4 , phice(jsea),           &
+                     tauocx(jsea), tauocy(jsea), wnmean(jsea),         &
+                     rhoair(isea), asf(isea))
+#ifdef w3_pdlib
+              end if
 #endif
-              WHITECAP(JSEA,1:4) = TMP1
-              BEDFORMS(JSEA,1:3) = TMP2
-              TAUBBL(JSEA,1:2) = TMP3
-              TAUICE(JSEA,1:2) = TMP4
-            ELSE
-              UST   (ISEA) = UNDEF
-              USTDIR(ISEA) = UNDEF
-              DTDYN (JSEA) = UNDEF
-              FCUT  (JSEA) = UNDEF
-              !                    VA(:,JSEA)  = 0.
-            END IF
-          END DO
+              whitecap(jsea,1:4) = tmp1
+              bedforms(jsea,1:3) = tmp2
+              taubbl(jsea,1:2) = tmp3
+              tauice(jsea,1:2) = tmp4
+            else
+              ust   (isea) = undef
+              ustdir(isea) = undef
+              dtdyn (jsea) = undef
+              fcut  (jsea) = undef
+              !                    va(:,jsea)  = 0.
+            end if
+          end do
           !
-          !$OMP END DO
-          !$OMP END PARALLEL
+          !!$omp end do
+          !!$omp end parallel
           !
-        END IF
-        !
-        ! End of interations for DTMAX < 1s
-        !
-        !
-        !
-        ! 3.8 Update global time step.
-        !     (Branch point FLDRY, IT=0)
-        !
-380     CONTINUE
-        !
-        !IF (IT.NE.NT) THEN
-        !  DTTST  = DSEC21 ( TIME , TCALC )
-        !  DTG    = DTTST / REAL(NT-IT)
-        !END IF
-        !
-        ! IF ( FLACT .AND. IT.NE.NT .AND. IAPROC.EQ.NAPLOG ) THEN
-        !   CALL STME21 ( TIME , IDTIME )
-        !   IF ( IDLAST .NE. TIME(1) ) THEN
-        !     WRITE (NDSO,900) ITIME, IPASS, IDTIME(01:19), IDACT, OUTID
-        !     IDLAST = TIME(1)
-        !   ELSE
-        !     WRITE (NDSO,901) ITIME, IPASS, IDTIME(12:19), IDACT, OUTID
-        !   END IF
-        !   FLACT  = .FALSE.
-        !   IDACT  = '         '
-        ! END IF
-        !
-        !
-        !
-        !END DO ! DO IT = IT0, NT
+       end if
+        print *,'yyy here 3'
+#ifdef test
+        ! output
+        call w3outg(va, .true., .true., .false.)
+        do_startall = .true.
+        print *,'ZZZ done w3outg ',nrqgo, irqgo,flgmpi(0),flgmpi(1)
 
-        call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE END TIME LOOP')
+        if (do_startall) then
+          if (.not. lpdlib) then
+            if (nrqgo .ne.0 ) then
+              call mpi_startall ( nrqgo, irqgo , ierr_mpi )
+              flgmpi(0) = .true.
+              nrqmax = max ( nrqmax , nrqgo )
+            end if
+            print *,'ZZZ done 0'
+            !
+            if (nrqgo2.ne.0 ) then
+              call mpi_startall ( nrqgo2, irqgo2, ierr_mpi )
+              flgmpi(1) = .true.
+              nrqmax = max ( nrqmax , nrqgo2 )
+            end if
+            print *,'ZZZ done 1'
+          else
+          end if ! if (.not. lpdlib) then
+        end if ! if (do_startall)
+
+        if ( flgmpi(0) )call mpi_waitall( nrqgo, irqgo, statio, ierr_mpi )
+        flgmpi(0) = .false.
+        print *,'ZZZ done 2'
+        if ( iaproc .eq. napfld ) then
+           if ( flgmpi(1) ) call mpi_waitall( nrqgo2, irqgo2, statio, ierr_mpi )
+           flgmpi(1) = .false.
+           print *,'ZZZ call nc'
+           call w3iogoncd ()
+           print *,'ZZZ done nc'
+        end if
+
+        if ( flgmpi(0) ) call mpi_waitall ( nrqgo, irqgo , statio, ierr_mpi )
+        if (user_netcdf_grdout) then
+          if ( flgmpi(1) .and. ( iaproc .eq. napfld ) ) then
+            call mpi_waitall ( nrqgo2, irqgo2 , statio, ierr_mpi )
+          end if
+       end if
+#endif
         !
-        !     End of loop over time steps
-        ! ==================================================================== /
+        ! end of interations for dtmax < 1s
         !
-400     CONTINUE
-        call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 5')
         !
-        !IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,902)
         !
-        DEALLOCATE(FIELD)
-        DEALLOCATE(TAUWX, TAUWY)
+        ! 3.8 update global time step.
+        !     (branch point fldry, it=0)
+        !
+380     continue
+        !
+        !if (it.ne.nt) then
+        !  dttst  = dsec21 ( time , tcalc )
+        !  dtg    = dttst / real(nt-it)
+        !end if
+        !
+        ! if ( flact .and. it.ne.nt .and. iaproc.eq.naplog ) then
+        !   call stme21 ( time , idtime )
+        !   if ( idlast .ne. time(1) ) then
+        !     write (ndso,900) itime, ipass, idtime(01:19), idact, outid
+        !     idlast = time(1)
+        !   else
+        !     write (ndso,901) itime, ipass, idtime(12:19), idact, outid
+        !   end if
+        !   flact  = .false.
+        !   idact  = '         '
+        ! end if
+        !
+        !
+        !
+        !end do ! do it = it0, nt
+
+        !call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE END TIME LOOP')
+        !
+        !if ( iaproc .eq. naplog ) write (ndso,902)
+        !
+        deallocate(field)
+        deallocate(tauwx, tauwy)
         !
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE END W3WAVE')
         !
-        RETURN
-!         !
-!         ! Formats
-!         !
-! 900     FORMAT (4X,I6,'|',I6,'| ', A19  ,' | ',A,' | ',A,' |')
-! 901     FORMAT (4X,I6,'|',I6,'| ',11X,A8,' | ',A,' | ',A,' |')
-! 902     FORMAT (2X,'--------+------+---------------------+'                  &
-!              ,'-----------------------+------------------+')
-!         !
-! #ifdef W3_IC3
-! 920     FORMAT ('     Updating k and Cg from ice param. 1,2,3,4.'/)
-! #endif
-! 950     FORMAT ('  WAVEWATCH III calculating for ',A,' at ',A)
-! 951     FORMAT ('  WAVEWATCH III reached the end of a computation',          &
-!              ' loop at ',A)
-! 1000    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     ENDING TIME BEFORE STARTING TIME '/)
-! 1001    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     NEW WATER LEVEL BEFORE OLD WATER LEVEL '/)
-! 1002    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     ILLEGAL CURRENT INTERVAL '/)
-! 1003    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     ILLEGAL WIND INTERVAL '/)
-! 1004    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     NEW ICE FIELD BEFORE OLD ICE FIELD '/)
-! 1005    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     NEW IC1 FIELD BEFORE OLD IC1 FIELD '/)
-! 1007    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     NEW ATM MOMENTUM BEFORE OLD ATM MOMENTUM '/)
-! 1008    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     NEW AIR DENSITY BEFORE OLD AIR DENSITY '/)
-! #ifdef W3_IS2
-! 1006    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
-! #endif
-! 1030    FORMAT (/' *** WAVEWATCH III WARING IN W3WAVE :'/                   &
-!              '     AT LEAST ONE PROCESSOR HAS 0 ACTIVE POINTS',              &
-!              ' IN GRID',I3)
-! #ifdef W3_REFRX
-! 1040    FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                    &
-!              '     EXPERIMENTAL FEATURE !/REFRX NOT FULLY IMPLEMENTED.'/)
-! #endif
+        return
       end subroutine w3step
 end module wav_step_mod

@@ -1,0 +1,32 @@
+print_esmf:              .true.
+start_year:              2021
+start_month:             03
+start_day:               22
+start_hour:              06
+start_minute:            0
+start_second:            0
+nhours_fcst:             24
+fhrot:                   12
+
+dt_atmos:                720
+calendar:                'julian'
+restart_interval:        0
+output_1st_tstep_rst:    .false.
+atm_coupling_interval_sec:      720
+
+quilting:                .true.
+write_groups:            1
+write_tasks_per_group:   6
+output_history:          .true.
+write_dopost:            .false.
+num_files:               2
+filename_base:           'atm' 'sfc'
+output_grid:             'cubed_sphere_grid'
+output_file:             'netcdf'
+ideflate:                0
+nbits:                   0
+imo:                     384
+jmo:                     190
+
+output_fh:               6 -1
+iau_offset:              0
