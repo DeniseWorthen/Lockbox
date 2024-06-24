@@ -1,6 +1,4 @@
 runSeq::
-@86400
-@10800
 @3600
 @1800
   MED med_phases_aofluxes_run
@@ -30,16 +28,6 @@ runSeq::
   OCN
   OCN -> MED :remapMethod=redist
   MED med_phases_post_ocn
-@
-  MED med_phases_prep_rof
-  MED -> ROF :remapMethod=redist
-  ROF
-  ROF -> MED :remapMethod=redist
-  MED med_phases_post_rof
-@
-  MED med_phases_prep_glc
-  MED -> GLC :remapMethod=redist
-  GLC -> MED :remapMethod=redist
   MED med_phases_history_write
   MED med_phases_restart_write
   MED med_phases_profile
