@@ -1,0 +1,9 @@
+1) removed if(oarst) blocks from w3init and w3iorsmd
+2) removed big comment blocks from
+ modified:   w3initmd.F90
+ modified:   w3iogomd.F90
+ modified:   w3iorsmd.F90
+ modified:   w3src4md.F90
+ modified:   w3srcemd.F90
+ modified:   w3wavemd.F90
+3) removed ww3_*F90
