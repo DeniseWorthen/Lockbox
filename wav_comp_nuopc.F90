@@ -45,7 +45,7 @@ module wav_comp_nuopc
   use wav_shr_mod           , only : merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
   use w3odatmd              , only : runtype, use_user_histname, user_histfname, use_user_restname, user_restfname
-  use w3odatmd              , only : user_netcdf_grdout
+  use w3odatmd              , only : user_netcdf_grdout, use_iogopio
   use w3odatmd              , only : time_origin, calendar_name, elapsed_secs
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index, unstr_mesh
   use wav_wrapper_mod       , only : ufs_settimer, ufs_logtimer, ufs_file_setlogunit, wtime
@@ -110,7 +110,7 @@ module wav_comp_nuopc
   character(*), parameter :: u_FILE_u = &                  !< a character string for an ESMF log message
        __FILE__
 
-  logical :: use_w3wavemd
+
 
   !===============================================================================
 contains
@@ -365,13 +365,13 @@ contains
     write(logmsg,'(A,l)') trim(subname)//': Wave multigrid setting is ',multigrid
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
-    use_w3wavemd = .false.
-    call NUOPC_CompAttributeGet(gcomp, name='use_w3wavemd', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    use_iogopio = .false.
+    call NUOPC_CompAttributeGet(gcomp, name='use_iogopio', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-      use_w3wavemd=(trim(cvalue)=="true")
+      use_iogopio=(trim(cvalue)=="true")
     end if
-    write(logmsg,'(A,l)') trim(subname)//': Wave use_w3wavemd setting is ',use_w3wavemd
+    write(logmsg,'(A,l)') trim(subname)//': Wave use_iogopio setting is ',use_iogopio
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
     ! Determine wave-ice coupling
@@ -380,7 +380,7 @@ contains
          isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-      wav_coupling_to_cice=(trim(cvalue)=="true")
+       read(cvalue,*) wav_coupling_to_cice
     end if
     write(logmsg,'(A,l)') trim(subname)//': Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
@@ -578,6 +578,7 @@ contains
     if ( root_task ) then
       write(stdout,'(a)')'      *** WAVEWATCH III Program shell ***      '
       write(stdout,'(a)')'==============================================='
+      write(stdout,'(a,l)')' Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     end if
 
     !--------------------------------------------------------------------
@@ -633,7 +634,7 @@ contains
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
     ! Determine time attributes for history output
-    call ESMF_TimeGet( esmfTime, timeString=time_origin, calendar=calendar, rc=rc )
+    call ESMF_TimeGet( startTime, timeString=time_origin, calendar=calendar, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     time_origin = 'seconds since '//time_origin(1:10)//' '//time_origin(12:19)
     !call ESMF_ClockGet(clock, calendar=calendar)
@@ -732,7 +733,7 @@ contains
     ! Intialize the list of requested output variables for netCDF output
     !--------------------------------------------------------------------
 
-    if (user_netcdf_grdout) then
+    if (user_netcdf_grdout) then       
       call wavinit_grdout
     end if
 
@@ -897,6 +898,12 @@ contains
       enddo
     end if
 #endif
+    !--------------------------------------------------------------------
+    ! Intialize PIO
+    !--------------------------------------------------------------------
+
+    !call wav_pio_init()
+
     if (root_task) call ufs_logtimer(nu_timer,time,start_tod,'InitializeRealize time: ',runtimelog,wtime)
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
@@ -928,6 +935,7 @@ contains
     type(ESMF_State)  :: exportState
     real(r8), pointer :: z0rlen(:)
     real(r8), pointer :: sw_lamult(:)
+    real(r8), pointer :: sw_lasl(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
     real(r8), pointer :: wave_elevation_spectrum(:,:)
@@ -949,6 +957,14 @@ contains
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_lamult (:) = 1.
     endif
+    if (state_fldchk(exportState, 'Sw_lasl')) then
+      call state_getfldptr(exportState, 'Sw_lasl', sw_lasl, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      ! note: the default value of this surface layer averaged Langmuir number
+      ! should be a large number to be consistent with lamult=1., ustokes=0.,
+      ! and vstokes=0.
+      sw_lasl (:) = 1.e6
+    endif
     if (state_fldchk(exportState, 'Sw_ustokes')) then
       call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -965,7 +981,7 @@ contains
       call CalcRoughl(z0rlen)
     endif
     if (wav_coupling_to_cice) then
-      call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
+      call state_getfldptr(exportState, 'Sw_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       wave_elevation_spectrum(:,:) = 0.
     endif
@@ -1009,8 +1025,6 @@ contains
     !------------------------
 
     use w3wavemd          , only : w3wave
-    use wav_step_mod       , only : w3step
-
     use w3wdatmd          , only : time, w3setw
     use wav_import_export , only : import_fields, export_fields
     use wav_shel_inp      , only : odat
@@ -1152,11 +1166,7 @@ contains
     if (multigrid) then
       call wmwave ( tend )
     else
-      if (use_w3wavemd) then
-        call w3wave ( 1, odat, timen )
-      else
-        call w3step(timen)
-      end if
+      call w3wave ( 1, odat, timen )
     end if
 #else
     call w3wave ( 1, odat, timen )
