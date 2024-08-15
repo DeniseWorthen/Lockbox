@@ -20,7 +20,7 @@ module wav_import_export
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
   use wav_shr_mod  , only : wav_coupling_to_cice, nwav_elev_spectrum, merge_import, dbug_flag, multigrid, unstr_mesh
-  use constants    , only : grav, tpi, dwat
+  use constants    , only : grav, tpi, dwat, dair
   use w3parall     , only : init_get_isea
 
   implicit none
@@ -138,13 +138,18 @@ contains
     if (.not. unstr_mesh) then
       call fldlist_add(fldsFrWav_num, fldsFrWav, trim(flds_scalar_name))
     end if
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
+
     if (cesmcoupled) then
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lamult' )
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
-      !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
+      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lasl' )
     else
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_z0')
+      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_wavsuu')
+      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_wavsuv')
+      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_wavsvv')
+      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hs')
     end if
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
@@ -154,7 +159,7 @@ contains
     ! will be implemented soon based on receiving USSP and USSPF from the coupler instead of the mod_def file. This will
     ! also ensure compatibility with the ocean component since ocean will also receive these from the coupler.
     if (wav_coupling_to_cice) then
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'wave_elevation_spectrum', &
+      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_elevation_spectrum', &
            ungridded_lbound=1, ungridded_ubound=nwav_elev_spectrum)
     end if
 
@@ -267,7 +272,7 @@ contains
     use w3odatmd    , only: w3seto
     use w3wdatmd    , only: time, w3setw
 #ifdef W3_CESMCOUPLED
-    use w3idatmd    , only: HML
+    use w3idatmd    , only: HSL
 #else
     use wmupdtmd    , only: wmupd2
     use wmmdatmd    , only: wmsetm
@@ -458,28 +463,6 @@ contains
         deallocate(wxdata)
         deallocate(wydata)
       end if
-
-      ! should come out of wav_import_export with single time
-      ! level values of u,ud,u10,u10d,as...etc
-      ! don't need dt0,dtn,wx0,wxn,wy0,wyn....just one (0th)
-      ! timelevel->ua,ud,as
-      ! do i = 1,nsea
-      ! ua(i) = sqrt ( wx0(ix,iy)**2 + wy0(ix,iy)**2 )
-      ! ud(i) = mod ( tpi+atan2(wy0(ix,iy),wx0(ix,iy)) , tpi )
-      ! as === dt0
-      ! correct for currents in wav_step
-      ! otherwise need ifdef here w3_rwnd
-      !do i = 1,nsea
-      ! uxr = ua* cos(ud) - rwindc*cx)
-      ! uyr = ua*sin(ud) = rwindc*cy)
-      ! u10=max..
-      ! u10d=..
-      ! enddo
-      ! else !no currents
-      !u1=ua
-      ! u10d=ud
-      ! endif
-      !
     end if
 
     ! ---------------
@@ -502,8 +485,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! ocn mixing layer depth
-    global_data = max(global_data, 5.)
-    call FillGlobalInput(global_data, HML)
+    global_data = max(global_data, 5.)*0.2
+    call FillGlobalInput(global_data, HSL)
 #endif
     ! ---------------
     ! INFLAGS1(5) - atm momentum fields
@@ -602,7 +585,7 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    use w3adatmd      , only : USSX, USSY, USSP
+    use w3adatmd      , only : USSX, USSY, USSP, HS
     use w3adatmd      , only : w3seta
     use w3idatmd      , only : w3seti
     use w3wdatmd      , only : va, w3setw
@@ -610,7 +593,9 @@ contains
     use w3gdatmd      , only : nseal, mapsf, MAPSTA, USSPF, NK, w3setg
     use w3iogomd      , only : CALC_U3STOKES
 #ifdef W3_CESMCOUPLED
-    use w3adatmd      , only : LAMULT
+    use w3wdatmd      , only : ASF, UST
+    use w3adatmd      , only : USSHX, USSHY, UD
+    use w3idatmd      , only : HSL
 #else
     use wmmdatmd      , only : mdse, mdst, wmsetm
 #endif
@@ -622,6 +607,7 @@ contains
     ! Local variables
 #ifdef W3_CESMCOUPLED
     real(R8)          :: fillvalue = 1.0e30_R8                 ! special missing value
+    real              :: sww, langmt, lasl, laslpj, alphal
 #else
     real(R8)          :: fillvalue = zero                      ! special missing value
 #endif
@@ -638,8 +624,10 @@ contains
     real(r8), pointer :: syyn(:)
 
     real(r8), pointer :: sw_lamult(:)
+    real(r8), pointer :: sw_lasl(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
+    real(r8), pointer :: sw_hs(:)
 
     ! d2 is location, d1 is frequency  - nwav_elev_spectrum frequencies will be used
     real(r8), pointer :: wave_elevation_spectrum(:,:)
@@ -675,11 +663,43 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) == 1) then
-          sw_lamult(jsea) = LAMULT(jsea)
+        if (mapsta(iy,ix) == 1 .and. HS(jsea) > zero .and. &
+            sqrt(USSX(jsea)**2+USSY(jsea)**2)>zero .and. sqrt(USSHX(jsea)**2+USSHY(jsea)**2)>zero ) then
+           sww = atan2(USSHY(jsea),USSHX(jsea)) - UD(isea)
+           alphal = atan( sin(sww) / (                                       &
+                          2.5 * UST(isea)*ASF(isea)*sqrt(dair/dwat)          &
+                        / max(1.e-14_r8, sqrt(USSX(jsea)**2+USSY(jsea)**2))     &
+                        * log(max(1.0, abs(1.25*HSL(ix,iy)/HS(jsea))))       &
+                        + cos(sww)   )                                       &
+                        )
+           lasl = sqrt(ust(isea) * asf(isea) * sqrt(dair/dwat) &
+                                 / sqrt(usshx(jsea)**2 + usshy(jsea)**2 ))
+           laslpj = lasl * sqrt(abs(cos(alphal)) &
+               / abs(cos(sww-alphal)))
+           sw_lamult(jsea) = min(5.0, abs(cos(alphal)) * &
+                              sqrt(1.0+(1.5*laslpj)**(-2)+(5.4_r8*laslpj)**(-4)))
         else
           sw_lamult(jsea)  = 1.
         endif
+      enddo
+    end if
+    if (state_fldchk(exportState, 'Sw_lasl')) then
+      call state_getfldptr(exportState, 'Sw_lasl', sw_lasl, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_lasl(:) = fillvalue
+      do jsea=1, nseal
+         isea = iaproc + (jsea-1)*naproc
+         ix  = mapsf(isea,1)
+         iy  = mapsf(isea,2)
+         if (mapsta(iy,ix) == 1) then
+            ! note: an arbitrary minimum value of 0.2 is set to avoid zero
+            !       Langmuir number which may result from zero surface friction
+            !       velocity but may cause unphysically strong Langmuir mixing
+            sw_lasl(jsea) = max(0.2, sqrt(UST(isea)*ASF(isea)*sqrt(dair/dwat) &
+                          / max(1.e-14, sqrt(USSHX(jsea)**2+USSHY(jsea)**2))))
+         else
+            sw_lasl(jsea)  = 1.e6
+         endif
       enddo
     end if
 #endif
@@ -715,6 +735,22 @@ contains
       enddo
     end if
 
+    if (state_fldchk(exportState, 'Sw_hs')) then
+      call state_getfldptr(exportState, 'Sw_hs', sw_hs, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_hs(:) = fillvalue
+      do jsea=1, nseal_cpl
+        call init_get_isea(isea, jsea)
+        ix  = mapsf(isea,1)
+        iy  = mapsf(isea,2)
+        if (mapsta(iy,ix) == 1) then
+          sw_hs(jsea) = hs(jsea)
+        else
+          sw_hs(jsea) = 0.
+        endif
+      enddo
+    end if
+
     if (state_fldchk(exportState, 'Sw_ch')) then
       call state_getfldptr(exportState, 'charno', charno, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -739,19 +775,19 @@ contains
       call CalcBotcur( va, wbcuru, wbcurv, wbcurp)
     end if
 
-    if ( state_fldchk(exportState, 'wavsuu') .and. &
-         state_fldchk(exportState, 'wavsuv') .and. &
-         state_fldchk(exportState, 'wavsvv')) then
-      call state_getfldptr(exportState, 'sxxn', sxxn, rc=rc)
+    if ( state_fldchk(exportState, 'Sw_wavsuu') .and. &
+         state_fldchk(exportState, 'Sw_wavsuv') .and. &
+         state_fldchk(exportState, 'Sw_wavsvv')) then
+      call state_getfldptr(exportState, 'Sw_wavsuu', sxxn, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'sxyn', sxyn, rc=rc)
+      call state_getfldptr(exportState, 'Sw_wavsuv', sxyn, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'syyn', syyn, rc=rc)
+      call state_getfldptr(exportState, 'Sw_wavsvv', syyn, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call CalcRadstr2D( va, sxxn, sxyn, syyn)
     end if
     if (wav_coupling_to_cice) then
-      call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
+      call state_getfldptr(exportState, 'Sw_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       ! Initialize wave elevation spectrum
       wave_elevation_spectrum(:,:) = fillvalue
