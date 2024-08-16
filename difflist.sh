@@ -1,59 +1,29 @@
 #!/bin/bash
 
-cmd=~/cime/tools/cprnc/cprnc
-
 set -x
 
-rt=/scratch1/NCEPDEV/climate/Jiande.Wang/working/scratch/GFDL-PR-1113/MED
-#rt="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_172770"
-#rt="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT"
+src=atmw.base
+dst=atmw.1cdaf9f1
+#dst=atmw.ic4
+#dst=atmw.1dfde570
+#dst=test
 
-#fname="DATM_CFSR.cpl.hi.2011-10-01-25200.nc"
-#fname="DATM_CFSR.cpl.hi.2011-10-01-28800.nc"
-#fname="RESTART/DATM_CFSR.cpl.r.2011-10-01-43200.nc"
+#dst=atmw.1dfde570.fix
+#dst=atmw.1dfde570.nofix
 
-#fname="field_atm_exporta_2011-10-01T11:45:00.nc"
+dt=720
+t0=21600
+#fsrc="ufs.atmw.cpl.hi.atm.2021-03-22-"
+fsrc="ufs.atmw.cpl.hi.wav.2021-03-22-"
+#fsrc="ufs.atmw.ww3.hi.2021-03-22-"
+let time=t0+13*dt
+fname=$fsrc$time".nc"
 
-#fname="ufs.cpld.cpl.r.2016-10-04-00000.nc"
-#fname="ufs.cpld.cpl.r.2013-04-02-00000.nc"
-#fname="ufs.cpld.cpl.hi.2016-10-03-44100.nc"
-#fname="ufs.cpld.cpl.hi.2016-10-03-11250.nc"
-fname="ufs.cpld.cpl.hi.2016-10-03-04500.nc"
-#fname="ufs.cpld.cpl.hi.2016-10-03-05400.nc"
-
-#dir="cpld_control_prod"
-#dir="cpld_controlLAT_prod"
-#dir="cpld_control_c192_prod"
-#dir="cpld_control_c384_prod"
-#dir="cpld_controlfrac_c384_prod"
-#dir="cpld_bmark_wave_prod"
-#dir="cpld_ca_prod"
-
-#$cmd -m ${rt}/devtests/test/RESTART/${fname}  ${rt}/ciceupd/test/RESTART/${fname}
-#$cmd -m ${rt}/updatecmeps/${dir}/RESTART/${fname}  ${rt}/perfcmeps/${dir}/RESTART/${fname}
-#$cmd -m ${rt}/${dir}/RESTART/${fname}  ${rt}/${dir}/RESTART/${fname}
-
-#$cmd -m ${rt}/cpld_control_prod/${fname}  ${rt}/cpld_restart_prod/${fname}
-$cmd -m ${rt}/cpld_controlLAT_prod/${fname}  ${rt}/cpld_restartLAT_prod/${fname}
-#$cmd -m ${rt}/cpld_controlC_prod/${fname}  ${rt}/cpld_restartC_prod/${fname}
-
-ncdiff -O ${rt}/cpld_controlLAT_prod/${fname}  ${rt}/cpld_restartLAT_prod/${fname} diffLAT.nc
-ncdiff -O ${rt}/cpld_controlC_prod/${fname}  ${rt}/cpld_restartC_prod/${fname} diffC.nc
-
-#$cmd -m ${rt}/cpld_control_c192_prod/${fname}  ${rt}/cpld_restart_c192_prod/${fname}
-#$cmd -m ${rt}/cpld_control_c384_prod/${fname}  ${rt}/cpld_restart_c384_prod/${fname}
-
-#$cmd -m ${rt}/restr/${fname}  ${rt}/hour12/${fname}
-
-#$cmd -m ${rt}/datm_restart_cfsr/${fname}  ${rt}/datm_12h_cfsr/${fname}
-#$cmd -m ${rt}/datm_restart_cfsr/RESTART/${fname}  ${rt}/datm_12h_cfsr/RESTART/${fname}
-#ncdiff -O ${rt}/datm_restart_cfsr/RESTART/${fname}  ${rt}/datm_12h_cfsr/RESTART/${fname} diff.nc
-
-#ncdiff ${rt}/devtests/test/RESTART/${fname}  ${rt}/ciceupd/test/RESTART/${fname} diff.nc
-
-#ncdiff -O ${rt}/cpld_control_c384_prod/${fname}  ${rt}/cpld_restart_c384_prod/${fname} diff.nc
+cprnc -m ${src}/${fname} ${dst}/${fname}
 
 #fname="ufs.cpld.cpl.hi.44100."
 #for tile in "tile1" "tile2" "tile3" "tile4" "tile5" "tile6"; do
 # $cmd -m ${rt}/cpld_control_prod/RESTART/${fname}${tile}.nc  ${rt}/cpld_restart_prod/RESTART/${fname}${tile}.nc | grep RMS
 #done
+
+echo $src $dst $fname
