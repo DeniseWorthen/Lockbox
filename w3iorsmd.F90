@@ -111,7 +111,7 @@ CONTAINS
   !>
   !> @author H. L. Tolman  @date 22-Mar-2021
   !>
-  SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT )
+  SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT , filename)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -328,15 +328,13 @@ CONTAINS
     USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
     USE w3odatmd, ONLY : RUNTYPE, INITFILE
+    USE w3adatmd, ONLY : USSHX, USSHY
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
 #endif
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    !
-    use w3timemd, only: set_user_timestring
-    use w3odatmd, only: use_user_restname, user_restfname, ndso
     !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
@@ -351,6 +349,7 @@ CONTAINS
     REAL, INTENT(INOUT)           :: DUMFPI
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
     LOGICAL, INTENT(IN),OPTIONAL  :: FLRSTRT
+    character(len=*), intent(in), optional :: filename
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -448,7 +447,8 @@ CONTAINS
     !
     IF ( IAPROC .LE. NAPROC ) VA(:,0) = 0.
     !
-    LRECL  = MAX ( LRB*NSPEC , LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
+    LRECL  = MAX ( LRB*NSPEC ,                                      &
+         LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
     NSIZE  = LRECL / LRB
     !     --- Allocate buffer array with zeros (used to
     !         fill bytes up to size LRECL). ---
@@ -463,46 +463,9 @@ CONTAINS
     !
     ! open file ---------------------------------------------------------- *
     !
-    if (use_user_restname) then
-      ierr = -99
-      if (.not. write) then
-        if (runtype == 'initial') then
-          if (len_trim(initfile) == 0) then
-            ! no IC file, use startup option
-            goto 800
-          else
-            ! IC file exists - use it
-            fname = trim(initfile)
-          end if
-        else
-          call set_user_timestring(time,user_timestring)
-          fname = trim(user_restfname)//trim(user_timestring)
-          inquire( file=trim(fname), exist=exists)
-          if (.not. exists) then
-            call extcde (60, msg="required initial/restart file " // trim(fname) // " does not exist")
-          end if
-        end if
-      else
-        call set_user_timestring(time,user_timestring)
-        fname = trim(user_restfname)//trim(user_timestring)
-      end if
-      ! write out filename
-      if (iaproc == naprst) then
-        IF ( WRITE ) THEN
-          write (ndso,'(a)') 'WW3: writing restart file '//trim(fname)
-        else
-          write (ndso,'(a)') 'WW3: reading initial/restart file '//trim(fname)
-        end if
-      end if
-      if ( write ) then
-        IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
-             open (ndsr,file=trim(fname), form='unformatted', convert=file_endian,       &
-             ACCESS='STREAM',ERR=800,IOSTAT=IERR)
-      ELSE  ! READ
-        open (ndsr, file=trim(fname), form='unformatted', convert=file_endian,       &
-             ACCESS='STREAM',ERR=800,IOSTAT=IERR,           &
-             STATUS='OLD',ACTION='READ')
-      END IF
+    if (present(filename)) then ! only when restart_nc and restart_from_binary=true
+      open (ndsr,file=trim(filename),form='unformatted', convert=file_endian, &
+           access='stream',err=800,iostat=ierr, status='old',action='read')
     else
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
@@ -532,7 +495,8 @@ CONTAINS
 #endif
       !
       IF(NDST.EQ.NDSR)THEN
-        IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,'(A,I8)')'UNIT NUMBERS OF RESTART FILE AND ' &
+        IF ( IAPROC .EQ. NAPERR )                                    &
+             WRITE(NDSE,'(A,I8)')'UNIT NUMBERS OF RESTART FILE AND '&
              //'TEST OUTPUT ARE THE SAME : ',NDST
         CALL EXTCDE ( 15 )
       ENDIF
@@ -546,7 +510,7 @@ CONTAINS
              ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
              STATUS='OLD',ACTION='READ')
       END IF
-    end if
+    end if ! if (present(filename))
     !
     ! test info ---------------------------------------------------------- *
     !
@@ -559,31 +523,38 @@ CONTAINS
         WRITEBUFF(:) = 0.
         WRITE (NDSR,POS=1) WRITEBUFF
         !           --- Replace zeros with data ---
-        WRITE (NDSR,POS=1) IDSTR, VERINI, GNAME, TYPE, NSEA, NSPEC, FLOGRR
+        WRITE (NDSR,POS=1) IDSTR, VERINI, GNAME, TYPE, NSEA,      &
+             NSPEC, FLOGRR
       END IF
       RSTYPE = 3
       !
     ELSE
-      READ (NDSR,POS=1,ERR=802,IOSTAT=IERR) IDTST, VERTST, TNAME, TYPE, NSEAT, MSPEC, FLOGOA
+      READ (NDSR,POS=1,ERR=802,IOSTAT=IERR)                       &
+           IDTST, VERTST, TNAME, TYPE, NSEAT, MSPEC, FLOGOA
       !
       IF ( IDTST .NE. IDSTR ) THEN
-        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,901) IDTST, IDSTR
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,901) IDTST, IDSTR
         CALL EXTCDE ( 10 )
       END IF
       IF ( VERTST .NE. VERINI ) THEN
-        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,902) VERTST, VERINI
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,902) VERTST, VERINI
         CALL EXTCDE ( 11 )
       END IF
       IF ( TNAME .NE. GNAME ) THEN
-        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,903) TNAME, GNAME
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,903) TNAME, GNAME
       END IF
       IF (TYPE.NE.'FULL' .AND. TYPE.NE.'COLD' .AND.               &
            TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' ) THEN
-        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,904) TYPE
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,904) TYPE
         CALL EXTCDE ( 12 )
       END IF
       IF (NSEAT.NE.NSEA .OR. NSPEC.NE.MSPEC) THEN
-        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,905) MSPEC, NSEAT, NSPEC, NSEA
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,905) MSPEC, NSEAT, NSPEC, NSEA
         CALL EXTCDE ( 13 )
       END IF
       IF (TYPE.EQ.'FULL') THEN
@@ -611,7 +582,8 @@ CONTAINS
 100 CONTINUE
     !
 #ifdef W3_T
-    WRITE (NDST,9002) IDSTR, VERINI, GNAME, TYPE, NSEA, NSEAL, NSPEC
+    WRITE (NDST,9002) IDSTR, VERINI, GNAME, TYPE,                &
+         NSEA, NSEAL, NSPEC
 #endif
     !
     ! TIME if required --------------------------------------------------- *
@@ -626,16 +598,19 @@ CONTAINS
         END IF
       ELSE
         READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TTIME
+!TODO: can this be removed?
 #ifdef W3_CESMCOUPLED
         if (runtype == 'branch' .or. runtype == 'continue') then
           IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
-            IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,906) TTIME, TIME
+            IF ( IAPROC .EQ. NAPERR )                           &
+                 WRITE (NDSE,906) TTIME, TIME
             CALL EXTCDE ( 20 )
           END IF
         end if
 #else
         IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
-          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,906) TTIME, TIME
+          IF ( IAPROC .EQ. NAPERR )                           &
+               WRITE (NDSE,906) TTIME, TIME
           CALL EXTCDE ( 20 )
         END IF
 #endif
@@ -672,10 +647,8 @@ CONTAINS
         !
         ! Original non-server version writing of spectra
         !
-        !     IOSFLG = IOSTYP .GT. 0; iostyp=0, iosflg=F and iostyp=1, iosflg=T
         IF ( .NOT.IOSFLG .OR. (NAPROC.EQ.1.AND.NAPRST.EQ.1) ) THEN
-          print *,'DEBUG w3iors ',iosflg,naproc,naprst
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGY0 : ',(ust(i),i=29406,29410)
+#ifdef W3_MPI
           DO JSEA=1, NSEAL
             CALL INIT_GET_ISEA(ISEA, JSEA)
             NREC   = ISEA + 2
@@ -684,20 +657,34 @@ CONTAINS
             WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
           END DO
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGY1 : ',(ust(i),i=29406,29410)
+#else
+          DO JSEA=1, NSEA
+            ISEA = JSEA
+            NREC   = ISEA + 2
+            RPOS  = 1_8 + LRECL*(NREC-1_8)
+            WRITEBUFF(:) = 0.
+            WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+          END DO
+#endif
           !
           ! I/O server version writing of spectra ( !/MPI )
           !
 #ifdef W3_MPI
         ELSE
           !
-          IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
-            if(iaproc.eq.3)print '(a,5g14.7)','DEBUGX0 : ',(ust(i),i=29406,29410)
-            print *,'DEBUG w3iors pdlib ',iosflg,naproc,naprst
+          IF (LPDLIB) THEN
+#endif
+#ifdef W3_TIMINGS
+            CALL PRINT_MY_TIME("Before UNST_PDLIB_WRITE_TO_FILE")
+#endif
 #ifdef W3_PDLIB
             CALL UNST_PDLIB_WRITE_TO_FILE(NDSR)
 #endif
-            if(iaproc.eq.3)print '(a,5g14.7)','DEBUGX1 : ',(ust(i),i=29406,29410)
+#ifdef W3_TIMINGS
+            CALL PRINT_MY_TIME("After UNST_PDLIB_WRITE_TO_FILE")
+#endif
+#ifdef W3_MPI
           ELSE
 
             IF ( IAPROC .NE. NAPRST ) THEN
@@ -709,7 +696,8 @@ CONTAINS
             END IF
             !
             ALLOCATE ( STAT1(MPI_STATUS_SIZE,NRQ) )
-            IF ( IAPROC .EQ. NAPRST ) CALL MPI_STARTALL ( NRQ, IRQRSS, IERR_MPI )
+            IF ( IAPROC .EQ. NAPRST ) CALL MPI_STARTALL    &
+                 ( NRQ, IRQRSS, IERR_MPI )
             !
             DO IB=1, NBLKRS
               ISEA0  = 1 + (IB-1)*RSBLKS*NAPROC
@@ -718,10 +706,12 @@ CONTAINS
               IF ( IAPROC .EQ. NAPRST ) THEN
                 !
                 IH     = 1 + NRQ * (IB-1)
-                CALL MPI_WAITALL ( NRQ, IRQRSS(IH), STAT1, IERR_MPI )
+                CALL MPI_WAITALL                         &
+                     ( NRQ, IRQRSS(IH), STAT1, IERR_MPI )
                 IF ( IB .LT. NBLKRS ) THEN
                   IH     = 1 + NRQ * IB
-                  CALL MPI_STARTALL ( NRQ, IRQRSS(IH), IERR_MPI )
+                  CALL MPI_STARTALL                    &
+                       ( NRQ, IRQRSS(IH), IERR_MPI )
                 END IF
                 !
                 DO ISEA=ISEA0, ISEAN
@@ -735,13 +725,16 @@ CONTAINS
                     JSEA   = JSEA - 2*((IB-1)/2)*RSBLKS
                     WRITEBUFF(1:NSPEC) = VAAUX(1:NSPEC,JSEA,IP)
                   END IF
-                  WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+                  WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) &
+                       WRITEBUFF
                 END DO
                 !
               ELSE
                 !
-                CALL MPI_STARTALL ( 1, IRQRSS(IB), IERR_MPI )
-                CALL MPI_WAITALL ( 1, IRQRSS(IB), STAT1, IERR_MPI )
+                CALL MPI_STARTALL                        &
+                     ( 1, IRQRSS(IB), IERR_MPI )
+                CALL MPI_WAITALL                         &
+                     ( 1, IRQRSS(IB), STAT1, IERR_MPI )
                 !
               END IF
             END DO
@@ -762,7 +755,7 @@ CONTAINS
         WRITE (NDST,9020) TYPE
 #endif
       ELSE
-        IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
+        IF (LPDLIB) THEN
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("Before UNST_PDLIB_READ_FROM_FILE")
 #endif
@@ -807,7 +800,7 @@ CONTAINS
               !              Include remainder values (switch to record format) ---- *
               JSEA = NSEAL_MIN + 1
               IF ( JSEA.EQ.NSEAL ) THEN
-                ISEA = IAPROC + (JSEA - 1) * NAPROC
+                CALL INIT_GET_ISEA(ISEA, JSEA)
                 NREC = ISEA + 2
                 RPOS = 1_8 + LRECL*(NREC-1_8)
                 READ (NDSR, POS=RPOS, ERR=802, IOSTAT=IERR)          &
@@ -823,7 +816,7 @@ CONTAINS
           ELSE
 #endif
             VA = 0.
-            DO JSEA=1, NSEAL
+            DO JSEA=1, NSEA
               CALL INIT_GET_ISEA(ISEA, JSEA)
               NREC   = ISEA + 2
               RPOS   = 1_8 + LRECL*(NREC-1_8)
@@ -842,7 +835,6 @@ CONTAINS
 #ifdef W3_T
     WRITE (NDST,9006)
 #endif
-    if(iaproc.eq.3)print '(a,5g14.7)','DEBUGY3 : ',(ust(i),i=29406,29410)
     !
     ! Water level etc. if required --------------------------------------- *
     !     ( For cold start write test output and cold start initialize
@@ -855,80 +847,118 @@ CONTAINS
     NPRTY2 = 1 + (NY-1)/NSIZE
     !
     IF ( WRITE ) THEN
-!      if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3aa : ',(ust(i),i=29406,29410)
       !
       IF (TYPE.EQ.'FULL') THEN
         !
         IF ( IAPROC .EQ. NAPRST ) THEN
           !
 #ifdef W3_MPI
-          ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3aa bf : ',(ust(i),i=29406,29410)
-          CALL MPI_WAITALL ( NRQRS, IRQRS , STAT2, IERR_MPI )
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3aa af : ',(ust(i),i=29406,29410)
-          print *,'size stat2 ',lbound(stat2,1),ubound(stat2,1),lbound(stat2,2),ubound(stat2,2)
-          DEALLOCATE ( STAT2 )
+          if (associated(irqrs)) then
+            ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
+            CALL MPI_WAITALL                               &
+                 ( NRQRS, IRQRS , STAT2, IERR_MPI )
+            DEALLOCATE ( STAT2 )
+          end if
 #endif
           !
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3aa2a : ',(ust(i),i=29406,29410)
           RPOS  = 1_8 + LRECL*(NREC-1_8)
           WRITEBUFF(:) = 0.
           WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-          WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) TLEV, TICE, TRHO
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3aa2b : ',(ust(i),i=29406,29410)
+          WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)           &
+               TLEV, TICE, TRHO
           DO IPART=1,NPART
             NREC  = NREC + 1
             RPOS  = 1_8 + LRECL*(NREC-1_8)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) (WLV(ISEA),ISEA=1+(IPART-1)*NSIZE, MIN(NSEA,IPART*NSIZE))
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)         &
+                 (WLV(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
+                 MIN(NSEA,IPART*NSIZE))
           END DO
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3aa2c : ',(ust(i),i=29406,29410)
           DO IPART=1,NPART
             NREC  = NREC + 1
             RPOS  = 1_8 + LRECL*(NREC-1_8)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE, MIN(NSEA,IPART*NSIZE))
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)         &
+                 (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
+                 MIN(NSEA,IPART*NSIZE))
           END DO
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3aa2d : ',(ust(i),i=29406,29410)
+
+#ifdef W3_WRST
+          ! The WRST switch saves the values of wind in the
+          ! restart file and then uses the wind for the first
+          ! time step here.  This is needed when coupling with
+          ! an atm model that does not have 10m wind speeds at
+          ! initialization.  If there is no restart, wind is zero
+#endif
+
+#ifdef W3_WRST
+          DO IX=1, NX
+            DO IPART=1,NPRTY2
+              NREC  = NREC + 1
+              RPOS  = 1_8 + LRECL*(NREC-1_8)
+              WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+              WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)       &
+                   (WXN(IX,IYL),IYL=1+(IPART-1)*NSIZE,         &
+                   MIN(NY,IPART*NSIZE))
+            END DO
+          END DO
+          DO IX=1, NX
+            DO IPART=1,NPRTY2
+              NREC  = NREC + 1
+              RPOS  = 1_8 + LRECL*(NREC-1_8)
+              WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+              WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)       &
+                   (WYN(IX,IYL),IYL=1+(IPART-1)*NSIZE,         &
+                   MIN(NY,IPART*NSIZE))
+            END DO
+          END DO
+#endif
           ALLOCATE ( MAPTMP(NY,NX) )
           MAPTMP = MAPSTA + 8*MAPST2
           DO IY=1, NY
             DO IPART=1,NPRTX2
               NREC  = NREC + 1
               RPOS  = 1_8 + LRECL*(NREC-1_8)
-              WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-              WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) (MAPTMP(IY,IXL),IXL=1+(IPART-1)*NSIZE, MIN(NX,IPART*NSIZE))
+              WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)       &
+                   WRITEBUFF
+              WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)       &
+                   (MAPTMP(IY,IXL),IXL=1+(IPART-1)*NSIZE,    &
+                   MIN(NX,IPART*NSIZE))
             END DO
           END DO
           DEALLOCATE ( MAPTMP )
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3a : ',(ust(i),i=29406,29410)
           DO IPART=1,NPART
             NREC  = NREC + 1
             RPOS  = 1_8 + LRECL*(NREC-1_8)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) (UST(ISEA),ISEA=1+(IPART-1)*NSIZE, MIN(NSEA,IPART*NSIZE))
-          END DO
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3b : ',(ust(i),i=29406,29410)
-          DO IPART=1,NPART
-            NREC  = NREC + 1
-            RPOS  = 1_8 + LRECL*(NREC-1_8)
-            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) (USTDIR(ISEA),ISEA=1+(IPART-1)*NSIZE, MIN(NSEA,IPART*NSIZE))
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)         &
+                 (UST(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
+                 MIN(NSEA,IPART*NSIZE))
           END DO
           DO IPART=1,NPART
             NREC  = NREC + 1
             RPOS  = 1_8 + LRECL*(NREC-1_8)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) (ASF(ISEA),ISEA=1+(IPART-1)*NSIZE, MIN(NSEA,IPART*NSIZE))
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)         &
+                 (USTDIR(ISEA),ISEA=1+(IPART-1)*NSIZE,       &
+                 MIN(NSEA,IPART*NSIZE))
           END DO
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3c : ',(ust(i),i=29406,29410)
           DO IPART=1,NPART
             NREC  = NREC + 1
             RPOS  = 1_8 + LRECL*(NREC-1_8)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
-            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) (FPIS(ISEA),ISEA=1+(IPART-1)*NSIZE, MIN(NSEA,IPART*NSIZE))
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)         &
+                 (ASF(ISEA),ISEA=1+(IPART-1)*NSIZE,          &
+                 MIN(NSEA,IPART*NSIZE))
           END DO
-          if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY3 : ',(ust(i),i=29406,29410)
+          DO IPART=1,NPART
+            NREC  = NREC + 1
+            RPOS  = 1_8 + LRECL*(NREC-1_8)
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)         &
+                 (FPIS(ISEA),ISEA=1+(IPART-1)*NSIZE,         &
+                 MIN(NSEA,IPART*NSIZE))
+          END DO
           IF (OARST) THEN
 #ifdef W3_MPI
             CALL W3XETA ( IGRD, NDSE, NDST )
@@ -986,6 +1016,10 @@ CONTAINS
               WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOCX(1:NSEA)
               WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOCY(1:NSEA)
             ENDIF
+            IF ( FLOGRR(6,14) ) THEN
+              WRITE(NDSR,ERR=803,IOSTAT=IERR) USSHX(1:NSEA)
+              WRITE(NDSR,ERR=803,IOSTAT=IERR) USSHY(1:NSEA)
+            ENDIF
             IF ( FLOGRR(7,2) ) THEN
               WRITE(NDSR,ERR=803,IOSTAT=IERR) UBA(1:NSEA)
               WRITE(NDSR,ERR=803,IOSTAT=IERR) UBD(1:NSEA)
@@ -1000,7 +1034,7 @@ CONTAINS
 #ifdef W3_MPI
             CALL W3SETA ( IGRD, NDSE, NDST )
 #endif
-          ENDIF ! IF (OARST) THEN
+          ENDIF
 #ifdef W3_T
           WRITE (NDST,9007)
         ELSE
@@ -1010,36 +1044,44 @@ CONTAINS
           END DO
           WRITE (NDST,9008)
 #endif
-        END IF ! IF ( IAPROC .EQ. NAPRST ) THEN
-
-      END IF ! IF (TYPE.EQ.'FULL') THEN
+        END IF
+      END IF
     ELSE
       IF (TYPE.EQ.'FULL') THEN
         RPOS = 1_8 + LRECL*(NREC-1_8)
-        READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TLEV, TICE, TRHO
+        READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)                &
+             TLEV, TICE, TRHO
         DO IPART=1,NPART
           NREC  = NREC + 1
           RPOS = 1_8 + LRECL*(NREC-1_8)
-          READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) (WLV(ISEA),ISEA=1+(IPART-1)*NSIZE, MIN(NSEA,IPART*NSIZE))
+          READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
+               (WLV(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
+               MIN(NSEA,IPART*NSIZE))
         END DO
         DO IPART=1,NPART
           NREC  = NREC + 1
           RPOS = 1_8 + LRECL*(NREC-1_8)
-          READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE, MIN(NSEA,IPART*NSIZE))
+          READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
+               (ICE(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
+               MIN(NSEA,IPART*NSIZE))
         END DO
 #ifdef W3_WRST
         DO IX=1, NX
           DO IPART=1,NPRTY2
             NREC  = NREC + 1
             RPOS = 1_8 + LRECL*(NREC-1_8)
-            READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) (WXNwrst(IX,IYL),IYL=1+(IPART-1)*NSIZE, MIN(NY,IPART*NSIZE))
+            READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
+                 (WXNwrst(IX,IYL),IYL=1+(IPART-1)*NSIZE,         &
+                 MIN(NY,IPART*NSIZE))
           END DO
         END DO
         DO IX=1, NX
           DO IPART=1,NPRTY2
             NREC  = NREC + 1
             RPOS = 1_8 + LRECL*(NREC-1_8)
-            READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) (WYNwrst(IX,IYL),IYL=1+(IPART-1)*NSIZE, MIN(NY,IPART*NSIZE))
+            READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)              &
+                 (WYNwrst(IX,IYL),IYL=1+(IPART-1)*NSIZE,         &
+                 MIN(NY,IPART*NSIZE))
           END DO
         END DO
 #endif
@@ -1048,13 +1090,14 @@ CONTAINS
           DO IPART=1,NPRTX2
             NREC  = NREC + 1
             RPOS  = 1_8 + LRECL*(NREC-1_8)
-            READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) (MAPTMP(IY,IXL),IXL=1+(IPART-1)*NSIZE, MIN(NX,IPART*NSIZE))
+            READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)            &
+                 (MAPTMP(IY,IXL),IXL=1+(IPART-1)*NSIZE,        &
+                 MIN(NX,IPART*NSIZE))
           END DO
         END DO
         MAPSTA = MOD(MAPTMP+2,8) - 2
         MAPST2 = (MAPTMP-MAPSTA) / 8
         DEALLOCATE ( MAPTMP )
-        if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY4 : ',(ust(i),i=29406,29410)
         !
         ! Updates reflections maps:
         !
@@ -1093,7 +1136,6 @@ CONTAINS
                (FPIS(ISEA),ISEA=1+(IPART-1)*NSIZE,             &
                MIN(NSEA,IPART*NSIZE))
         END DO
-        if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY5 : ',(ust(i),i=29406,29410)
         IF (OARST) THEN
           IF ( FLOGOA(1,2) ) THEN
             READ (NDSR,ERR=802,IOSTAT=IERR) CX(1:NSEA)
@@ -1245,6 +1287,17 @@ CONTAINS
               ENDIF
             ENDDO
           ENDIF
+          IF ( FLOGOA(6,14) ) THEN
+            READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+            READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+            DO I=1, NSEALM
+              J = IAPROC + (I-1)*NAPROC
+              IF (J .LE. NSEA) THEN
+                USSHX(I) = TMP(J)
+                USSHY(I) = TMP2(J)
+              ENDIF
+            ENDDO
+          ENDIF
           IF ( FLOGOA(7,2) ) THEN
             READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
             READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1279,7 +1332,6 @@ CONTAINS
         WRITE (NDST,9007)
 #endif
       ELSE
-        if(iaproc.eq.3)print '(a,5g14.7)','DEBUGYY6 : ',(ust(i),i=29406,29410)
         TLEV(1) = -1
         TLEV(2) =  0
         TICE(1) = -1
@@ -1329,13 +1381,14 @@ CONTAINS
           UBD     = 0.
           PHIBBL  = 0.
           TAUBBL  = 0.
+          USSHX   = 0.
+          USSHY   = 0.
         ENDIF
 #ifdef W3_T
         WRITE (NDST,9008)
 #endif
       END IF
     END IF
-    if(iaproc.eq.3)print '(a,5g14.7)','DEBUGX2 : ',(ust(i),i=29406,29410)
     !
     ! Close file --------------------------------------------------------- *
     !
