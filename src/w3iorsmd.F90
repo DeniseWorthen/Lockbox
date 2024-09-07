@@ -327,7 +327,7 @@ CONTAINS
 #ifdef W3_TIMINGS
     USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
-    USE w3odatmd, ONLY : RUNTYPE, INITFILE
+    USE w3odatmd, ONLY : RUNTYPE
     USE w3adatmd, ONLY : USSHX, USSHY
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
@@ -380,12 +380,10 @@ CONTAINS
     LOGICAL                 :: NDSROPN
     CHARACTER(LEN=4)        :: TYPE
     CHARACTER(LEN=10)       :: VERTST
-    CHARACTER(LEN=512)      :: FNAME
+    CHARACTER(LEN=40)       :: FNAME
     CHARACTER(LEN=26)       :: IDTST
     CHARACTER(LEN=30)       :: TNAME
     CHARACTER(LEN=15)       :: TIMETAG
-    character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
-    logical                 :: exists
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -491,7 +489,7 @@ CONTAINS
       IFILE  = IFILE + 1
       !
 #ifdef W3_T
-      WRITE (NDST,9001) trim(FNAME), LRECL
+      WRITE (NDST,9001) FNAME, LRECL
 #endif
       !
       IF(NDST.EQ.NDSR)THEN
@@ -503,10 +501,10 @@ CONTAINS
 
       IF ( WRITE ) THEN
         IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
-             OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),form='UNFORMATTED', convert=file_endian,       &
+             OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
              ACCESS='STREAM',ERR=800,IOSTAT=IERR)
       ELSE
-        OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),form='UNFORMATTED', convert=file_endian,       &
+        OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
              ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
              STATUS='OLD',ACTION='READ')
       END IF
@@ -598,22 +596,11 @@ CONTAINS
         END IF
       ELSE
         READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TTIME
-!TODO: can this be removed?
-#ifdef W3_CESMCOUPLED
-        if (runtype == 'branch' .or. runtype == 'continue') then
-          IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
-            IF ( IAPROC .EQ. NAPERR )                           &
-                 WRITE (NDSE,906) TTIME, TIME
-            CALL EXTCDE ( 20 )
-          END IF
-        end if
-#else
         IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
           IF ( IAPROC .EQ. NAPERR )                           &
                WRITE (NDSE,906) TTIME, TIME
           CALL EXTCDE ( 20 )
         END IF
-#endif
       END IF
       !
 #ifdef W3_T
