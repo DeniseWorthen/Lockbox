@@ -732,11 +732,6 @@ CONTAINS
     !
     CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
 
-    do iy = 1,ny
-      write(910,'(360i4)')(mapsta(iy,ix),ix=1,nx)
-      write(920,'(360i4)')(mapst2(iy,ix),ix=1,nx)
-    end do
-
     IF (GTYPE .eq. UNGTYPE) THEN
       CALL SPATIAL_GRID
       CALL NVECTRI
@@ -978,7 +973,6 @@ CONTAINS
             call w3iors('READ', nds(6), sig(nk), imod, filename=trim(fname))
           else
             call read_restart(trim(fname), va=va, mapsta=mapsta, mapst2=mapst2)
-            !call read_restart(trim(fname), va=va, mapsta=mapsta)
           end if
         else
           call extcde (60, msg="required restart file " // trim(fname) // " does not exist")
@@ -986,17 +980,8 @@ CONTAINS
       else
         call read_restart('none')
         ! mapst2 is module variable defined in read of mod_def; maptst is from 2.b above
-        !mapsta = mod(maptst+2,8) - 2
-        !mapsta = maptst
         flcold = .true.
       end if
-
-      do iy = 1,ny
-        write(2010,'(360i4)')(mapsta(iy,ix),ix=1,nx)
-        write(2020,'(360i4)')(mapst2(iy,ix),ix=1,nx)
-        write(2030,'(360i4)')(maptst(iy,ix),ix=1,nx)
-      end do
-
     else
 #ifdef W3_DEBUGCOH
       CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before W3IORS call", 1)
@@ -1388,12 +1373,6 @@ CONTAINS
 #endif
     !
     MAPST2 = MAPST2 + 2*MAPTST
-
-    do iy = 1,ny
-      write(3010,'(360i4)')(mapsta(iy,ix),ix=1,nx)
-      write(3020,'(360i4)')(mapst2(iy,ix),ix=1,nx)
-      write(3030,'(360i4)')(maptst(iy,ix),ix=1,nx)
-    end do
     !
     DEALLOCATE ( MAPTST )
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 6')
@@ -1461,7 +1440,7 @@ CONTAINS
     !
     ! 7.  Write info to log file ----------------------------------------- /
     !
-    IF ( IAPROC .EQ. NAPLOG ) THEN
+    IF ( IAPROC .EQ. NAPLOG) THEN
       !
       WRITE (NDSO,970) GNAME
       IF (   FLLEV    ) WRITE (NDSO,971) 'Prescribed'
@@ -1548,7 +1527,9 @@ CONTAINS
         WRITE (NDSO,990) DTME21
       END IF
       !
-      WRITE (NDSO,984)
+      if (.not. logfile_is_assigned) then
+        WRITE (NDSO,984)
+      end if
       !
     END IF
     !

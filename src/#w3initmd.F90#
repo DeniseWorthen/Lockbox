@@ -686,12 +686,12 @@ CONTAINS
       IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
            OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
       !
-      IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
-        INQUIRE (MDS(3),OPENED=OPENED)
-        IF ( .NOT. OPENED ) OPEN (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT), ERR=889, &
-             IOSTAT=IERR)
-      END IF
-    end if ! if (.not. logfile_is_assigned)
+
+    IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
+      INQUIRE (MDS(3),OPENED=OPENED)
+      IF ( .NOT. OPENED ) OPEN (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT), ERR=889, &
+           IOSTAT=IERR)
+    END IF
     !
     ! 1.d Dataset unit numbers
     !
@@ -700,7 +700,8 @@ CONTAINS
     NDSE   = NDS(2)
     NDST   = NDS(3)
     SCREEN = NDS(4)
-    !
+ end if ! if (.not. logfile_is_assigned)
+ !
     ! 1.e Subroutine tracing
     !
     CALL ITRACE ( MTRACE(1), MTRACE(2) )
@@ -731,12 +732,6 @@ CONTAINS
     ! 2.a Read model definition file
     !
     CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
-
-    do iy = 1,ny
-      write(910,'(360i4)')(mapsta(iy,ix),ix=1,nx)
-      write(920,'(360i4)')(mapst2(iy,ix),ix=1,nx)
-    end do
-
     IF (GTYPE .eq. UNGTYPE) THEN
       CALL SPATIAL_GRID
       CALL NVECTRI
@@ -977,26 +972,16 @@ CONTAINS
           if (restart_from_binary) then
             call w3iors('READ', nds(6), sig(nk), imod, filename=trim(fname))
           else
-            call read_restart(trim(fname), va=va, mapsta=mapsta, mapst2=mapst2)
-            !call read_restart(trim(fname), va=va, mapsta=mapsta)
+            call read_restart(trim(fname), va, mapsta)
           end if
         else
           call extcde (60, msg="required restart file " // trim(fname) // " does not exist")
         end if
       else
-        call read_restart('none')
-        ! mapst2 is module variable defined in read of mod_def; maptst is from 2.b above
-        mapsta = mod(maptst+2,8) - 2
+        call read_restart('none', va, mapsta)
         mapsta = maptst
         flcold = .true.
       end if
-
-      do iy = 1,ny
-        write(2010,'(360i4)')(mapsta(iy,ix),ix=1,nx)
-        write(2020,'(360i4)')(mapst2(iy,ix),ix=1,nx)
-        write(2030,'(360i4)')(maptst(iy,ix),ix=1,nx)
-      end do
-
     else
 #ifdef W3_DEBUGCOH
       CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before W3IORS call", 1)
@@ -1309,6 +1294,7 @@ CONTAINS
     !
     MAPTST = MOD(MAPST2/2,2)
     MAPST2 = MAPST2 - 2*MAPTST
+
     !
     !Li   For multi-resolution SMC grid, these 1-NX and 1-NY nested loops
     !Li   may miss the refined cells as they are not 1-1 corresponding to
@@ -1382,18 +1368,14 @@ CONTAINS
       CALL SET_IOBDP_PDLIB
     ENDIF
 #endif
+
     !
 #ifdef W3_DEBUGCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.2", 1)
 #endif
+
     !
     MAPST2 = MAPST2 + 2*MAPTST
-
-    do iy = 1,ny
-      write(3010,'(360i4)')(mapsta(iy,ix),ix=1,nx)
-      write(3020,'(360i4)')(mapst2(iy,ix),ix=1,nx)
-      write(3030,'(360i4)')(maptst(iy,ix),ix=1,nx)
-    end do
     !
     DEALLOCATE ( MAPTST )
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 6')
@@ -1445,6 +1427,7 @@ CONTAINS
         !
       END DO
     END DO
+
     !
     ! 6.  Initialize arrays ---------------------------------------------- /
     !     Some initialized in W3IORS

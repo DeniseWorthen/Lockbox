@@ -138,18 +138,13 @@ contains
     if (.not. unstr_mesh) then
       call fldlist_add(fldsFrWav_num, fldsFrWav, trim(flds_scalar_name))
     end if
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
-    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
-
     if (cesmcoupled) then
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lamult' )
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lasl' )
+      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
+      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
     else
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_z0')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_wavsuu')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_wavsuv')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_wavsvv')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hs')
     end if
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
     call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
@@ -168,6 +163,9 @@ contains
            TransferOfferGeomObject='will provide', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do
+
+    ! figure out list of variables that *may* be needed to be read/written to restarts
+    !need to do this now, so that w3init can use it when reading restart
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
@@ -585,7 +583,7 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    use w3adatmd      , only : USSX, USSY, USSP, HS
+    use w3adatmd      , only : USSX, USSY, USSP
     use w3adatmd      , only : w3seta
     use w3idatmd      , only : w3seti
     use w3wdatmd      , only : va, w3setw
@@ -594,7 +592,7 @@ contains
     use w3iogomd      , only : CALC_U3STOKES
 #ifdef W3_CESMCOUPLED
     use w3wdatmd      , only : ASF, UST
-    use w3adatmd      , only : USSHX, USSHY, UD
+    use w3adatmd      , only : USSHX, USSHY, UD, HS
     use w3idatmd      , only : HSL
 #else
     use wmmdatmd      , only : mdse, mdst, wmsetm
@@ -627,7 +625,6 @@ contains
     real(r8), pointer :: sw_lasl(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
-    real(r8), pointer :: sw_hs(:)
 
     ! d2 is location, d1 is frequency  - nwav_elev_spectrum frequencies will be used
     real(r8), pointer :: wave_elevation_spectrum(:,:)
@@ -735,22 +732,6 @@ contains
       enddo
     end if
 
-    if (state_fldchk(exportState, 'Sw_hs')) then
-      call state_getfldptr(exportState, 'Sw_hs', sw_hs, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      sw_hs(:) = fillvalue
-      do jsea=1, nseal_cpl
-        call init_get_isea(isea, jsea)
-        ix  = mapsf(isea,1)
-        iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) == 1) then
-          sw_hs(jsea) = hs(jsea)
-        else
-          sw_hs(jsea) = 0.
-        endif
-      enddo
-    end if
-
     if (state_fldchk(exportState, 'Sw_ch')) then
       call state_getfldptr(exportState, 'charno', charno, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -775,14 +756,14 @@ contains
       call CalcBotcur( va, wbcuru, wbcurv, wbcurp)
     end if
 
-    if ( state_fldchk(exportState, 'Sw_wavsuu') .and. &
-         state_fldchk(exportState, 'Sw_wavsuv') .and. &
-         state_fldchk(exportState, 'Sw_wavsvv')) then
-      call state_getfldptr(exportState, 'Sw_wavsuu', sxxn, rc=rc)
+    if ( state_fldchk(exportState, 'wavsuu') .and. &
+         state_fldchk(exportState, 'wavsuv') .and. &
+         state_fldchk(exportState, 'wavsvv')) then
+      call state_getfldptr(exportState, 'sxxn', sxxn, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_wavsuv', sxyn, rc=rc)
+      call state_getfldptr(exportState, 'sxyn', sxyn, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_wavsvv', syyn, rc=rc)
+      call state_getfldptr(exportState, 'syyn', syyn, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call CalcRadstr2D( va, sxxn, sxyn, syyn)
     end if
@@ -966,6 +947,7 @@ contains
       ! local variables
       type(ESMF_Distgrid) :: distgrid
       type(ESMF_Grid)     :: grid
+      real(ESMF_KIND_R8), pointer :: fldptr2d(:,:)
       character(len=*), parameter :: subname='(wav_import_export:SetScalarField)'
       ! ----------------------------------------------
 
@@ -981,6 +963,11 @@ contains
       field = ESMF_FieldCreate(name=trim(flds_scalar_name), grid=grid, typekind=ESMF_TYPEKIND_R8, &
            ungriddedLBound=(/1/), ungriddedUBound=(/flds_scalar_num/), gridToFieldMap=(/2/), rc=rc) ! num of scalar values
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=u_FILE_u)) return
+
+      ! initialize fldptr to zero
+      call ESMF_FieldGet(field, farrayPtr=fldptr2d, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      fldptr2d(:,:) = 0.0
 
     end subroutine SetScalarField
 

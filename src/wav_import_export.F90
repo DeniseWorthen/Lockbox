@@ -164,6 +164,9 @@ contains
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do
 
+    ! figure out list of variables that *may* be needed to be read/written to restarts
+    !need to do this now, so that w3init can use it when reading restart
+
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine advertise_fields

@@ -494,6 +494,7 @@ CONTAINS
     use wav_restart_mod , only : write_restart
     use wav_history_mod , only : write_history
     use w3odatmd        , only : histwr, rstwr, use_historync, use_restartnc, user_restfname
+    use w3odatmd        , only : verboselog
     use w3timemd        , only : set_user_timestring
     !
 #ifdef W3_MPI
@@ -503,7 +504,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(35)
+    INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(40)
     LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 #ifdef W3_OASIS
     INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
@@ -2300,10 +2301,6 @@ CONTAINS
         END DO
         IF (IT.GT.0) DTG=DTGTEMP
 #endif
-
-
-
-
         !
         !
         ! 3.8 Update global time step.
@@ -2316,7 +2313,7 @@ CONTAINS
           DTG    = DTTST / REAL(NT-IT)
         END IF
         !
-        IF ( FLACT .AND. IT.NE.NT .AND. IAPROC.EQ.NAPLOG ) THEN
+        IF ( FLACT .AND. IT.NE.NT .AND. IAPROC.EQ.NAPLOG .and. verboselog) THEN
           CALL STME21 ( TIME , IDTIME )
           IF ( IDLAST .NE. TIME(1) ) THEN
             WRITE (NDSO,900) ITIME, IPASS, IDTIME(01:19), IDACT, OUTID
@@ -2336,7 +2333,7 @@ CONTAINS
 #endif
         !
         !
-      END DO
+      END DO ! DO IT = IT0, NT
 
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("W3WAVE, step 6.21.1")
@@ -2357,27 +2354,23 @@ CONTAINS
       !     Delay if data assimilation time.
       !
       !
-      if (use_historync) then
-        floutg = .false.
-        floutg2 = .false.
-        if (histwr) then
-          call w3cprt (imod)
-          call w3outg (va, flpfld, .true., .false. )
-          call write_history(tend)
-        end if
-      end if
-
-      if (use_restartnc) then
-        if (rstwr) then
-          call set_user_timestring(tend,user_timestring)
-          fname = trim(user_restfname)//trim(user_timestring)//'.nc'
-          if (trim(user_timestring) == '2021-03-22-43200') then
-            do iy = 1,ny
-              write(4010,'(360i4)')(mapsta(iy,ix),ix=1,nx)
-              write(4020,'(360i4)')(mapst2(iy,ix),ix=1,nx)
-            end do
+      if (dsec21(time,tend) == 0.0) then    ! req'd in case waves are running in slow loop
+        if (use_historync) then
+          floutg = .false.
+          floutg2 = .false.
+          if (histwr) then
+            call w3cprt (imod)
+            call w3outg (va, flpfld, .true., .false. )
+            call write_history(tend)
           end if
-          call write_restart(trim(fname), va, mapsta+8*mapst2)
+        end if
+
+        if (use_restartnc) then
+          if (rstwr) then
+            call set_user_timestring(tend,user_timestring)
+            fname = trim(user_restfname)//trim(user_timestring)//'.nc'
+            call write_restart(trim(fname), va, mapsta+8*mapst2)
+          end if
         end if
       end if
 
@@ -2783,7 +2776,7 @@ CONTAINS
       !
       ! 5.  Update log file ------------------------------------------------ /
       !
-      IF ( IAPROC.EQ.NAPLOG ) THEN
+      IF ( IAPROC.EQ.NAPLOG .and. verboselog) THEN
         !
         CALL STME21 ( TIME , IDTIME )
         IF ( FLCUR ) THEN
@@ -2836,7 +2829,7 @@ CONTAINS
       WRITE (SCREEN,951) STTIME
     END IF
 
-    IF ( IAPROC .EQ. NAPLOG ) WRITE (NDSO,902)
+    IF ( IAPROC .EQ. NAPLOG .and. verboselog) WRITE (NDSO,902)
     !
     DEALLOCATE(FIELD)
     DEALLOCATE(TAUWX, TAUWY)

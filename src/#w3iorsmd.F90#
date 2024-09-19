@@ -335,8 +335,6 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    use w3timemd, only: set_user_timestring
-    use w3odatmd, only: user_restfname
     !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
@@ -362,7 +360,7 @@ CONTAINS
          NSEAT, MSPEC, TTIME(2), ISEA, JSEA,  &
          NREC, NPART, IPART, IX, IY, IXL, IP, &
          NPRTX2, NPRTY2, IYL, ITMP
-    INTEGER, ALLOCATABLE    :: MAPTMP(:,:)
+    INTEGER, ALLOCATABsLE    :: MAPTMP(:,:)
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -382,11 +380,10 @@ CONTAINS
     LOGICAL                 :: NDSROPN
     CHARACTER(LEN=4)        :: TYPE
     CHARACTER(LEN=10)       :: VERTST
-    CHARACTER(LEN=512)       :: FNAME
+    CHARACTER(LEN=40)       :: FNAME
     CHARACTER(LEN=26)       :: IDTST
     CHARACTER(LEN=30)       :: TNAME
     CHARACTER(LEN=15)       :: TIMETAG
-    character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -502,26 +499,15 @@ CONTAINS
         CALL EXTCDE ( 15 )
       ENDIF
 
-      call set_user_timestring(time,user_timestring)
-      fname = trim(user_restfname)//trim(user_timestring)
-      if ( write ) then
-        IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
-             open (ndsr,file=trim(fname), form='unformatted', convert=file_endian,       &
+      IF ( WRITE ) THEN
+        IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
+             OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
              ACCESS='STREAM',ERR=800,IOSTAT=IERR)
-      ELSE  ! READ
-        open (ndsr, file=trim(fname), form='unformatted', convert=file_endian,       &
-             ACCESS='STREAM',ERR=800,IOSTAT=IERR,           &
+      ELSE
+        OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
+             ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
              STATUS='OLD',ACTION='READ')
       END IF
-      ! IF ( WRITE ) THEN
-      !   IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
-      !        OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
-      !        ACCESS='STREAM',ERR=800,IOSTAT=IERR)
-      ! ELSE
-      !   OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
-      !        ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
-      !        STATUS='OLD',ACTION='READ')
-      ! END IF
     end if ! if (present(filename))
     !
     ! test info ---------------------------------------------------------- *
@@ -610,22 +596,11 @@ CONTAINS
         END IF
       ELSE
         READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TTIME
-!TODO: can this be removed?
-#ifdef W3_CESMCOUPLED
-        if (runtype == 'branch' .or. runtype == 'continue') then
-          IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
-            IF ( IAPROC .EQ. NAPERR )                           &
-                 WRITE (NDSE,906) TTIME, TIME
-            CALL EXTCDE ( 20 )
-          END IF
-        end if
-#else
         IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
           IF ( IAPROC .EQ. NAPERR )                           &
                WRITE (NDSE,906) TTIME, TIME
           CALL EXTCDE ( 20 )
         END IF
-#endif
       END IF
       !
 #ifdef W3_T

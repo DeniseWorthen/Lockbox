@@ -9,7 +9,8 @@ module wav_restart_mod
   use w3parall      , only : init_get_isea
   use w3adatmd      , only : nsealm
   use w3gdatmd      , only : nth, nk, nx, ny, mapsf, nspec, nseal, nsea
-  use w3odatmd      , only : ndso, iaproc
+  use w3idatmd      , only : flice, flic1, flic5, fllev
+  use w3odatmd      , only : ndso, iaproc, slow_coupling
   use wav_pio_mod   , only : pio_iotype, pio_ioformat, wav_pio_subsystem
   use wav_pio_mod   , only : handle_err, wav_pio_initdecomp
 #ifdef W3_PDLIB
@@ -25,6 +26,7 @@ module wav_restart_mod
   type(file_desc_t) :: pioid
   type(var_desc_t)  :: varid
   type(io_desc_t)   :: iodesc2dint
+  type(io_desc_t)   :: iodesc2d
   type(io_desc_t)   :: iodesc3dk
 
   integer(kind=Pio_Offset_Kind) :: frame
@@ -35,6 +37,9 @@ module wav_restart_mod
   ! used/reused in module
   character(len=12) :: vname
   integer           :: ik, ith, ix, iy, kk, nseal_cpl, isea, jsea, ierr
+
+  integer, parameter :: maxslow = 4
+  character(len=12)  :: slowfldlist(maxslow) = (/'ice ', 'iceh', 'ice5', 'wllev')/
 
   !===============================================================================
 contains
@@ -64,6 +69,7 @@ contains
     integer              :: dimid(4)
     real   , allocatable :: lva(:,:)
     integer, allocatable :: lmap(:)
+    real   , allocatable :: lvar(:)
     !-------------------------------------------------------------------------------
 
 #ifdef W3_PDLIB
@@ -73,6 +79,7 @@ contains
 #endif
     allocate(lmap(1:nseal_cpl))
     allocate(lva(1:nseal_cpl,1:nspec))
+    allocate(lvar(1:nseal_cpl))
 
     ! create the netcdf file
     frame = 1
@@ -112,12 +119,25 @@ contains
     ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_int)
     call handle_err(ierr, 'define _FillValue '//trim(vname))
 
+    if (any(slowfldlist) .ne. '') then
+       do n = 1,size(slowfldlist)
+          vname = trim(slowfldlist(n))
+          if (vname == 'ice')then
+             ierr = pio_def_var(pioid, trim(vname), PIO_REAL, (/xtid, ytid, timid/), varid)
+             call handle_err(ierr, 'define variable '//trim(vname))
+             ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
+             call handle_err(ierr, 'define _FillValue '//trim(vname))
+          end if   ! define vname
+       end do
+    end if
+
     ! end variable definitions
     ierr = pio_enddef(pioid)
     call handle_err(ierr, 'end variable definition')
 
     ! initialize the decomp
     call wav_pio_initdecomp(iodesc2dint, use_int=.true.)
+    call wav_pio_initdecomp(iodesc2d)
     call wav_pio_initdecomp(nspec, iodesc3dk)
 
     ! write the time
@@ -162,6 +182,23 @@ contains
     call pio_write_darray(pioid, varid, iodesc3dk, lva, ierr)
     call handle_err(ierr, 'put variable '//trim(vname))
 
+    if (any(slowfldlist) .ne. '') then
+       do n = 1,size(slowfldlist)
+          vname = trim(slowfldlist(n))
+          if (vname == 'ice')call write_field(vname, ice)
+       end do
+    end if
+
+    !in write_field(vname, field)
+    ! do jsea = 1,nseal_cpl
+    !    call init_get_isea(isea, jsea)
+    !    lvar(jsea) = var(isea)
+    ! end do
+    ! call handle_err(ierr, 'inquire variable '//trim(vname))
+    ! call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
+    ! call pio_write_darray(pioid, varid, iodesc2d, lvar, ierr)
+    ! call handle_err(ierr, 'put variable '//trim(vname))
+
     call pio_syncfile(pioid)
     call pio_freedecomp(pioid, iodesc2dint)
     call pio_freedecomp(pioid, iodesc3dk)
@@ -178,7 +215,7 @@ contains
   !! @param[in]     fname     the time-stamped file name
   !! @param[out]    va        the va array, optional
   !! @param[out]    mapsta    the mapsta array, optional
-  !! @param[out]    mapst2    the mapst2 array, optional
+  !! @param[inout]  mapst2    the mapst2 array, optional
   !!
   !> author DeniseWorthen@noaa.gov
   !> @date 08-26-2024
@@ -189,10 +226,10 @@ contains
     use w3gdatmd    , only : sig
     use w3wdatmd    , only : time, tlev, tice, trho, tic1, tic5, wlv, asf, ice, fpis
 
-    character(len=*)  , intent(in)  :: fname
-    real   , optional , intent(out) :: va(1:nspec,0:nsealm)
-    integer, optional , intent(out) :: mapsta(ny,nx)
-    integer, optional , intent(out)  :: mapst2(ny,nx)
+    character(len=*)  , intent(in)    :: fname
+    real   , optional , intent(out)   :: va(1:nspec,0:nsealm)
+    integer, optional , intent(out)   :: mapsta(ny,nx)
+    integer, optional , intent(inout) :: mapst2(ny,nx)
 
     ! local variables
     type(MPI_Comm)       :: wave_communicator  ! needed for mpi_f08
@@ -202,9 +239,10 @@ contains
     real   , allocatable :: lva(:,:)
     integer, allocatable :: lmap(:)
     integer, allocatable :: lmap2d(:,:)
+    integer, allocatable :: st2init(:,:)
     !-------------------------------------------------------------------------------
 
-    ! cold start, set initial values and return
+    ! cold start, set initial values and return.
     if (trim(fname)  == 'none') then
       tlev(1) = -1
       tlev(2) =  0
@@ -233,10 +271,13 @@ contains
 #endif
     allocate(lva(1:nseal_cpl,1:nspec))
     allocate(lmap2d(1:ny,1:nx))
+    allocate(st2init(1:ny,1:nx))
     allocate(lmap(1:nseal_cpl))
     lva(:,:) = 0.0
     lmap2d(:,:) = 0
     lmap(:) = 0
+    ! save a copy of initial mapst2 from mod_def
+    st2init = mapst2
 
     ! all times are restart times
     tlev = time
@@ -305,10 +346,11 @@ contains
       iy = mapsf(isea,2)
       lmap2d(iy,ix) = global_output(isea)
     end do
-    print *,'XXX ',minval(lmap2d),maxval(lmap2d)
 
     mapsta = mod(lmap2d+2,8) - 2
-    mapst2 = (lmap2d-mapsta)/8
+    mapst2 = st2init + (lmap2d-mapsta)/8
+
+    !if(any(fldist) ne '') reverse write
 
     call pio_syncfile(pioid)
     call pio_freedecomp(pioid, iodesc2dint)
