@@ -76,12 +76,12 @@ contains
     !---------------------------------------------
 
     use ESMF                  , only : ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_SUCCESS, ESMF_LogFlush
-    use ESMF                  , only : ESMF_GridComp, ESMF_GridCompGet, ESMF_Field
+    use ESMF                  , only : ESMF_GridComp, ESMF_GridCompGet, ESMF_Field, ESMF_FieldCreate
     use ESMF                  , only : ESMF_FieldBundle, ESMF_FieldBundleGet, ESMF_FieldBundleCreate
     use ESMF                  , only : ESMF_FieldBundleAdd, ESMF_FieldBundleIsCreated
     use ESMF                  , only : ESMF_FieldBundleWrite, ESMF_FieldBundleDestroy
     use ESMF                  , only : ESMF_Field, ESMF_FieldGet, ESMF_FieldCreate, ESMF_FieldDestroy
-    use ESMF                  , only : ESMF_Mesh, ESMF_TYPEKIND_R8, ESMF_MESHLOC_ELEMENT
+    use ESMF                  , only : ESMF_Mesh, ESMF_TYPEKIND_R8, ESMF_TYPEKIND_I4, ESMF_MESHLOC_ELEMENT
     use med_methods_mod       , only : med_methods_FB_getFieldN, med_methods_FB_getNameN
     use med_constants_mod     , only : czero => med_constants_czero
     use esmFlds               , only : med_fldList_GetfldListFr, med_fldlist_type
@@ -102,6 +102,7 @@ contains
     type(ESMF_Field)          :: flddst
     type(ESMF_Field)          :: dststatusfield
     type(ESMF_FieldBundle)    :: FBdststatus
+    type(ESMF_Mesh)           :: dstmesh
     integer                   :: n1,n2
     integer                   :: nf
     integer                   :: fieldCount
@@ -184,6 +185,15 @@ contains
                       ! Create route handle for target mapindex if route handle is required
                       ! (i.e. mapindex /= mapunset) and route handle has not already been created
                       if (.not. mapexists) then
+
+                         ! create a field to retrieve the dststatus field
+                         call ESMF_FieldGet(flddst, mesh=dstmesh, rc=rc)
+                         if (chkerr(rc,__LINE__,u_FILE_u)) return
+                         dststatname = 'dststat.'//trim(compname(n1))//'.'//trim(compname(n2))//'.'//trim(mapnames(mapindex))
+                         dststatusfield = ESMF_FieldCreate(dstmesh, ESMF_TYPEKIND_I4, name=trim(dststatname), &
+                              meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+                         if (chkerr(rc,__LINE__,u_FILE_u)) return
+
                          call med_fld_GetFldInfo(fldptr, compsrc=n2, mapfile=mapfile)
                          call med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, &
                               mapindex, is_local%wrap%rh(n1,n2,:), mapfile=trim(mapfile), &
@@ -386,11 +396,11 @@ contains
     integer                    , intent(in)    :: mapindex
     type(ESMF_RouteHandle)     , intent(inout) :: routehandles(:)
     character(len=*), optional , intent(in)    :: mapfile
-    type(ESMF_Field), optional , intent(out)   :: dststatusfield
+    type(ESMF_Field), optional , intent(inout)   :: dststatusfield
     integer                    , intent(out)   :: rc
 
     ! local variables
-    type(ESMF_Mesh)            :: dstmesh
+    !type(ESMF_Mesh)            :: dstmesh
     !type(ESMF_Field)           :: dststatusfield, doffield
     type(ESMF_DistGrid)        :: distgrid
     character(len=CS)          :: string
@@ -416,10 +426,10 @@ contains
     call ESMF_LogWrite(trim(subname)//": mapname "//trim(mapname), ESMF_LOGMSG_INFO)
 
     ! create a field to retrieve the dststatus field
-    call ESMF_FieldGet(flddst, mesh=dstmesh, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    dststatusfield = ESMF_FieldCreate(dstmesh, ESMF_TYPEKIND_I4, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    !call ESMF_FieldGet(flddst, mesh=dstmesh, rc=rc)
+    !if (chkerr(rc,__LINE__,u_FILE_u)) return
+    !dststatusfield = ESMF_FieldCreate(dstmesh, ESMF_TYPEKIND_I4, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+    !if (chkerr(rc,__LINE__,u_FILE_u)) return
     ! set local flag to false
     ldstprint = .false.
 
