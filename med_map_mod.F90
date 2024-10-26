@@ -1,4 +1,4 @@
-module med_map_mod
+Amodule med_map_mod
 
   use med_kind_mod          , only : CX=>SHR_KIND_CX, CS=>SHR_KIND_CS, CL=>SHR_KIND_CL, R8=>SHR_KIND_R8
   use med_kind_mod          , only : I4=>SHR_KIND_I4, R4=>SHR_KIND_R4
@@ -174,7 +174,7 @@ contains
                   call med_methods_FB_getFieldN(is_local%wrap%FBImp(n1,n2), 1, flddst, rc)
                   if (chkerr(rc,__LINE__,u_FILE_u)) return
                end if
-
+                         
                 ! Loop over fields
                 fldListFr => med_fldList_getFldListFr(n1)
                 fldptr => fldListFr%fields
@@ -192,38 +192,29 @@ contains
                       ! (i.e. mapindex /= mapunset) and route handle has not already been created
                       if (.not. mapexists) then
 
-                         ! create a field to retrieve the dststatus field
-                         call ESMF_FieldGet(flddst, mesh=dstmesh, rc=rc)
-                         if (chkerr(rc,__LINE__,u_FILE_u)) return
-                         dststatusfield = ESMF_FieldCreate(dstmesh, ESMF_TYPEKIND_I4, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
-                         if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-                         if (dststatus_print) then
-                            ! create a named R4 field to store the dststatusfield for writing
-                            dststatfld = trim(compname(n1))//'_'//trim(compname(n2))//'_'//trim(mapnames(mapindex))
-                            lfield = ESMF_FieldCreate(dstmesh, ESMF_TYPEKIND_R4, meshloc=ESMF_MESHLOC_ELEMENT, &
-                                 name=trim(dststatfld), rc=rc)
-                            if (chkerr(rc,__LINE__,u_FILE_u)) return
-                         end if
-
                          call med_fld_GetFldInfo(fldptr, compsrc=n2, mapfile=mapfile)
                          call med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, &
                               mapindex, is_local%wrap%rh(n1,n2,:), mapfile=trim(mapfile), &
                               dststatusfield=dststatusfield, rc=rc)
                          if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-                         if (dststatus_print) then
-                            if (mapindex /= mapfcopy) then
-                               if (maintask) print *,'XXX0 here0'
-                               call ESMF_FieldGet(dststatusfield, farrayPtr=i4ptr, rc=rc)
-                               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-                               call ESMF_FieldGet(lfield, farrayPtr=dstptr, rc=rc)
-                               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-                               dstptr = real(i4ptr,R4)
-                               call ESMF_FieldBundleAdd(FBdststatus, (/lfield/), rc=rc)
-                               if (maintask) print *,'XXX0 here1'
-                            end if
+                         if (dststatus_print .and. mapindex /= mapfcopy) then
+                            ! create a named R4 field to store the dststatusfield for writing
+                            dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_'//trim(mapnames(mapindex))
+                            call ESMF_FieldGet(dststatusfield, mesh=dstmesh, rc=rc)
+                            if (chkerr(rc,__LINE__,u_FILE_u)) return
+                            lfield = ESMF_FieldCreate(dstmesh, ESMF_TYPEKIND_R4, meshloc=ESMF_MESHLOC_ELEMENT, &
+                                 name=trim(dstatname), rc=rc)
+                            if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+                            call ESMF_FieldGet(dststatusfield, farrayPtr=i4ptr, rc=rc)
+                            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                            call ESMF_FieldGet(lfield, farrayPtr=dstptr, rc=rc)
+                            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                            dstptr = real(i4ptr,R4)
+                            call ESMF_FieldBundleAdd(FBdststatus, (/lfield/), rc=rc)
                          end if
+                         
                       end if ! mapexists
 
                       ! if (ESMF_FieldIsCreated(dststatusfield)) then
@@ -1650,7 +1641,6 @@ contains
     integer                    :: m,n,nn
     integer                    :: fieldCount
     integer                    :: fldcnt(ncomps)
-    !character(CL), allocatable :: fieldnamelist(:)
     character(CL), allocatable :: flds(:,:)
     character(CL)              :: filename, fieldname
     character(len=3)           :: dstcomp
@@ -1666,32 +1656,51 @@ contains
 
     call ESMF_FieldBundleGet(FBdst, fieldCount=fieldCount, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    !allocate(fieldNameList(fieldCount))
-    !call ESMF_FieldBundleGet(FBdst, fieldNameList=fieldNameList, rc=rc)
-    !if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    !allocate(flds(1:ncomps,1:fieldCount))
-
-    ! count the dststatus fields for each component
+    allocate(flds(1:ncomps,1:fieldCount))
+    ! create a list of dststatus fields for each component
     flds = ''
     fldcnt = 0
     do n = 1,fieldCount
        call med_methods_FB_getNameN(FBdst, n, fieldname, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       !fldname = fieldnameList(n)
-
        do nn = 2,ncomps
           dstcomp = trim(compname(nn))
           if (fieldname(5:7) == dstcomp) then
              fldcnt(nn) = fldcnt(nn) + 1
+             flds(nn,fldcnt(nn)) = fieldname
           end if
        end do
     end do
 
+
+    
+    ! Loop over whead/wdata phases
+    do m = 1,2
+       if (m == 2) then
+          !call med_io_enddef(io_file)
+       end if
+
+       do n = 2,ncomps
+          
+          call med_io_write(io_file, FBdst, whead(m), wdata(m), &
+               is_local%wrap%nx(n), is_local%wrap%ny(n), pre='dststatus_', flds=flds(n,fldcnt(n)), use_float = .true. &
+               ntile=is_local%wrap%ntile(n), rc=rc)
+
+          !call med_io_write(auxcomp%files(nf)%io_file, is_local%wrap%FBimp(compid,compid), whead(2), wdata(2), nx, ny, &
+          !     nt=auxcomp%files(nf)%nt, pre=trim(compname(compid))//'Imp', flds=auxcomp%files(nf)%flds, rc=rc)
+          !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end do
+    end do
+
+
+
+
+
+#ifdef test    
+    
     do nn = 2,ncomps
        if (fldcnt(nn) /= 0) then
-
-#ifdef test
 
 
 
@@ -1729,39 +1738,9 @@ contains
 
 
 
-    ! Loop over whead/wdata phases
-    do m = 1,2
-       if (m == 2) then
-          !call med_io_enddef(io_file)
-       end if
 
-       ! write dststatusfields for each dst component
-       do n = 2,ncomps
-          cnt = 0
-          flds = ' '
-          dstcomp = trim(compname(n))
-          do nn = 1,fieldCount
-             call med_methods_FB_getNameN(FBdst, nn, fldname, rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             if (maintask .and. m == 1) print *,'XXX0 calling getNameN',n,dstcomp,nn,fldname(5:7)
 
-             if (fldname(5:7) == dstcomp) then
-                cnt = cnt + 1
-                flds(cnt) = trim(fldname)
-                if (maintask .and. m == 1) print *,'XXX1 ',cnt,trim(flds(cnt))
-             end if
-          end do
-
-          if (maintask .and. m == 1) then
-             do nn = 1,cnt
-                print *,'XXX ',cnt,nn,trim(flds(nn))
-             end do
-          end if
-          !call med_io_write(io_file, FBdst, whead(m), wdata(m), &
-          !     is_local%wrap%nx(n), is_local%wrap%ny(n), pre='dststatus_', flds=flds(1:cnt), use_float = .true. &
-          !     ntile=is_local%wrap%ntile(n), rc=rc)
-       end do
-    end do
+    
 #endif
   end subroutine write_dststatus
 
