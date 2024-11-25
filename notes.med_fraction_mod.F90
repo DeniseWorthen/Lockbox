@@ -33,7 +33,7 @@ module med_fraction_mod
   !  we assume ocn2atm and ice2atm are masked maps
   !  we assume lnd2atm is a global map
   !  we assume that the ice fraction evolves in time but that
-ofrac  !    the land model fraction does not.  the ocean fraction then
+  !    the land model fraction does not.  the ocean fraction then
   !    is just the complement of the ice fraction over the region
   !    of the ocean/ice mask.
   !  we assume that component fractions sent at runtime
@@ -330,7 +330,7 @@ contains
           else
              maptype = mapconsd
           end if
-          ! XXX
+          ! XXX in _init
           ! subroutine med_map_routehandles_initfrom_fieldbundle(n1, n2, FBsrc, FBdst, mapindex, RouteHandle, rc)
           ! calls initfrom_field; RouteHandle(:,:,:)
           ! call med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex, routehandle(n1,n2,:), rc=rc)
@@ -347,11 +347,11 @@ contains
           end if
        end if
        ! XXX ifrac from fbfrac(compice) mapped to atm w/ consd; maps mask to begin w/ Si_imask
-       call ESMF_FieldBundleGet(is_local%wrap%FBfrac(compice), 'ifrac', field=field_src, rc=rc)
+       call ESMF_FieldBundleGet(is_local%wrap%FBfrac(compice), 'ifrac', field=field_src, rc=rc)  !FBfrac(compice) ifrac==Si_imask
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_FieldBundleGet(is_local%wrap%FBfrac(compatm), 'ifrac', field=field_dst, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call med_map_field(field_src, field_dst, is_local%wrap%RH(compice,compatm,:), maptype, rc=rc)
+       call med_map_field(field_src, field_dst, is_local%wrap%RH(compice,compatm,:), maptype, rc=rc) ! map ifrac to atm w/ consd
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -400,7 +400,8 @@ contains
           end if
        end if
        ! XXX
-       ! maps so_omask to atm w/ consd....aofrac should be the same field essentially? it comes from
+       ! maps so_omask to atm w/ consd....should be same as (1-lfrac) on atm grid
+       ! aofrac should be the same field essentially? it comes from
        ! the atm as 1-ifrac*1-lfrac ????
        ! XXX
        call ESMF_FieldBundleGet(is_local%wrap%FBfrac(compocn), fieldname='ofrac', field=field_src, rc=rc)
@@ -425,6 +426,15 @@ contains
           end if
        end if
     end if
+    ! for consd: it is important to note that by default (i.e. using destination area normalization) conservative
+    ! regridding doesn't normalize the interpolation weights by the destination fraction. this means that for a
+    ! destination grid which only partially overlaps the source grid the destination field which is output from
+    ! the regrid operation should be divided by the corresponding destination fraction to yield the true interpolated
+    ! values for cells which are only partially covered by the source grid. the fraction also needs to be included when
+    ! computing the total source and destination integrals. to include the fraction in the conservative weights, the
+    ! user can specify the fraction area normalization type. this can be done by specifying "--norm_type fracarea” on
+    ! the command line.
+    ! dst_field(i)=dst_field(i)/dst_frac(i)
 
     !---------------------------------------
     ! Set 'lfrin' in FBFrac(compatm)
