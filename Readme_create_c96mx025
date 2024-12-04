@@ -1,0 +1,38 @@
+using a noaero/nowave rt directory, create cpld.c96mx100
+cp -r cpld.c96mx100/ cpld.c96mx025
+
+!! Fix files
+!get the tiled fix fields and then change the file names in input.nml to contain the mx string
+! remove the non-mx string files
+cp /work/noaa/global/glopara/fix/orog/20240917/C96/sfc/C96.mx025* .
+
+! get the orog
+cd INPUT
+cp /work/noaa/global/glopara/fix/orog/20240917/C96/C96.mx025* .
+! rename w/o mx string---(code should be able to deal w/ this!)
+
+! get grid_spec
+ cp /work/noaa/global/glopara/fix/cpl/20230526/aC96o025/grid_spec.nc
+
+! get ocn/ice fix files; remove mx100 versions
+cd INPUT
+cp /work/noaa/epic/hercules/UFS-WM_RT/NEMSfv3gfs/input-data-20240501/CICE_FIX/025/* .
+cp /work/noaa/epic/hercules/UFS-WM_RT/NEMSfv3gfs/input-data-20240501/MOM6_FIX/025/* .
+! get parsed MOM_input from bmark RT run directory; remember to set WAVES=false
+cp /work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_3723754/cpld_bmark_p8_intel/INPUT/MOM_input .
+
+! get ocn/ice ICs; cice IC goes into rundirectory, mom into INPUT
+cp /work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_3723754/cpld_bmark_p8_intel/INPUT/MOM*res* .
+cd ../
+cp /work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_3723754/cpld_bmark_p8_intel/cice_model.res.nc .
+
+! edit ufs-configure for mesh names and timesteps and eps_imesh = 1.0e-1
+! match bmark
+! set dtatmos=dtice=720, need to modify model_configure and ice_in
+! set pet bounds and mod job_card
+! edit nprocs,block sizes in ice-in, grid file names
+
+! ooops, 720 doesn't divide....need to make it 600 for atm and ice
+
+! another gotcha...the data_table file needs the runoff name
+"OCN", "runoff", "runoff", "./INPUT/runoff.daitren.clim.1440x1080.v20180328.nc", "none" ,  1.0

@@ -1,0 +1,43 @@
+cancel data/all
+cancel mode logo
+set wind/asp=.6
+
+!define axis/t="22-mar-2021:06:15:00":"01-apr-2021:06:00:00":15/units=minutes tax
+!define axis/t="22-mar-2021:06:15:00":"31-may-2021:03:00:00":15/units=minutes ta
+define axis/t="01-oct-2011:01:30:00":"03-oct-2011:00:00:00":30/units=minutes tax
+define grid/t=tax gd
+
+!let dirname="datm.base/"
+!let dirname="datm.nodup/"
+let dirname="$1"
+
+!let filename="vmpeak.ww3"
+!let filename="vmrss.ww3"
+let filename="pctcommt.ww3"
+
+file/var=pdat/grid=gd `dirname`/`filename`.0208.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0308.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0408.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0508.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0608.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0708.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0808.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0908.dat
+file/var=pdat/grid=gd `dirname`/`filename`.1008.dat
+file/var=pdat/grid=gd `dirname`/`filename`.1023.dat
+
+file/var=pdat/grid=gd `dirname`/`filename`.0258.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0358.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0458.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0558.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0658.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0758.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0858.dat
+file/var=pdat/grid=gd `dirname`/`filename`.0958.dat
+
+let rdat=pdat/pdat[l=1]
+
+!plot pdat[d=1],pdat[d=2],pdat[d=3],pdat[d=4],pdat[d=5],pdat[d=6],pdat[d=7],pdat[d=8],pdat[d=9],pdat[d=10]
+!plot/nolab/vlim=0.995:1.030 rdat[d=1],rdat[d=2],rdat[d=3],rdat[d=4],rdat[d=5],rdat[d=6],rdat[d=7],rdat[d=8],rdat[d=9],rdat[d=10],rdat[d=11],rdat[d=12],rdat[d=13],rdat[d=14],rdat[d=15],rdat[d=16],rdat[d=17],rdat[d=18]
+
+plot/nolab/vlim=50:100 pdat[d=1],pdat[d=2],pdat[d=3],pdat[d=4],pdat[d=5],pdat[d=6],pdat[d=7],pdat[d=8],pdat[d=9],pdat[d=10],pdat[d=11],pdat[d=12],pdat[d=13],pdat[d=14],pdat[d=15],pdat[d=16],pdat[d=17],pdat[d=18]

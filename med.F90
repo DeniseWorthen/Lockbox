@@ -59,14 +59,15 @@ module MED
   public  SetServices
   public  SetVM
   private InitializeP0
-  private AdvertiseFields ! advertise fields
+  private AdvertiseFields                   ! advertise fields
   private RealizeFieldsWithTransferProvided ! realize connected Fields with transfer action "provide"
-  private ModifyDecompofMesh ! optionally modify the decomp/distr of transferred Grid/Mesh
-  private RealizeFieldsWithTransferAccept ! realize all Fields with transfer action "accept"
-  private DataInitialize     ! finish initialization and resolve data dependencies
+  private ModifyDecompofMesh                ! optionally modify the decomp/distr of transferred Grid/Mesh
+  private RealizeFieldsWithTransferAccept   ! realize all Fields with transfer action "accept"
+  private DataInitialize                    ! finish initialization and resolve data dependencies
   private SetRunClock
   private med_meshinfo_create
   private med_grid_write
+  private med_write_dststatus
   private med_finalize
 
   character(len=*), parameter :: u_FILE_u  = &
@@ -1003,8 +1004,6 @@ contains
     type(ESMF_VM)              :: vm
     integer                    :: n
     character(len=*), parameter :: subname = '('//__FILE__//':RealizeFieldsWithTransferProvided)'
-    ! debug
-    integer :: lpet
     !-----------------------------------------------------------
 
     call ESMF_LogWrite(trim(subname)//": called", ESMF_LOGMSG_INFO)
@@ -1017,7 +1016,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
      ! Initialize the internal state mediator vm
-     call ESMF_GridCompGet(gcomp, vm=vm, localpet=lpet, rc=rc)
+     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
      if (ChkErr(rc,__LINE__,u_FILE_u)) return
      is_local%wrap%vm = vm
 
@@ -1026,26 +1025,18 @@ contains
       if (ESMF_StateIsCreated(is_local%wrap%NStateImp(n), rc=rc)) then
          call ESMF_StateSet(is_local%wrap%NStateImp(n), stateIntent=ESMF_StateIntent_Import, rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-         call med_fldList_Realize(lpet,is_local%wrap%NStateImp(n), med_fldList_GetfldListFr(n), &
+         call med_fldList_Realize(is_local%wrap%NStateImp(n), med_fldList_GetfldListFr(n), &
               is_local%wrap%flds_scalar_name, is_local%wrap%flds_scalar_num, &
               tag=subname//':Fr_'//trim(compname(n)), rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-         !call FB_diagnose(is_local%wrap%NStateImp(n), string=trim(compname(n))//' import ', rc=rc)
-         !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
       endif
       if (ESMF_StateIsCreated(is_local%wrap%NStateExp(n), rc=rc)) then
           call ESMF_StateSet(is_local%wrap%NStateExp(n), stateIntent=ESMF_StateIntent_Export, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call med_fldList_Realize(lpet,is_local%wrap%NStateExp(n), med_fldList_getfldListTo(n), &
-               is_local%wrap%flds_scalar_name, is_local%wrap%flds_scalar_num, &
-               tag=subname//':To_'//trim(compname(n)), rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-          !call FB_diagnose(is_local%wrap%NStateExp(n), string=trim(compname(n))//' export ', rc=rc)
-          !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
+          call med_fldList_Realize(is_local%wrap%NStateExp(n), med_fldList_getfldListTo(n), &
+              is_local%wrap%flds_scalar_name, is_local%wrap%flds_scalar_num, &
+              tag=subname//':To_'//trim(compname(n)), rc=rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       endif
     enddo
 
@@ -1632,7 +1623,7 @@ contains
     use med_phases_post_lnd_mod , only : med_phases_post_lnd
     use med_phases_post_glc_mod , only : med_phases_post_glc
     use med_phases_post_ocn_mod , only : med_phases_post_ocn
-    use med_phases_post_rof_mod , only : med_phases_post_rof
+    use med_phases_post_rof_mod , only : med_phases_post_rof_init, med_phases_post_rof
     use med_phases_post_wav_mod , only : med_phases_post_wav
     use med_phases_ocnalb_mod   , only : med_phases_ocnalb_run
     use med_phases_aofluxes_mod , only : med_phases_aofluxes_init_fldbuns
@@ -1641,8 +1632,6 @@ contains
     use med_map_mod             , only : med_map_routehandles_init, med_map_packed_field_create
     use med_io_mod              , only : med_io_init
     use esmFlds                 , only : med_fldList_GetaofluxfldList
-    !debug
-    use ESMF, only : ESMF_END_ABORT, ESMF_Finalize, ESMF_FieldGet, ESMF_GridCompGet,ESMF_VMGet
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -1668,21 +1657,11 @@ contains
     real(r8)                           :: real_nx, real_ny, real_ntile
     character(len=CX)                  :: msgString
     character(len=*), parameter :: subname = '('//__FILE__//':DataInitialize)'
-    !debug
-    type(ESMF_vm) :: vm
-    integer :: localPet
-    type(ESMF_Field)  :: lfield
-    real(R8), pointer :: lfarrayptr(:,:)
     !-----------------------------------------------------------
 
     call ESMF_LogWrite(trim(subname)//": called", ESMF_LOGMSG_INFO)
     rc = ESMF_SUCCESS
     if (profile_memory) call ESMF_VMLogMemInfo("Entering "//trim(subname))
-
-    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMGet(vm, localPet=localPet, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", value="false", rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1946,6 +1925,10 @@ contains
          call med_phases_prep_rof_init(gcomp, rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
+      if (is_local%wrap%comp_present(comprof)) then
+         call med_phases_post_rof_init(gcomp, rc=rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      end if
       !---------------------------------------
       ! Set the data initialize flag to false
       !---------------------------------------
@@ -2141,33 +2124,12 @@ contains
           write(logunit,*)
           write(logunit,'(a)') trim(subname)//"Initialize-Data-Dependency allDone check Passed"
        end if
-
        do n1 = 1,ncomps
-          if (is_local%wrap%comp_present(n1) .and. ESMF_StateIsCreated(is_local%wrap%NStateImp(n1),rc=rc)) then
-             if(localPet==0)write(*,*)'AAA '//trim(compname(n1))//' is present and nstate(n1) created'
-          end if
-       end do
-
-
-       do n1 = ncomps,2,-1
           if (maintask) then
              write(logunit,*)
-             write(logunit,'(a)') trim(subname)//" "//trim(compname(n1))
+             write(logunit,'(a,2L2)') trim(subname)//" "//trim(compname(n1)), is_local%wrap%comp_present(n1), ESMF_StateIsCreated(is_local%wrap%NStateImp(n1),rc=rc)
           end if
           if (is_local%wrap%comp_present(n1) .and. ESMF_StateIsCreated(is_local%wrap%NStateImp(n1),rc=rc)) then
-
-             if (n1 .ne. compatm) then
-                call ESMF_StateGet(is_local%wrap%NstateImp(n1), itemName='cpl_scalars', field=lfield, rc=rc)
-                if(localPet==0)print *,'XX2 get cpl_scalars ',n1
-                if (chkerr(rc,__LINE__,u_FILE_u)) return
-                call ESMF_FieldGet(lfield, farrayPtr = lfarrayptr, rc=rc)
-                if (chkerr(rc,__LINE__,u_FILE_u)) return
-                if(localPet==0)write(*,'(a,5i8)')'YYY0 '//trim(compname(n1)),localPet,dbug_flag,n1, &
-                     size(lfarrayptr,1), size(lfarrayptr,2)
-                if(localPet==0)write(*,*)'YYY00 ',lfarrayptr
-                if(localPet==0)write(*,'(a,2g16.7)')'YYY1 ',minval(lfarrayptr),maxval(lfarrayptr)
-             end if
-
              call State_GetScalar(scalar_value=real_nx, &
                   scalar_id=is_local%wrap%flds_scalar_index_nx, &
                   state=is_local%wrap%NstateImp(n1), &
@@ -2193,15 +2155,15 @@ contains
              end if
              is_local%wrap%nx(n1) = nint(real_nx)
              is_local%wrap%ny(n1) = nint(real_ny)
+
              write(msgString,'(3i8)') is_local%wrap%nx(n1), is_local%wrap%ny(n1), is_local%wrap%ntile(n1)
+             call ESMF_LogWrite(trim(subname)//":"//trim(compname(n1))//":"//trim(msgString), ESMF_LOGMSG_INFO)
              if (maintask) then
                 write(logunit,'(a)') 'global nx,ny,ntile sizes for '//trim(compname(n1))//":"//trim(msgString)
              end if
-             call ESMF_LogWrite(trim(subname)//":"//trim(compname(n1))//":"//trim(msgString), ESMF_LOGMSG_INFO)
           end if
        end do
        if (maintask) write(logunit,*)
-       call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
        !---------------------------------------
        ! Initialize mediator IO
@@ -2217,6 +2179,14 @@ contains
        call med_diag_zero(mode='all', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+       !---------------------------------------
+       ! write dstStatus fields if requested
+       !---------------------------------------
+       if (dststatus_print) then
+          call med_dststatus_write(gcomp, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+       
        !---------------------------------------
        ! read mediator restarts
        !---------------------------------------
