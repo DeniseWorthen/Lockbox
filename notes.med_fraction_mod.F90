@@ -436,6 +436,24 @@ contains
     ! the command line.
     ! dst_field(i)=dst_field(i)/dst_frac(i)
 
+
+    ! By default (or if "\verb+--+norm\_type dstarea"), the weight $w_{ij}$ for a particular source cell $i$ and
+    ! destination cell $j$ are calculated as $w_{ij}=f_{ij} * A_{si}/A_{dj}$. In this equation $f_{ij}$ is the
+    ! fraction of the source cell $i$ contributing to destination cell $j$, and $A_{si}$ and $A_{dj}$ are the areas
+    ! of the source and destination cells. If "\verb+--+norm\_type fracarea", then the weights are further divided
+    ! by the destination fraction. In other words, in that case $w_{ij}=f_{ij} * A_{si}/(A_{dj}*D_j)$ where $D_j$ is
+    ! fraction of the destination cell that intersects the unmasked source grid.
+
+    ! for dstarea (default, or with norm=dstarea)
+    ! f_ij = frac_of_src_cell_on_dst "the frac of src cell i contributing to dst cell j"
+    ! w_ij = f_ij * A_i/A_j
+    !
+    ! for consf (with norm=fracarea) then
+    ! w_ij = f_ij * (A_i/A_j)*(1/d_ij) where d_ij = frac of dst that intersects unmasked src
+
+    ! dst_field ~ sum( dst(row) + Si*src(col)); Si == w_ij
+
+    !
     !---------------------------------------
     ! Set 'lfrin' in FBFrac(compatm)
     ! ---------------------------------------
