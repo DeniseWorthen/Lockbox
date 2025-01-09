@@ -19,29 +19,29 @@ ores=900
 sorc=/work2/noaa/stmp/dworthen/REGRESSION_TEST/cpld_control_c${ares}_intel/RESTART
 
 # MOM6
-dest=/work2/noaa/stmp/dworthen/input-data-20240501/MOM6_IC/${ores}/2021032306
-cp ${sorc}/${datetype1}.MOM.res.nc  ${dest}/MOM.res.nc
+#dest=/work2/noaa/stmp/dworthen/input-data-20240501/MOM6_IC/${ores}/2021032306
+#cp ${sorc}/${datetype1}.MOM.res.nc  ${dest}/MOM.res.nc
 #cp ${sorc}/RESTART/MOM.res.${datetype2}-00-00.nc ${dest}/INPUT/MOM.res.nc
 #cp ${sorc}/RESTART/MOM.res.${datetype2}-00-00_1.nc ${dest}/INPUT/MOM.res_1.nc
 #cp ${sorc}/RESTART/MOM.res.${datetype2}-00-00_2.nc ${dest}/INPUT/MOM.res_2.nc
 #cp ${sorc}/RESTART/MOM.res.${datetype2}-00-00_3.nc ${dest}/INPUT/MOM.res_3.nc
 
 # CICE6
-dest=/work2/noaa/stmp/dworthen/input-data-20240501/CICE_IC/${ores}/2021032306
-cp ${sorc}/iced.${datetype3}.nc ${dest}/iced.${datetype3}.nc
-ls -1 ${dest}/INPUT/iced.${datetype3}.nc>${dest}/ice.restart_file
+# dest=/work2/noaa/stmp/dworthen/input-data-20240501/CICE_IC/${ores}/2021032306
+# cp ${sorc}/iced.${datetype3}.nc ${dest}/iced.${datetype3}.nc
+# ls -1 ${dest}/iced.${datetype3}.nc>${dest}/ice.restart_file
 
-# CMEPS
-dest=/work2/noaa/stmp/dworthen/input-data-20240501/CMEPS_IC/C${ares}mx${ores}/2021032306
-cp ${sorc}/ufs.cpld.cpl.r.${datetype3}.nc ${dest}
-ls -1 ${dest}/ufs.cpld.cpl.r.${datetype3}.nc>${dest}/rpointer.cpl
+# # CMEPS
+# dest=/work2/noaa/stmp/dworthen/input-data-20240501/CMEPS_IC/C${ares}mx${ores}/2021032306
+# cp ${sorc}/ufs.cpld.cpl.r.${datetype3}.nc ${dest}
+# ls -1 ${dest}/ufs.cpld.cpl.r.${datetype3}.nc>${dest}/rpointer.cpl
 
 
-#sorc="/scratch1/NCEPDEV/nems/Nick.Szapiro/tasks/warmStart_c48-5deg/IC"
-#dest="/scratch1/NCEPDEV/stmp4/Denise.Worthen/input-data_20240501/FV3_input_data48/INPUT_L127_mx500/2021032306"
+# #sorc="/scratch1/NCEPDEV/nems/Nick.Szapiro/tasks/warmStart_c48-5deg/IC"
+# #dest="/scratch1/NCEPDEV/stmp4/Denise.Worthen/input-data_20240501/FV3_input_data48/INPUT_L127_mx500/2021032306"
 
-#FV3 restarts
-dest="/work2/noaa/stmp/dworthen/input-data-20240501/FV3_input_data${ares}/INPUT_L41_mx900/2021032306"
+# #FV3 restarts
+ dest="/work2/noaa/stmp/dworthen/input-data-20240501/FV3_input_data${ares}/INPUT_L41_mx900/2021032306"
 
 #cp ${sorc}/${datetype1}.coupler.res  ${dest}/coupler.res
 cp ${sorc}/${datetype1}.fv_core.res.nc  ${dest}/fv_core.res.nc
