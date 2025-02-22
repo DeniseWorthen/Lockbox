@@ -1,0 +1,72 @@
+;;========================================
+;; start the emacsserver that listens to emacsclient
+;(server-start)
+
+;;; XEmacs backwards compatibility file
+;(setq user-init-file
+;      (expand-file-name "init.el"
+;                        (expand-file-name ".xemacs" "~")))
+;(setq custom-file
+;      (expand-file-name "custom.el"
+;                        (expand-file-name ".xemacs" "~")))
+
+
+;(require 'package)
+;(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+;(package-initialize)
+
+
+;(setq lazy-highlight-cleanup nil)
+(setq column-number-mode t)
+(setq show-paren-mode 1)
+(setq-default fill-column 100)
+
+(setq-default indent-tabs-mode nil)
+(setq fortran-blink-matching-if nil)
+
+;(load-file user-init-file)
+;(load-file custom-file)
+
+; Fortran-90 mode
+(autoload 'f90-mode "f90"
+          "Major mode for editing Fortran 90 code in free format." t)
+
+;; Set Fortran and Fortran 90 mode for appropriate extensions
+(setq auto-mode-alist
+      (cons '("\\.F90$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.pf$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.fpp$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.F$" . fortran-mode) auto-mode-alist))
+
+;(defun xml-format ()
+;  (interactive)
+;  (save-excursion
+;    (shell-command-on-region (mark) (point) "xmllint --format -" (buffer-name) t)
+;  )
+;)
+
+(defun batch-replace-strings (replacement-alist)
+  "Prompt user for pairs of strings to search/replace, then do so in the current buffer"
+  (interactive (list (batch-replace-strings-prompt)))
+  (dolist (pair replacement-alist)
+    (save-excursion
+      (replace-string (car pair) (cdr pair)))))
+
+(defun batch-replace-strings-prompt ()
+  "prompt for string pairs and return as an association list"
+  (let (from-string
+        ret-alist)
+    (while (not (string-equal "" (setq from-string (read-string "String to search (RET to stop): "))))
+      (setq ret-alist
+            (cons (cons from-string (read-string (format "Replace %s with: " from-string)))
+                  ret-alist)))
+    ret-alist))
+
+(add-hook 'before-save-hook
+          'delete-trailing-whitespace)
