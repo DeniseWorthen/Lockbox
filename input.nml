@@ -2,7 +2,7 @@
   blocksize = 32
   chksum_debug = .false.
   dycore_only = .false.
-  ccpp_suite = 'FV3_C12'
+  ccpp_suite = 'FV3_GFS_v16'
 /
 
 &diag_manager_nml
@@ -23,16 +23,16 @@
 &fv_core_nml
   layout = 1,1
   io_layout = 1,1
-  npx = 13
-  npy = 13
+  npx = 49
+  npy = 49
   ntiles = 6
-  npz = 41
+  npz = 127
   grid_type = -1
   make_nh = .true.
   fv_debug = .false.
   range_warn = .false.
   reset_eta = .false.
-  n_sponge = 5
+  n_sponge = 42
   nudge_qv = .true.
   nudge_dz = .false.
   tau = 10.
@@ -78,7 +78,7 @@
   hord_tr = 8
   adjust_dry_mass = .false.
   consv_te = 1.
-  do_sat_adj = .false.
+  do_sat_adj = .true.
   consv_am = .false.
   fill = .true.
   dwind_2d = .false.
@@ -94,7 +94,7 @@
 
 &external_ic_nml
   filtered_terrain = .true.
-  levp = 42
+  levp = 128
   gfs_dwinds = .true.
   checker_tr = .false.
   nt_checker = 0
@@ -258,35 +258,35 @@
   FNTSFC   = 'RTGSST.1982.2012.monthly.clim.grb'
   FNSNOC   = 'global_snoclim.1.875.grb'
   FNZORC   = 'igbp'
-  FNALBC   = 'C12.snowfree_albedo.tileX.nc'
-  FNALBC2  = 'C12.facsf.tileX.nc'
-  FNAISC   = 'IMS-NIC.blended.ice.monthly.clim.grb'
-  FNTG3C   = 'C12.substrate_temperature.tileX.nc'
-  FNVEGC   = 'C12.vegetation_greenness.tileX.nc'
-  FNVETC   = 'C12.vegetation_type.tileX.nc'
-  FNSOTC   = 'C12.soil_type.tileX.nc'
-  FNSOCC   = 'C12.soil_color.tileX.nc'
-  FNSMCC   = 'global_soilmgldas.statsgo.t92.192.94.grb'
-  FNMSKH   = 'global_slmask.t62.192.94.grb'
+  FNALBC   = 'global_snowfree_albedo.bosu.t62.192.94.rg.grb',
+  FNALBC2  = 'global_albedo4.1x1.grb'
+  FNAISC   = 'CFSR.SEAICE.1982.2012.monthly.clim.grb'
+  FNTG3C   = 'global_tg3clim.2.6x1.5.grb'
+  FNVEGC   = 'global_vegfrac.0.144.decpercent.grb'
+  FNVETC   = 'global_vegtype.igbp.t62.192.94.rg.grb',
+  FNSOTC   = 'global_soiltype.statsgo.t62.192.94.rg.grb',
+  FNSOCC   = ''
+  FNSMCC   = 'global_soilmgldas.statsgo.t92.192.94.grb',
+  FNMSKH   = 'global_slmask.t62.192.94.grb',
   FNTSFA   = ''
   FNACNA   = ''
   FNSNOA   = ''
-  FNVMNC   = 'C12.vegetation_greenness.tileX.nc'
-  FNVMXC   = 'C12.vegetation_greenness.tileX.nc'
-  FNSLPC   = 'C12.slope_type.tileX.nc'
-  FNABSC   = 'C12.maximum_snow_albedo.tileX.nc'
+  FNVMNC   = 'global_shdmin.0.144x0.144.grb'
+  FNVMXC   = 'global_shdmax.0.144x0.144.grb'
+  FNSLPC   = 'global_slope.1x1.grb'
+  FNABSC   = 'global_mxsnoalb.uariz.t62.192.94.rg.grb',
   LDEBUG   = .false.
   FSMCL(2) = 99999
   FSMCL(3) = 99999
   FSMCL(4) = 99999
-  LANDICE  = .false.
+  LANDICE  = .true.
   FTSFS    = 90
   FAISL    = 99999
   FAISS    = 99999
   FSNOL    = 99999
   FSNOS    = 99999
-  FSICL    = 0
-  FSICS    = 0
+  FSICL    = 99999
+  FSICS    = 99999
   FTSFL    = 99999
   FVETL    = 99999
   FSOTL    = 99999
