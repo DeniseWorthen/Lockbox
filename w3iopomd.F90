@@ -505,32 +505,35 @@ CONTAINS
                MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
                MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
                MAPSTA(IY(4),IX(4)) .EQ. 0 )  foundonland(ipt) = 1
-          !
-          !     Store interpolation data
-          !
-          NOPTS  = NOPTS + 1
-          !
-          PTLOC (1,NOPTS) = XPT(IPT)
-          PTLOC (2,NOPTS) = YPT(IPT)
-#ifdef W3_RTD
-          !!   Store the standard lon/lat in PTLOC for output purpose, assuming
-          !!   they are not used for any inside calculation.  JGLi12Jun2012
-          PTLOC (1,NOPTS) = StdLon(IPT)
-          PTLOC (2,NOPTS) = StdLat(IPT)
-#endif
-          !
-          DO K = 1,4
-            IPTINT(1,K,NOPTS) = IX(K)
-            IPTINT(2,K,NOPTS) = IY(K)
-            PTIFAC(K,NOPTS) = RD(K)
-          END DO
 
-          PTNME(NOPTS) = PNAMES(IPT)
-          !
+          if (notfound(ipt) .eq. 0 .and. foundonland(ipt) .eq. 0) then
+            !
+            !     Store interpolation data
+            !
+            NOPTS  = NOPTS + 1
+            !
+            PTLOC (1,NOPTS) = XPT(IPT)
+            PTLOC (2,NOPTS) = YPT(IPT)
+#ifdef W3_RTD
+            !!   Store the standard lon/lat in PTLOC for output purpose, assuming
+            !!   they are not used for any inside calculation.  JGLi12Jun2012
+            PTLOC (1,NOPTS) = StdLon(IPT)
+            PTLOC (2,NOPTS) = StdLat(IPT)
+#endif
+            !
+            DO K = 1,4
+              IPTINT(1,K,NOPTS) = IX(K)
+              IPTINT(2,K,NOPTS) = IY(K)
+              PTIFAC(K,NOPTS) = RD(K)
+            END DO
+
+            PTNME(NOPTS) = PNAMES(IPT)
+            !
+          end if
         END DO ! End loop over output points (IPT).
       end if ! iaproc=1
 
-      ! log the notfound list
+      !log the notfound list
       if (iaproc .eq. naperr) then
         do ipt = 1,npt
           if (notfound(ipt) .eq. 1 ) then
@@ -554,6 +557,24 @@ CONTAINS
       end if
       deallocate(notfound)
       deallocate(foundonland)
+#ifdef W3_MPI
+      ! Broadcast weight info to all MPI tasks:
+
+      !First broadcast NOPTS, used in the next calls:
+      CALL MPI_BCAST(NOPTS,1,MPI_INTEGER,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
+
+      CALL MPI_BCAST(PTLOC,2*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTIFAC,4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(IPTINT(:,:,1:NOPTS),2*4*NOPTS,MPI_INTEGER,0,MPI_COMM_IOPP,IERR_MPI)
+
+      !Send point names individually
+      DO IPT=1, NOPTS
+        CALL MPI_BCAST(PTNME(IPT),40,MPI_CHARACTER,0,MPI_COMM_IOPP,IERR_MPI)
+      ENDDO
+
+      CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
+#endif
     ELSE
       ! Saved weight file exists, read weights from file
       IF ( IAPROC .EQ. 1 ) THEN
@@ -621,16 +642,16 @@ CONTAINS
       ! Broadcast weight info to all MPI tasks:
 
       !First broadcast NOPTS, used in the next calls:
-      CALL MPI_BCAST(NOPTS,1,MPI_INTEGER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(NOPTS,1,MPI_INTEGER,0,MPI_COMM_IOPP,IERR_MPI)
       CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
 
-      CALL MPI_BCAST(PTLOC,2*NPT,MPI_REAL,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(PTIFAC,4*NPT,MPI_REAL,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(IPTINT(:,:,1:NOPTS),2*4*NOPTS,MPI_INTEGER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTLOC,2*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTIFAC,4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(IPTINT(:,:,1:NOPTS),2*4*NOPTS,MPI_INTEGER,0,MPI_COMM_IOPP,IERR_MPI)
 
       !Send point names individually
       DO IPT=1, NOPTS
-        CALL MPI_BCAST(PTNME(IPT),40,MPI_CHARACTER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+        CALL MPI_BCAST(PTNME(IPT),40,MPI_CHARACTER,0,MPI_COMM_IOPP,IERR_MPI)
       ENDDO
 
       CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
