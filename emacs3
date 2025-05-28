@@ -1,0 +1,79 @@
+;;========================================
+;; start the emacsserver that listens to emacsclient
+(server-start)
+
+(require 'server)
+(server-force-delete)  ;; WARNING: Kills any existing edit server
+
+;;; XEmacs backwards compatibility file
+;(setq user-init-file
+;      (expand-file-name "init.el"
+;                        (expand-file-name ".xemacs" "~")))
+;(setq custom-file
+;      (expand-file-name "custom.el"
+;                        (expand-file-name ".xemacs" "~")))
+
+;(setq lazy-highlight-cleanup nil)
+(setq column-number-mode t)
+(setq show-paran-mode-delay 0)
+(show-paren-mode 1)
+
+(setq-default indent-tabs-mode nil)
+(setq fortran-blink-matching-if nil)
+
+;(load-file user-init-file)
+;(load-file custom-file)
+;(load "columnize" nil t)
+
+; Fortran-90 mode
+(autoload 'f90-mode "f90"
+          "Major mode for editing Fortran 90 code in free format." t)
+
+;; Set Fortran and Fortran 90 mode for appropriate extensions
+(setq auto-mode-alist
+      (cons '("\\.F90$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.pf$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.fpp$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.F$" . fortran-mode) auto-mode-alist))
+
+;(defun xml-format ()
+;  (interactive)
+;  (save-excursion
+;    (shell-command-on-region (mark) (point) "xmllint --format -" (buffer-name) t)
+;  )
+;)
+
+(add-hook 'before-save-hook
+          'delete-trailing-whitespace)
+
+(setq auto-mode-alist (cons '("\.ncl$" . ncl-mode) auto-mode-alist))
+
+    ; this line associates ncl-mode with the lisp package that defines it.
+    (autoload 'ncl-mode "$HOME/bin/ncl.el")
+
+    ; a hook is a list of functions that get executed under certain
+    ; conditions.
+    (add-hook 'ncl-mode-hook
+       (lambda ()  ; lambda is an anonymous function. e.g. has no name.
+    ; highlight comments
+        (set-face-foreground font-lock-comment-face "FireBrick")
+    ; highlight strings
+        (set-face-foreground font-lock-string-face "Salmon")
+    ; highlight keywords, array descriptors, and tests
+        (set-face-foreground font-lock-keyword-face "Purple")
+    ; highlight built-in functions
+        (set-face-foreground font-lock-builtin-face "Blue")
+    ; highlight gsn* functions
+        (set-face-foreground font-lock-variable-name-face "SteelBlue")
+    ; highlight shea_util and contributed functions
+        (set-face-foreground font-lock-function-name-face  "CadetBlue")
+    ; highlight resources
+        (set-face-foreground font-lock-constant-face  "ForestGreen")
+         )
+    )
+
+;    (autoload 'columnize-text "columnize.el"
+;              "Formats a list of items into columns (pillars)" t)
