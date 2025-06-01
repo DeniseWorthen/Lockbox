@@ -9,8 +9,8 @@ module wav_restart_mod
   use w3parall      , only : init_get_isea
   use w3adatmd      , only : nsealm
   use w3gdatmd      , only : nth, nk, nx, ny, mapsf, nspec, nseal, nsea
-  use w3idatmd      , only : flice, flic1, flic5, fllev
-  use w3odatmd      , only : ndso, iaproc, slow_coupling
+  use w3odatmd      , only : ndso, iaproc, addrstflds, rstfldlist, rstfldcnt, multifield
+  use w3wdatmd      , only : ice
   use wav_pio_mod   , only : pio_iotype, pio_ioformat, wav_pio_subsystem
   use wav_pio_mod   , only : handle_err, wav_pio_initdecomp
 #ifdef W3_PDLIB
@@ -29,17 +29,15 @@ module wav_restart_mod
   type(io_desc_t)   :: iodesc2d
   type(io_desc_t)   :: iodesc3dk
 
-  integer(kind=Pio_Offset_Kind) :: frame
+  integer(kind=PIO_OFFSET_KIND) :: frame
 
   public :: write_restart
   public :: read_restart
 
   ! used/reused in module
+  character(len=4)  :: cspec
   character(len=12) :: vname
-  integer           :: ik, ith, ix, iy, kk, nseal_cpl, isea, jsea, ierr
-
-  integer, parameter :: maxslow = 4
-  character(len=12)  :: slowfldlist(maxslow) = (/'ice ', 'iceh', 'ice5', 'wllev')/
+  integer           :: ik, ith, ix, iy, kk, isea, jsea, ierr, i
 
   !===============================================================================
 contains
@@ -65,11 +63,11 @@ contains
 
     ! local variables
     integer              :: timid, xtid, ytid, ztid
-    integer              :: nmode
-    integer              :: dimid(4)
+    integer              :: nseal_cpl, nmode
+    integer              :: dimid3(3)
+    integer              :: dimid4(4)
     real   , allocatable :: lva(:,:)
     integer, allocatable :: lmap(:)
-    real   , allocatable :: lvar(:)
     !-------------------------------------------------------------------------------
 
 #ifdef W3_PDLIB
@@ -77,9 +75,13 @@ contains
 #else
     nseal_cpl = nseal
 #endif
+    ! if (.not. multifield) then
+    !   allocate(lva(1:nseal_cpl,1:nspec))
+    !   lva(:,:) = 0.0
+    ! end if
     allocate(lmap(1:nseal_cpl))
-    allocate(lva(1:nseal_cpl,1:nspec))
-    allocate(lvar(1:nseal_cpl))
+    lmap(:) = 0
+
 
     ! create the netcdf file
     frame = 1
@@ -95,10 +97,12 @@ contains
 
     ierr = pio_def_dim(pioid,    'nx',    nx, xtid)
     ierr = pio_def_dim(pioid,    'ny',    ny, ytid)
-    ierr = pio_def_dim(pioid, 'nspec', nspec, ztid)
+    if (.not. multifield) then
+      ierr = pio_def_dim(pioid, 'nspec', nspec, ztid)
+    end if
     ierr = pio_def_dim(pioid,  'time', PIO_UNLIMITED, timid)
 
-    !define the time variable
+    ! define the time variable
     ierr = pio_def_var(pioid, 'time', PIO_DOUBLE, (/timid/), varid)
     call handle_err(ierr,'def_timevar')
     ierr = pio_put_att(pioid, varid, 'units', trim(time_origin))
@@ -106,12 +110,33 @@ contains
     ierr = pio_put_att(pioid, varid, 'calendar', trim(calendar_name))
     call handle_err(ierr,'def_time_calendar')
 
-    vname = 'va'
-    dimid = (/xtid, ytid, ztid, timid/)
-    ierr = pio_def_var(pioid, trim(vname), PIO_REAL, dimid, varid)
-    call handle_err(ierr, 'define variable '//trim(vname))
-    ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
-    call handle_err(ierr, 'define _FillValue '//trim(vname))
+    ! define the nth,nk sizes
+    ierr = pio_def_var(pioid, 'nth', PIO_INT, varid)
+    call handle_err(ierr,'def_nth')
+    ierr = pio_put_att(pioid, varid, 'long_name', 'number of direction bins')
+    ierr = pio_def_var(pioid, 'nk', PIO_INT, varid)
+    call handle_err(ierr,'def_nk')
+    ierr = pio_put_att(pioid, varid, 'long_name', 'number of frequencies')
+
+    if (multifield) then
+      ! write each nspec as separate variable
+      do kk = 1,nspec
+        write(cspec,'(i4.4)')kk
+        vname = 'va'//cspec
+        dimid3 = (/xtid, ytid, timid/)
+        ierr = pio_def_var(pioid, trim(vname), PIO_REAL, dimid3, varid)
+        call handle_err(ierr, 'define variable '//trim(vname))
+        ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
+        call handle_err(ierr, 'define _FillValue '//trim(vname))
+      end do
+    else
+      vname = 'va'
+      dimid4 = (/xtid, ytid, ztid, timid/)
+      ierr = pio_def_var(pioid, trim(vname), PIO_REAL, dimid4, varid)
+      call handle_err(ierr, 'define variable '//trim(vname))
+      ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
+      call handle_err(ierr, 'define _FillValue '//trim(vname))
+    end if
 
     vname = 'mapsta'
     ierr = pio_def_var(pioid, trim(vname), PIO_INT, (/xtid, ytid, timid/), varid)
@@ -119,21 +144,29 @@ contains
     ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_int)
     call handle_err(ierr, 'define _FillValue '//trim(vname))
 
-    if (any(slowfldlist) .ne. '') then
-       do n = 1,size(slowfldlist)
-          vname = trim(slowfldlist(n))
-          if (vname == 'ice')then
-             ierr = pio_def_var(pioid, trim(vname), PIO_REAL, (/xtid, ytid, timid/), varid)
-             call handle_err(ierr, 'define variable '//trim(vname))
-             ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
-             call handle_err(ierr, 'define _FillValue '//trim(vname))
-          end if   ! define vname
-       end do
+    ! define any requested additional fields
+    if (addrstflds) then
+      do i = 1,rstfldcnt
+        vname = trim(rstfldlist(i))
+        ierr = pio_def_var(pioid, trim(vname), PIO_REAL, (/xtid, ytid, timid/), varid)
+        call handle_err(ierr, 'define variable '//trim(vname))
+        ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
+        call handle_err(ierr, 'define _FillValue '//trim(vname))
+      end do
     end if
-
     ! end variable definitions
     ierr = pio_enddef(pioid)
     call handle_err(ierr, 'end variable definition')
+
+    ! write the freq and direction sizes
+    ierr = pio_inq_varid(pioid, 'nth', varid)
+    call handle_err(ierr, 'inquire variable nth ')
+    ierr = pio_put_var(pioid, varid, nth)
+    call handle_err(ierr, 'put nth')
+    ierr = pio_inq_varid(pioid, 'nk', varid)
+    call handle_err(ierr, 'inquire variable nk ')
+    ierr = pio_put_var(pioid, varid, nk)
+    call handle_err(ierr, 'put nk')
 
     ! initialize the decomp
     call wav_pio_initdecomp(iodesc2dint, use_int=.true.)
@@ -147,7 +180,6 @@ contains
     call handle_err(ierr, 'put time')
 
     ! mapsta is global
-    lmap(:) = 0
     do jsea = 1,nseal_cpl
       call init_get_isea(isea, jsea)
       ix = mapsf(isea,1)
@@ -159,47 +191,52 @@ contains
     vname = 'mapsta'
     ierr = pio_inq_varid(pioid,  trim(vname), varid)
     call handle_err(ierr, 'inquire variable '//trim(vname))
-    call pio_setframe(pioid, varid, int(1,kind=Pio_Offset_Kind))
+    call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
     call pio_write_darray(pioid, varid, iodesc2dint, lmap, ierr)
     call handle_err(ierr, 'put variable '//trim(vname))
 
     ! write va
-    lva(:,:) = 0.0
-    do jsea = 1,nseal_cpl
-      kk = 0
-      do ik = 1,nk
-        do ith = 1,nth
-          kk = kk + 1
-          lva(jsea,kk) = va(kk,jsea)
-        end do
+    ! do jsea = 1,nseal_cpl
+    !   kk = 0
+    !   do ik = 1,nk
+    !     do ith = 1,nth
+    !       kk = kk + 1
+    !       lva(jsea,kk) = va(kk,jsea)
+    !     end do
+    !   end do
+    ! end do
+
+    if (multifield) then
+      do kk = 1,nspec
+        write(cspec,'(i4.4)')kk
+        vname = 'va'//cspec
+        ierr = pio_inq_varid(pioid,  trim(vname), varid)
+        call handle_err(ierr, 'inquire variable '//trim(vname))
+        call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
+        call pio_write_darray(pioid, varid, iodesc2d, va(kk,1:nseal_cpl), ierr)
+        call handle_err(ierr, 'put variable '//trim(vname))
       end do
-    end do
-
-    vname = 'va'
-    ierr = pio_inq_varid(pioid,  trim(vname), varid)
-    call handle_err(ierr, 'inquire variable '//trim(vname))
-    call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
-    call pio_write_darray(pioid, varid, iodesc3dk, lva, ierr)
-    call handle_err(ierr, 'put variable '//trim(vname))
-
-    if (any(slowfldlist) .ne. '') then
-       do n = 1,size(slowfldlist)
-          vname = trim(slowfldlist(n))
-          if (vname == 'ice')call write_field(vname, ice)
-       end do
+    else
+      !lva(1:nseal_cpl,:) = transpose(va(:,1:nseal_cpl))
+      vname = 'va'
+      ierr = pio_inq_varid(pioid,  trim(vname), varid)
+      call handle_err(ierr, 'inquire variable '//trim(vname))
+      call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
+      !call pio_write_darray(pioid, varid, iodesc3dk, lva, ierr)
+      call pio_write_darray(pioid, varid, iodesc3dk, transpose(va(:,1:nseal_cpl)), ierr)
+      call handle_err(ierr, 'put variable '//trim(vname))
     end if
 
-    !in write_field(vname, field)
-    ! do jsea = 1,nseal_cpl
-    !    call init_get_isea(isea, jsea)
-    !    lvar(jsea) = var(isea)
-    ! end do
-    ! call handle_err(ierr, 'inquire variable '//trim(vname))
-    ! call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
-    ! call pio_write_darray(pioid, varid, iodesc2d, lvar, ierr)
-    ! call handle_err(ierr, 'put variable '//trim(vname))
+    ! write requested additional global(nsea) fields
+    if (addrstflds) then
+      do i = 1,rstfldcnt
+        vname = trim(rstfldlist(i))
+        if (vname == 'ice')call write_globalfield(vname, nseal_cpl, ice(1:nsea))
+      end do
+    end if
 
     call pio_syncfile(pioid)
+    call pio_freedecomp(pioid, iodesc2d)
     call pio_freedecomp(pioid, iodesc2dint)
     call pio_freedecomp(pioid, iodesc3dk)
     call pio_closefile(pioid)
@@ -220,11 +257,12 @@ contains
   !> author DeniseWorthen@noaa.gov
   !> @date 08-26-2024
   subroutine read_restart (fname, va, mapsta, mapst2)
-  !subroutine read_restart (fname, va, mapsta)
+
     use mpi_f08
     use w3adatmd    , only : mpi_comm_wave
     use w3gdatmd    , only : sig
-    use w3wdatmd    , only : time, tlev, tice, trho, tic1, tic5, wlv, asf, ice, fpis
+    use w3idatmd    , only : icei
+    use w3wdatmd    , only : time, tlev, tice, trho, tic1, tic5, wlv, asf, fpis
 
     character(len=*)  , intent(in)    :: fname
     real   , optional , intent(out)   :: va(1:nspec,0:nsealm)
@@ -233,7 +271,8 @@ contains
 
     ! local variables
     type(MPI_Comm)       :: wave_communicator  ! needed for mpi_f08
-    integer              :: global_input(nsea), global_output(nsea)
+    integer, allocatable :: global_input(:), global_output(:)
+    integer              :: nseal_cpl
     integer              :: ifill
     real                 :: rfill
     real   , allocatable :: lva(:,:)
@@ -270,12 +309,13 @@ contains
     nseal_cpl = nseal
 #endif
     allocate(lva(1:nseal_cpl,1:nspec))
+    allocate(lmap(1:nseal_cpl))
     allocate(lmap2d(1:ny,1:nx))
     allocate(st2init(1:ny,1:nx))
-    allocate(lmap(1:nseal_cpl))
     lva(:,:) = 0.0
-    lmap2d(:,:) = 0
     lmap(:) = 0
+    lmap2d(:,:) = 0
+
     ! save a copy of initial mapst2 from mod_def
     st2init = mapst2
 
@@ -290,18 +330,24 @@ contains
     call handle_err(ierr, 'open file '//trim(fname))
     if (iaproc == 1) write(ndso,'(a)')' Reading restart file '//trim(fname)
 
+    ! check the field dimensions and sizes against the current values
+    call checkfile()
+
     ! initialize the decomp
     call wav_pio_initdecomp(iodesc2dint, use_int=.true.)
-    call wav_pio_initdecomp(nspec, iodesc3dk)
+    call wav_pio_initdecomp(iodesc2d)
 
-    vname = 'va'
-    ierr = pio_inq_varid(pioid, trim(vname), varid)
-    call handle_err(ierr, 'inquire variable '//trim(vname))
-    call pio_setframe(pioid, varid, frame)
-    call pio_read_darray(pioid, varid, iodesc3dk, lva, ierr)
-    call handle_err(ierr, 'get variable '//trim(vname))
-    ierr = pio_get_att(pioid, varid, "_FillValue", rfill)
-    call handle_err(ierr, 'get variable _FillValue'//trim(vname))
+    do kk = 1,nspec
+      write(cspec,'(i4.4)')kk
+      vname = 'va'//cspec
+      ierr = pio_inq_varid(pioid, trim(vname), varid)
+      call handle_err(ierr, 'inquire variable '//trim(vname))
+      call pio_setframe(pioid, varid, frame)
+      ierr = pio_get_att(pioid, varid, "_FillValue", rfill)
+      call handle_err(ierr, 'get variable _FillValue'//trim(vname))
+      call pio_read_darray(pioid, varid, iodesc2d, lva(:,kk), ierr)
+      call handle_err(ierr, 'get variable '//trim(vname))
+    end do
 
     va = 0.0
     do jsea = 1,nseal_cpl
@@ -326,12 +372,12 @@ contains
     call handle_err(ierr, 'get variable _FillValue'//trim(vname))
 
     ! fill global array with PE local values
+    allocate(global_input(nsea))
+    allocate(global_output(nsea))
     global_input = 0
     global_output = 0
     do jsea = 1,nseal_cpl
       call init_get_isea(isea, jsea)
-      ix = mapsf(isea,1)
-      iy = mapsf(isea,2)
       if (lmap(jsea) .ne. ifill) then
         global_input(isea) = lmap(jsea)
       end if
@@ -340,22 +386,183 @@ contains
     call MPI_AllReduce(global_input, global_output, nsea, MPI_INTEGER, MPI_SUM, wave_communicator, ierr)
 
     ! fill global array on each PE
-    lmap2d = 0
     do isea = 1,nsea
       ix = mapsf(isea,1)
       iy = mapsf(isea,2)
       lmap2d(iy,ix) = global_output(isea)
     end do
+    deallocate(global_input)
+    deallocate(global_output)
 
     mapsta = mod(lmap2d+2,8) - 2
     mapst2 = st2init + (lmap2d-mapsta)/8
 
-    !if(any(fldist) ne '') reverse write
+    ! read additional global(nsea) restart fields
+    if (addrstflds) then
+      do i = 1,rstfldcnt
+        vname = trim(rstfldlist(i))
+        if (vname == 'ice')call read_globalfield(wave_communicator, vname, nseal_cpl, ice(1:nsea), icei)
+      end do
+    end if
 
     call pio_syncfile(pioid)
+    call pio_freedecomp(pioid, iodesc2d)
     call pio_freedecomp(pioid, iodesc2dint)
-    call pio_freedecomp(pioid, iodesc3dk)
     call pio_closefile(pioid)
 
   end subroutine read_restart
+
+  !===============================================================================
+  !>  Write a decomposed array of (nsea) global values
+  !!
+  !! @param[in]   vname         the variable name
+  !! @param[in]   nseal_cpl     the PE local dimension, disregarding halos
+  !! @param[in]   global_input  the global array
+  !!
+  !> author DeniseWorthen@noaa.gov
+  !> @date 09-22-2024
+  subroutine write_globalfield(vname, nseal_cpl, global_input)
+
+    character(len=*) , intent(in)    :: vname
+    integer          , intent(in)    :: nseal_cpl
+    real             , intent(in)    :: global_input(:)
+
+    ! local variable
+    real, allocatable :: lvar(:)
+
+    allocate(lvar(1:nseal_cpl))
+
+    lvar(:) = 0.0
+    do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
+      lvar(jsea) = global_input(isea)
+    end do
+
+    !write PE local field
+    ierr = pio_inq_varid(pioid,  trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
+    call pio_write_darray(pioid, varid, iodesc2d, lvar, ierr)
+    call handle_err(ierr, 'put variable '//trim(vname))
+
+  end subroutine write_globalfield
+
+  !===============================================================================
+  !>  Read a decomposed array of (nsea) global values and return a global field on
+  !! each DE
+  !!
+  !! @param[in]    wave_communicator  the MPI handle
+  !! @param[in]    vname              the variable name
+  !! @param[in]    nseal_cpl          the PE local dimension, disregarding halos
+  !! @param[out]   global_output      the global array, nsea points on each DE
+  !! @param[out]   global_2d          the global array, (nx,ny) points on each DE
+  !!
+  !> author DeniseWorthen@noaa.gov
+  !> @date 09-22-2024
+  subroutine read_globalfield(wave_communicator, vname, nseal_cpl, global_output, global_2d)
+
+    use mpi_f08
+
+    type(MPI_Comm)   , intent(in)    :: wave_communicator  ! needed for mpi_f08
+    character(len=*) , intent(in)    :: vname
+    integer          , intent(in)    :: nseal_cpl
+    real             , intent(out)   :: global_output(:)
+    real             , intent(out)   :: global_2d(:,:)
+
+    ! local variables
+    real, allocatable :: global_input(:)
+    real              :: rfill
+    real, allocatable :: lvar(:)
+
+    allocate(lvar(1:nseal_cpl))
+    lvar(:) = 0.0
+
+    ierr = pio_inq_varid(pioid, trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    call pio_setframe(pioid, varid, frame)
+    call pio_read_darray(pioid, varid, iodesc2d, lvar, ierr)
+    call handle_err(ierr, 'get variable '//trim(vname))
+    ierr = pio_get_att(pioid, varid, "_FillValue", rfill)
+    call handle_err(ierr, 'get variable _FillValue'//trim(vname))
+
+    ! fill global array with PE local values
+    allocate(global_input(nsea))
+    global_input = 0.0
+    global_output = 0.0
+    do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
+      if (lvar(jsea) .ne. rfill) then
+        global_input(isea) = lvar(jsea)
+      end if
+    end do
+    ! reduce across all PEs to create global array
+    call MPI_AllReduce(global_input, global_output, nsea, MPI_REAL, MPI_SUM, wave_communicator, ierr)
+    deallocate(global_input)
+
+    global_2d = 0.0
+    do isea = 1,nsea
+      ix = mapsf(isea,1)
+      iy = mapsf(isea,2)
+      global_2d(ix,iy) = global_output(isea)
+    end do
+
+  end subroutine read_globalfield
+
+  !===============================================================================
+  !>  Check that a restart file has the expected dimensions and sizes
+  !!
+  !> author DeniseWorthen@noaa.gov
+  !> @date 10-15-2024
+  subroutine checkfile()
+
+    use w3odatmd  , only : ndse
+    use w3servmd  , only : extcde
+
+    integer :: dimid, ivar
+    integer(kind=PIO_OFFSET_KIND) :: dimlen
+
+    ! check dimension nx
+    vname = 'nx'
+    ierr = pio_inq_dimid(pioid, vname, dimid)
+    call handle_err(ierr, 'inquire dimension '//trim(vname))
+    ierr = pio_inq_dimlen(pioid, dimid, dimlen)
+    if (dimlen /= int(nx,PIO_OFFSET_KIND)) then
+      write(ndse,*) '*** WAVEWATCH III restart error: '//trim(vname)//' does not match expected value'
+      call extcde ( 49 )
+    end if
+
+    ! check dimension ny
+    vname = 'ny'
+    ierr = pio_inq_dimid(pioid, vname, dimid)
+    call handle_err(ierr, 'inquire dimension '//trim(vname))
+    ierr = pio_inq_dimlen(pioid, dimid, dimlen)
+    if (dimlen /= int(ny,PIO_OFFSET_KIND)) then
+      write(ndse,*) '*** WAVEWATCH III restart error: '//trim(vname)//' does not match expected value'
+      call extcde ( 49 )
+    end if
+
+    ! check number of directions
+    vname = 'nth'
+    ierr = pio_inq_varid(pioid, vname, varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    ierr = pio_get_var(pioid, varid, ivar)
+    call handle_err(ierr, 'get variable '//trim(vname))
+    if (ivar .ne. nth) then
+      write(ndse,*) '*** WAVEWATCH III restart error: '//trim(vname)//' does not match expected value'
+      call extcde ( 49 )
+    end if
+
+    ! check number of frequencies
+    vname = 'nk'
+    ierr = pio_inq_varid(pioid, vname, varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    ierr = pio_get_var(pioid, varid, ivar)
+    call handle_err(ierr, 'get variable '//trim(vname))
+    if (ivar .ne. nk) then
+      write(ndse,*) '*** WAVEWATCH III restart error: '//trim(vname)//' does not match expected value'
+      call extcde ( 49 )
+    end if
+
+  end subroutine checkfile
+
 end module wav_restart_mod
