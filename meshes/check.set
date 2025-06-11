@@ -1,0 +1,11 @@
+cancel data/all
+
+set data hafswav.SCRIP.nc
+statistics grid_center_lat, grid_center_lon
+
+set data glo_1deg.SCRIP.nc
+statistics grid_center_lat, grid_center_lon
+
+set data glo_30m.SCRIP.nc
+statistics grid_center_lat, grid_center_lon
+
