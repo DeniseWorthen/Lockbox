@@ -1,0 +1,579 @@
+20111001       0       0 WW3 InitializeAdvertise time:  72.21112    
+20111001       0       0 WW3 InitializeRealize time:  8.240241    
+20111001       0       0 WW3 ModelAdvance time since last step:  12.82598    
+20111001    1000     600 WW3 ModelAdvance time:  4.961409    
+20111001    1000     600 WW3 ModelAdvance time since last step: 0.5440109E-01
+20111001    2000    1200 WW3 ModelAdvance time:  7.259758    
+20111001    2000    1200 WW3 ModelAdvance time since last step:  4.170304    
+20111001    3000    1800 WW3 ModelAdvance time:  10.62730    
+20111001    3000    1800 WW3 ModelAdvance time since last step:  2.498749    
+20111001    4000    2400 WW3 ModelAdvance time:  10.73329    
+20111001    4000    2400 WW3 ModelAdvance time since last step:  2.162652    
+20111001    5000    3000 WW3 ModelAdvance time:  11.97525    
+20111001    5000    3000 WW3 ModelAdvance time since last step:  2.873049    
+20111001   10000    3600 WW3 ModelAdvance time:  22.83575    
+20111001   10000    3600 WW3 ModelAdvance time since last step:  1.709616    
+20111001   11000    4200 WW3 ModelAdvance time:  7.890044    
+20111001   11000    4200 WW3 ModelAdvance time since last step:  4.558299    
+20111001   12000    4800 WW3 ModelAdvance time:  10.78607    
+20111001   12000    4800 WW3 ModelAdvance time since last step:  4.026733    
+20111001   13000    5400 WW3 ModelAdvance time:  9.693342    
+20111001   13000    5400 WW3 ModelAdvance time since last step:  3.635276    
+20111001   14000    6000 WW3 ModelAdvance time:  8.708570    
+20111001   14000    6000 WW3 ModelAdvance time since last step:  3.381825    
+20111001   15000    6600 WW3 ModelAdvance time:  7.898434    
+20111001   15000    6600 WW3 ModelAdvance time since last step:  3.223769    
+20111001   20000    7200 WW3 ModelAdvance time:  17.21364    
+20111001   20000    7200 WW3 ModelAdvance time since last step:  1.383695    
+20111001   21000    7800 WW3 ModelAdvance time:  5.274576    
+20111001   21000    7800 WW3 ModelAdvance time since last step:  2.927088    
+20111001   22000    8400 WW3 ModelAdvance time:  6.695047    
+20111001   22000    8400 WW3 ModelAdvance time since last step:  2.783642    
+20111001   23000    9000 WW3 ModelAdvance time:  6.540932    
+20111001   23000    9000 WW3 ModelAdvance time since last step:  2.714137    
+20111001   24000    9600 WW3 ModelAdvance time:  6.429641    
+20111001   24000    9600 WW3 ModelAdvance time since last step:  2.604735    
+20111001   25000   10200 WW3 ModelAdvance time:  6.370682    
+20111001   25000   10200 WW3 ModelAdvance time since last step:  2.532570    
+20111001   30000   10800 WW3 ModelAdvance time:  15.90103    
+20111001   30000   10800 WW3 ModelAdvance time since last step:  1.287440    
+20111001   31000   11400 WW3 ModelAdvance time:  4.492719    
+20111001   31000   11400 WW3 ModelAdvance time since last step:  2.370652    
+20111001   32000   12000 WW3 ModelAdvance time:  6.240707    
+20111001   32000   12000 WW3 ModelAdvance time since last step:  2.288383    
+20111001   33000   12600 WW3 ModelAdvance time:  6.201219    
+20111001   33000   12600 WW3 ModelAdvance time since last step:  2.231853    
+20111001   34000   13200 WW3 ModelAdvance time:  6.171424    
+20111001   34000   13200 WW3 ModelAdvance time since last step:  2.183292    
+20111001   35000   13800 WW3 ModelAdvance time:  6.123517    
+20111001   35000   13800 WW3 ModelAdvance time since last step:  2.171319    
+20111001   40000   14400 WW3 ModelAdvance time:  15.50430    
+20111001   40000   14400 WW3 ModelAdvance time since last step:  1.414923    
+20111001   41000   15000 WW3 ModelAdvance time:  4.189112    
+20111001   41000   15000 WW3 ModelAdvance time since last step:  2.085852    
+20111001   42000   15600 WW3 ModelAdvance time:  5.998337    
+20111001   42000   15600 WW3 ModelAdvance time since last step:  2.044824    
+20111001   43000   16200 WW3 ModelAdvance time:  5.982044    
+20111001   43000   16200 WW3 ModelAdvance time since last step:  1.986556    
+20111001   44000   16800 WW3 ModelAdvance time:  5.992824    
+20111001   44000   16800 WW3 ModelAdvance time since last step:  1.933138    
+20111001   45000   17400 WW3 ModelAdvance time:  5.996933    
+20111001   45000   17400 WW3 ModelAdvance time since last step:  1.910127    
+20111001   50000   18000 WW3 ModelAdvance time:  15.00022    
+20111001   50000   18000 WW3 ModelAdvance time since last step:  1.897190    
+20111001   51000   18600 WW3 ModelAdvance time:  4.071256    
+20111001   51000   18600 WW3 ModelAdvance time since last step:  1.838957    
+20111001   52000   19200 WW3 ModelAdvance time:  5.933989    
+20111001   52000   19200 WW3 ModelAdvance time since last step:  1.799183    
+20111001   53000   19800 WW3 ModelAdvance time:  5.911446    
+20111001   53000   19800 WW3 ModelAdvance time since last step:  1.775400    
+20111001   54000   20400 WW3 ModelAdvance time:  5.919935    
+20111001   54000   20400 WW3 ModelAdvance time since last step:  1.742159    
+20111001   55000   21000 WW3 ModelAdvance time:  5.930209    
+20111001   55000   21000 WW3 ModelAdvance time since last step:  1.726487    
+20111001   60000   21600 WW3 ModelAdvance time:  14.92650    
+20111001   60000   21600 WW3 ModelAdvance time since last step:  2.082995    
+20111001   61000   22200 WW3 ModelAdvance time:  3.844787    
+20111001   61000   22200 WW3 ModelAdvance time since last step:  1.672028    
+20111001   62000   22800 WW3 ModelAdvance time:  5.888797    
+20111001   62000   22800 WW3 ModelAdvance time since last step:  1.649420    
+20111001   63000   23400 WW3 ModelAdvance time:  5.748666    
+20111001   63000   23400 WW3 ModelAdvance time since last step:  1.636691    
+20111001   64000   24000 WW3 ModelAdvance time:  5.606675    
+20111001   64000   24000 WW3 ModelAdvance time since last step:  1.584862    
+20111001   65000   24600 WW3 ModelAdvance time:  5.486607    
+20111001   65000   24600 WW3 ModelAdvance time since last step:  1.590005    
+20111001   70000   25200 WW3 ModelAdvance time:  13.71258    
+20111001   70000   25200 WW3 ModelAdvance time since last step:  1.601607    
+20111001   71000   25800 WW3 ModelAdvance time:  3.789299    
+20111001   71000   25800 WW3 ModelAdvance time since last step:  1.585953    
+20111001   72000   26400 WW3 ModelAdvance time:  5.121475    
+20111001   72000   26400 WW3 ModelAdvance time since last step:  1.548285    
+20111001   73000   27000 WW3 ModelAdvance time:  5.088483    
+20111001   73000   27000 WW3 ModelAdvance time since last step:  1.526875    
+20111001   74000   27600 WW3 ModelAdvance time:  5.051688    
+20111001   74000   27600 WW3 ModelAdvance time since last step:  1.515987    
+20111001   75000   28200 WW3 ModelAdvance time:  5.030734    
+20111001   75000   28200 WW3 ModelAdvance time since last step:  1.502967    
+20111001   80000   28800 WW3 ModelAdvance time:  13.12107    
+20111001   80000   28800 WW3 ModelAdvance time since last step:  1.263282    
+20111001   81000   29400 WW3 ModelAdvance time:  3.881904    
+20111001   81000   29400 WW3 ModelAdvance time since last step:  1.494436    
+20111001   82000   30000 WW3 ModelAdvance time:  5.043648    
+20111001   82000   30000 WW3 ModelAdvance time since last step:  1.489886    
+20111001   83000   30600 WW3 ModelAdvance time:  5.082959    
+20111001   83000   30600 WW3 ModelAdvance time since last step:  1.509211    
+20111001   84000   31200 WW3 ModelAdvance time:  5.093787    
+20111001   84000   31200 WW3 ModelAdvance time since last step:  1.504544    
+20111001   85000   31800 WW3 ModelAdvance time:  5.135380    
+20111001   85000   31800 WW3 ModelAdvance time since last step:  1.516757    
+20111001   90000   32400 WW3 ModelAdvance time:  13.26635    
+20111001   90000   32400 WW3 ModelAdvance time since last step:  1.344186    
+20111001   91000   33000 WW3 ModelAdvance time:  4.566670    
+20111001   91000   33000 WW3 ModelAdvance time since last step:  1.497381    
+20111001   92000   33600 WW3 ModelAdvance time:  5.137980    
+20111001   92000   33600 WW3 ModelAdvance time since last step:  1.476424    
+20111001   93000   34200 WW3 ModelAdvance time:  5.138980    
+20111001   93000   34200 WW3 ModelAdvance time since last step:  1.452619    
+20111001   94000   34800 WW3 ModelAdvance time:  5.162027    
+20111001   94000   34800 WW3 ModelAdvance time since last step:  1.428972    
+20111001   95000   35400 WW3 ModelAdvance time:  5.194327    
+20111001   95000   35400 WW3 ModelAdvance time since last step:  1.409115    
+20111001  100000   36000 WW3 ModelAdvance time:  13.10768    
+20111001  100000   36000 WW3 ModelAdvance time since last step:  1.246897    
+20111001  101000   36600 WW3 ModelAdvance time:  4.526626    
+20111001  101000   36600 WW3 ModelAdvance time since last step:  1.379303    
+20111001  102000   37200 WW3 ModelAdvance time:  5.209930    
+20111001  102000   37200 WW3 ModelAdvance time since last step:  1.350389    
+20111001  103000   37800 WW3 ModelAdvance time:  5.255385    
+20111001  103000   37800 WW3 ModelAdvance time since last step:  1.298187    
+20111001  104000   38400 WW3 ModelAdvance time:  5.299938    
+20111001  104000   38400 WW3 ModelAdvance time since last step:  1.242597    
+20111001  105000   39000 WW3 ModelAdvance time:  5.387761    
+20111001  105000   39000 WW3 ModelAdvance time since last step:  1.199079    
+20111001  110000   39600 WW3 ModelAdvance time:  13.45735    
+20111001  110000   39600 WW3 ModelAdvance time since last step:  1.283602    
+20111001  111000   40200 WW3 ModelAdvance time:  4.221046    
+20111001  111000   40200 WW3 ModelAdvance time since last step:  1.146130    
+20111001  112000   40800 WW3 ModelAdvance time:  5.494084    
+20111001  112000   40800 WW3 ModelAdvance time since last step:  1.118307    
+20111001  113000   41400 WW3 ModelAdvance time:  5.532841    
+20111001  113000   41400 WW3 ModelAdvance time since last step:  1.096575    
+20111001  114000   42000 WW3 ModelAdvance time:  5.528923    
+20111001  114000   42000 WW3 ModelAdvance time since last step:  1.066039    
+20111001  115000   42600 WW3 ModelAdvance time:  5.588164    
+20111001  115000   42600 WW3 ModelAdvance time since last step:  1.034041    
+20111001  120000   43200 WW3 ModelAdvance time:  13.17866    
+20111001  120000   43200 WW3 ModelAdvance time since last step:  1.393367    
+20111001  121000   43800 WW3 ModelAdvance time:  4.939608    
+20111001  121000   43800 WW3 ModelAdvance time since last step: 0.9921296    
+20111001  122000   44400 WW3 ModelAdvance time:  5.591277    
+20111001  122000   44400 WW3 ModelAdvance time since last step:  1.028658    
+20111001  123000   45000 WW3 ModelAdvance time:  5.509796    
+20111001  123000   45000 WW3 ModelAdvance time since last step:  1.073080    
+20111001  124000   45600 WW3 ModelAdvance time:  5.425716    
+20111001  124000   45600 WW3 ModelAdvance time since last step:  1.100293    
+20111001  125000   46200 WW3 ModelAdvance time:  5.347641    
+20111001  125000   46200 WW3 ModelAdvance time since last step:  1.139172    
+20111001  130000   46800 WW3 ModelAdvance time:  12.56746    
+20111001  130000   46800 WW3 ModelAdvance time since last step:  1.762406    
+20111001  131000   47400 WW3 ModelAdvance time:  4.120771    
+20111001  131000   47400 WW3 ModelAdvance time since last step:  1.150763    
+20111001  132000   48000 WW3 ModelAdvance time:  5.192342    
+20111001  132000   48000 WW3 ModelAdvance time since last step:  1.169805    
+20111001  133000   48600 WW3 ModelAdvance time:  5.168578    
+20111001  133000   48600 WW3 ModelAdvance time since last step:  1.180403    
+20111001  134000   49200 WW3 ModelAdvance time:  5.066151    
+20111001  134000   49200 WW3 ModelAdvance time since last step:  1.196369    
+20111001  135000   49800 WW3 ModelAdvance time:  5.038406    
+20111001  135000   49800 WW3 ModelAdvance time since last step:  1.197314    
+20111001  140000   50400 WW3 ModelAdvance time:  12.28639    
+20111001  140000   50400 WW3 ModelAdvance time since last step:  2.331788    
+20111001  141000   51000 WW3 ModelAdvance time:  3.947629    
+20111001  141000   51000 WW3 ModelAdvance time since last step:  1.202171    
+20111001  142000   51600 WW3 ModelAdvance time:  5.006626    
+20111001  142000   51600 WW3 ModelAdvance time since last step:  1.194063    
+20111001  143000   52200 WW3 ModelAdvance time:  4.983515    
+20111001  143000   52200 WW3 ModelAdvance time since last step:  1.177796    
+20111001  144000   52800 WW3 ModelAdvance time:  5.019863    
+20111001  144000   52800 WW3 ModelAdvance time since last step:  1.160235    
+20111001  145000   53400 WW3 ModelAdvance time:  5.015443    
+20111001  145000   53400 WW3 ModelAdvance time since last step:  1.146174    
+20111001  150000   54000 WW3 ModelAdvance time:  12.03169    
+20111001  150000   54000 WW3 ModelAdvance time since last step:  1.619032    
+20111001  151000   54600 WW3 ModelAdvance time:  4.023936    
+20111001  151000   54600 WW3 ModelAdvance time since last step:  1.098471    
+20111001  152000   55200 WW3 ModelAdvance time:  5.089294    
+20111001  152000   55200 WW3 ModelAdvance time since last step:  1.055348    
+20111001  153000   55800 WW3 ModelAdvance time:  5.141303    
+20111001  153000   55800 WW3 ModelAdvance time since last step: 0.9940865    
+20111001  154000   56400 WW3 ModelAdvance time:  5.194296    
+20111001  154000   56400 WW3 ModelAdvance time since last step: 0.9373069    
+20111001  155000   57000 WW3 ModelAdvance time:  5.243369    
+20111001  155000   57000 WW3 ModelAdvance time since last step: 0.8663189    
+20111001  160000   57600 WW3 ModelAdvance time:  11.89014    
+20111001  160000   57600 WW3 ModelAdvance time since last step:  2.251982    
+20111001  161000   58200 WW3 ModelAdvance time:  4.370937    
+20111001  161000   58200 WW3 ModelAdvance time since last step: 0.7225231    
+20111001  162000   58800 WW3 ModelAdvance time:  5.419943    
+20111001  162000   58800 WW3 ModelAdvance time since last step: 0.6651003    
+20111001  163000   59400 WW3 ModelAdvance time:  5.465936    
+20111001  163000   59400 WW3 ModelAdvance time since last step: 0.6262732    
+20111001  164000   60000 WW3 ModelAdvance time:  5.492024    
+20111001  164000   60000 WW3 ModelAdvance time since last step: 0.5885930    
+20111001  165000   60600 WW3 ModelAdvance time:  5.602517    
+20111001  165000   60600 WW3 ModelAdvance time since last step: 0.5665305    
+20111001  170000   61200 WW3 ModelAdvance time:  12.03071    
+20111001  170000   61200 WW3 ModelAdvance time since last step:  1.376245    
+20111001  171000   61800 WW3 ModelAdvance time:  4.924694    
+20111001  171000   61800 WW3 ModelAdvance time since last step: 0.4967949    
+20111001  172000   62400 WW3 ModelAdvance time:  5.880024    
+20111001  172000   62400 WW3 ModelAdvance time since last step: 0.4593055    
+20111001  173000   63000 WW3 ModelAdvance time:  5.985185    
+20111001  173000   63000 WW3 ModelAdvance time since last step: 0.4069993    
+20111001  174000   63600 WW3 ModelAdvance time:  6.077410    
+20111001  174000   63600 WW3 ModelAdvance time since last step: 0.3581828    
+20111001  175000   64200 WW3 ModelAdvance time:  6.210606    
+20111001  175000   64200 WW3 ModelAdvance time since last step: 0.2994418    
+20111001  180000   64800 WW3 ModelAdvance time:  12.65405    
+20111001  180000   64800 WW3 ModelAdvance time since last step:  1.482933    
+20111001  181000   65400 WW3 ModelAdvance time:  5.548393    
+20111001  181000   65400 WW3 ModelAdvance time since last step: 0.1583883    
+20111001  182000   66000 WW3 ModelAdvance time:  6.407152    
+20111001  182000   66000 WW3 ModelAdvance time since last step: 0.2035671    
+20111001  183000   66600 WW3 ModelAdvance time:  6.272733    
+20111001  183000   66600 WW3 ModelAdvance time since last step: 0.2616277    
+20111001  184000   67200 WW3 ModelAdvance time:  6.124255    
+20111001  184000   67200 WW3 ModelAdvance time since last step: 0.3268130    
+20111001  185000   67800 WW3 ModelAdvance time:  6.015433    
+20111001  185000   67800 WW3 ModelAdvance time since last step: 0.3744390    
+20111001  190000   68400 WW3 ModelAdvance time:  12.10722    
+20111001  190000   68400 WW3 ModelAdvance time since last step:  1.408417    
+20111001  191000   69000 WW3 ModelAdvance time:  4.596255    
+20111001  191000   69000 WW3 ModelAdvance time since last step: 0.4994057    
+20111001  192000   69600 WW3 ModelAdvance time:  5.538213    
+20111001  192000   69600 WW3 ModelAdvance time since last step: 0.5474016    
+20111001  193000   70200 WW3 ModelAdvance time:  5.468896    
+20111001  193000   70200 WW3 ModelAdvance time since last step: 0.5700095    
+20111001  194000   70800 WW3 ModelAdvance time:  5.366320    
+20111001  194000   70800 WW3 ModelAdvance time since last step: 0.6103734    
+20111001  195000   71400 WW3 ModelAdvance time:  5.282023    
+20111001  195000   71400 WW3 ModelAdvance time since last step: 0.6479832    
+20111001  200000   72000 WW3 ModelAdvance time:  11.64852    
+20111001  200000   72000 WW3 ModelAdvance time since last step:  1.193744    
+20111001  201000   72600 WW3 ModelAdvance time:  4.387001    
+20111001  201000   72600 WW3 ModelAdvance time since last step: 0.7150049    
+20111001  202000   73200 WW3 ModelAdvance time:  5.193902    
+20111001  202000   73200 WW3 ModelAdvance time since last step: 0.7421015    
+20111001  203000   73800 WW3 ModelAdvance time:  5.177647    
+20111001  203000   73800 WW3 ModelAdvance time since last step: 0.7527954    
+20111001  204000   74400 WW3 ModelAdvance time:  5.204335    
+20111001  204000   74400 WW3 ModelAdvance time since last step: 0.7144047    
+20111001  205000   75000 WW3 ModelAdvance time:  5.235110    
+20111001  205000   75000 WW3 ModelAdvance time since last step: 0.6655739    
+20111001  210000   75600 WW3 ModelAdvance time:  11.73192    
+20111001  210000   75600 WW3 ModelAdvance time since last step:  2.191139    
+20111001  211000   76200 WW3 ModelAdvance time:  4.237590    
+20111001  211000   76200 WW3 ModelAdvance time since last step: 0.5878330    
+20111001  212000   76800 WW3 ModelAdvance time:  5.402803    
+20111001  212000   76800 WW3 ModelAdvance time since last step: 0.5598182    
+20111001  213000   77400 WW3 ModelAdvance time:  5.441853    
+20111001  213000   77400 WW3 ModelAdvance time since last step: 0.5515544    
+20111001  214000   78000 WW3 ModelAdvance time:  5.477630    
+20111001  214000   78000 WW3 ModelAdvance time since last step: 0.5380255    
+20111001  215000   78600 WW3 ModelAdvance time:  5.562568    
+20111001  215000   78600 WW3 ModelAdvance time since last step: 0.5201977    
+20111001  220000   79200 WW3 ModelAdvance time:  12.35326    
+20111001  220000   79200 WW3 ModelAdvance time since last step:  1.760251    
+20111001  221000   79800 WW3 ModelAdvance time:  4.274626    
+20111001  221000   79800 WW3 ModelAdvance time since last step: 0.5753810    
+20111001  222000   80400 WW3 ModelAdvance time:  5.640962    
+20111001  222000   80400 WW3 ModelAdvance time since last step: 0.6064878    
+20111001  223000   81000 WW3 ModelAdvance time:  5.610156    
+20111001  223000   81000 WW3 ModelAdvance time since last step: 0.6446067    
+20111001  224000   81600 WW3 ModelAdvance time:  5.610605    
+20111001  224000   81600 WW3 ModelAdvance time since last step: 0.6614294    
+20111001  225000   82200 WW3 ModelAdvance time:  5.595218    
+20111001  225000   82200 WW3 ModelAdvance time since last step: 0.7014776    
+20111001  230000   82800 WW3 ModelAdvance time:  12.37261    
+20111001  230000   82800 WW3 ModelAdvance time since last step:  1.461333    
+20111001  231000   83400 WW3 ModelAdvance time:  4.328055    
+20111001  231000   83400 WW3 ModelAdvance time since last step: 0.7370375    
+20111001  232000   84000 WW3 ModelAdvance time:  5.621043    
+20111001  232000   84000 WW3 ModelAdvance time since last step: 0.7560391    
+20111001  233000   84600 WW3 ModelAdvance time:  5.620704    
+20111001  233000   84600 WW3 ModelAdvance time since last step: 0.7837429    
+20111001  234000   85200 WW3 ModelAdvance time:  5.636397    
+20111001  234000   85200 WW3 ModelAdvance time since last step: 0.8048639    
+20111001  235000   85800 WW3 ModelAdvance time:  5.631653    
+20111001  235000   85800 WW3 ModelAdvance time since last step: 0.8290248    
+20111002       0       0 WW3 ModelAdvance time:  12.52036    
+20111002       0       0 WW3 ModelAdvance time since last step:  1.743765    
+20111002    1000     600 WW3 ModelAdvance time:  4.399360    
+20111002    1000     600 WW3 ModelAdvance time since last step: 0.8709895    
+20111002    2000    1200 WW3 ModelAdvance time:  5.646615    
+20111002    2000    1200 WW3 ModelAdvance time since last step: 0.9026693    
+20111002    3000    1800 WW3 ModelAdvance time:  5.354850    
+20111002    3000    1800 WW3 ModelAdvance time since last step: 0.9223031    
+20111002    4000    2400 WW3 ModelAdvance time:  5.185951    
+20111002    4000    2400 WW3 ModelAdvance time since last step: 0.9646403    
+20111002    5000    3000 WW3 ModelAdvance time:  5.050832    
+20111002    5000    3000 WW3 ModelAdvance time since last step: 0.9933776    
+20111002   10000    3600 WW3 ModelAdvance time:  11.53267    
+20111002   10000    3600 WW3 ModelAdvance time since last step:  3.045342    
+20111002   11000    4200 WW3 ModelAdvance time:  4.411683    
+20111002   11000    4200 WW3 ModelAdvance time since last step:  1.019532    
+20111002   12000    4800 WW3 ModelAdvance time:  4.947959    
+20111002   12000    4800 WW3 ModelAdvance time since last step: 0.9921967    
+20111002   13000    5400 WW3 ModelAdvance time:  4.934556    
+20111002   13000    5400 WW3 ModelAdvance time since last step:  1.004626    
+20111002   14000    6000 WW3 ModelAdvance time:  4.886354    
+20111002   14000    6000 WW3 ModelAdvance time since last step:  1.017411    
+20111002   15000    6600 WW3 ModelAdvance time:  4.853103    
+20111002   15000    6600 WW3 ModelAdvance time since last step:  1.042781    
+20111002   20000    7200 WW3 ModelAdvance time:  11.15511    
+20111002   20000    7200 WW3 ModelAdvance time since last step:  1.764719    
+20111002   21000    7800 WW3 ModelAdvance time:  4.416583    
+20111002   21000    7800 WW3 ModelAdvance time since last step:  1.087729    
+20111002   22000    8400 WW3 ModelAdvance time:  4.711870    
+20111002   22000    8400 WW3 ModelAdvance time since last step:  1.126519    
+20111002   23000    9000 WW3 ModelAdvance time:  4.672193    
+20111002   23000    9000 WW3 ModelAdvance time since last step:  1.149722    
+20111002   24000    9600 WW3 ModelAdvance time:  4.633592    
+20111002   24000    9600 WW3 ModelAdvance time since last step:  1.192211    
+20111002   25000   10200 WW3 ModelAdvance time:  4.583944    
+20111002   25000   10200 WW3 ModelAdvance time since last step:  1.207731    
+20111002   30000   10800 WW3 ModelAdvance time:  10.85701    
+20111002   30000   10800 WW3 ModelAdvance time since last step:  2.670389    
+20111002   31000   11400 WW3 ModelAdvance time:  4.472683    
+20111002   31000   11400 WW3 ModelAdvance time since last step:  1.281216    
+20111002   32000   12000 WW3 ModelAdvance time:  4.530268    
+20111002   32000   12000 WW3 ModelAdvance time since last step:  1.304335    
+20111002   33000   12600 WW3 ModelAdvance time:  4.510636    
+20111002   33000   12600 WW3 ModelAdvance time since last step:  1.349570    
+20111002   34000   13200 WW3 ModelAdvance time:  4.506171    
+20111002   34000   13200 WW3 ModelAdvance time since last step:  1.354474    
+20111002   35000   13800 WW3 ModelAdvance time:  4.498271    
+20111002   35000   13800 WW3 ModelAdvance time since last step:  1.391238    
+20111002   40000   14400 WW3 ModelAdvance time:  10.89785    
+20111002   40000   14400 WW3 ModelAdvance time since last step:  1.095318    
+20111002   41000   15000 WW3 ModelAdvance time:  5.663221    
+20111002   41000   15000 WW3 ModelAdvance time since last step:  1.456806    
+20111002   42000   15600 WW3 ModelAdvance time:  4.482253    
+20111002   42000   15600 WW3 ModelAdvance time since last step:  1.499080    
+20111002   43000   16200 WW3 ModelAdvance time:  4.476973    
+20111002   43000   16200 WW3 ModelAdvance time since last step:  1.543221    
+20111002   44000   16800 WW3 ModelAdvance time:  4.470638    
+20111002   44000   16800 WW3 ModelAdvance time since last step:  1.581379    
+20111002   45000   17400 WW3 ModelAdvance time:  4.479097    
+20111002   45000   17400 WW3 ModelAdvance time since last step:  1.621235    
+20111002   50000   18000 WW3 ModelAdvance time:  11.09875    
+20111002   50000   18000 WW3 ModelAdvance time since last step:  1.250396    
+20111002   51000   18600 WW3 ModelAdvance time:  5.422972    
+20111002   51000   18600 WW3 ModelAdvance time since last step:  1.695269    
+20111002   52000   19200 WW3 ModelAdvance time:  4.477285    
+20111002   52000   19200 WW3 ModelAdvance time since last step:  1.713808    
+20111002   53000   19800 WW3 ModelAdvance time:  4.496354    
+20111002   53000   19800 WW3 ModelAdvance time since last step:  1.742441    
+20111002   54000   20400 WW3 ModelAdvance time:  4.500440    
+20111002   54000   20400 WW3 ModelAdvance time since last step:  1.762872    
+20111002   55000   21000 WW3 ModelAdvance time:  4.479632    
+20111002   55000   21000 WW3 ModelAdvance time since last step:  1.775265    
+20111002   60000   21600 WW3 ModelAdvance time:  11.37187    
+20111002   60000   21600 WW3 ModelAdvance time since last step:  1.208346    
+20111002   61000   22200 WW3 ModelAdvance time:  4.922153    
+20111002   61000   22200 WW3 ModelAdvance time since last step:  1.834062    
+20111002   62000   22800 WW3 ModelAdvance time:  4.539450    
+20111002   62000   22800 WW3 ModelAdvance time since last step:  1.706741    
+20111002   63000   23400 WW3 ModelAdvance time:  4.543000    
+20111002   63000   23400 WW3 ModelAdvance time since last step:  1.640620    
+20111002   64000   24000 WW3 ModelAdvance time:  4.485242    
+20111002   64000   24000 WW3 ModelAdvance time since last step:  1.578497    
+20111002   65000   24600 WW3 ModelAdvance time:  4.462667    
+20111002   65000   24600 WW3 ModelAdvance time since last step:  1.509519    
+20111002   70000   25200 WW3 ModelAdvance time:  10.94693    
+20111002   70000   25200 WW3 ModelAdvance time since last step:  1.251212    
+20111002   71000   25800 WW3 ModelAdvance time:  5.460707    
+20111002   71000   25800 WW3 ModelAdvance time since last step:  1.269357    
+20111002   72000   26400 WW3 ModelAdvance time:  4.612167    
+20111002   72000   26400 WW3 ModelAdvance time since last step:  1.182862    
+20111002   73000   27000 WW3 ModelAdvance time:  4.678879    
+20111002   73000   27000 WW3 ModelAdvance time since last step:  1.130475    
+20111002   74000   27600 WW3 ModelAdvance time:  4.712290    
+20111002   74000   27600 WW3 ModelAdvance time since last step:  1.090814    
+20111002   75000   28200 WW3 ModelAdvance time:  4.773531    
+20111002   75000   28200 WW3 ModelAdvance time since last step:  1.077940    
+20111002   80000   28800 WW3 ModelAdvance time:  11.13715    
+20111002   80000   28800 WW3 ModelAdvance time since last step:  1.564121    
+20111002   81000   29400 WW3 ModelAdvance time:  4.546310    
+20111002   81000   29400 WW3 ModelAdvance time since last step:  1.046526    
+20111002   82000   30000 WW3 ModelAdvance time:  4.795083    
+20111002   82000   30000 WW3 ModelAdvance time since last step:  1.035032    
+20111002   83000   30600 WW3 ModelAdvance time:  4.802189    
+20111002   83000   30600 WW3 ModelAdvance time since last step:  1.021883    
+20111002   84000   31200 WW3 ModelAdvance time:  4.814673    
+20111002   84000   31200 WW3 ModelAdvance time since last step: 0.9933767    
+20111002   85000   31800 WW3 ModelAdvance time:  4.832739    
+20111002   85000   31800 WW3 ModelAdvance time since last step: 0.9640913    
+20111002   90000   32400 WW3 ModelAdvance time:  11.19329    
+20111002   90000   32400 WW3 ModelAdvance time since last step:  1.435331    
+20111002   91000   33000 WW3 ModelAdvance time:  4.481041    
+20111002   91000   33000 WW3 ModelAdvance time since last step: 0.8563733    
+20111002   92000   33600 WW3 ModelAdvance time:  4.962024    
+20111002   92000   33600 WW3 ModelAdvance time since last step: 0.7993239    
+20111002   93000   34200 WW3 ModelAdvance time:  5.007801    
+20111002   93000   34200 WW3 ModelAdvance time since last step: 0.7660215    
+20111002   94000   34800 WW3 ModelAdvance time:  5.043528    
+20111002   94000   34800 WW3 ModelAdvance time since last step: 0.8273607    
+20111002   95000   35400 WW3 ModelAdvance time:  5.008326    
+20111002   95000   35400 WW3 ModelAdvance time since last step: 0.8851588    
+20111002  100000   36000 WW3 ModelAdvance time:  11.65691    
+20111002  100000   36000 WW3 ModelAdvance time since last step:  1.652469    
+20111002  101000   36600 WW3 ModelAdvance time:  4.312989    
+20111002  101000   36600 WW3 ModelAdvance time since last step:  1.093548    
+20111002  102000   37200 WW3 ModelAdvance time:  5.248783    
+20111002  102000   37200 WW3 ModelAdvance time since last step:  1.223210    
+20111002  103000   37800 WW3 ModelAdvance time:  5.273984    
+20111002  103000   37800 WW3 ModelAdvance time since last step:  1.338077    
+20111002  104000   38400 WW3 ModelAdvance time:  5.290405    
+20111002  104000   38400 WW3 ModelAdvance time since last step:  1.468731    
+20111002  105000   39000 WW3 ModelAdvance time:  5.248969    
+20111002  105000   39000 WW3 ModelAdvance time since last step:  1.543164    
+20111002  110000   39600 WW3 ModelAdvance time:  12.40867    
+20111002  110000   39600 WW3 ModelAdvance time since last step:  2.016157    
+20111002  111000   40200 WW3 ModelAdvance time:  4.185530    
+20111002  111000   40200 WW3 ModelAdvance time since last step:  1.620681    
+20111002  112000   40800 WW3 ModelAdvance time:  5.029957    
+20111002  112000   40800 WW3 ModelAdvance time since last step:  1.631294    
+20111002  113000   41400 WW3 ModelAdvance time:  4.954624    
+20111002  113000   41400 WW3 ModelAdvance time since last step:  1.660239    
+20111002  114000   42000 WW3 ModelAdvance time:  4.857701    
+20111002  114000   42000 WW3 ModelAdvance time since last step:  1.677744    
+20111002  115000   42600 WW3 ModelAdvance time:  4.825453    
+20111002  115000   42600 WW3 ModelAdvance time since last step:  1.675559    
+20111002  120000   43200 WW3 ModelAdvance time:  11.95272    
+20111002  120000   43200 WW3 ModelAdvance time since last step:  1.575901    
+20111002  121000   43800 WW3 ModelAdvance time:  4.930988    
+20111002  121000   43800 WW3 ModelAdvance time since last step:  1.702724    
+20111002  122000   44400 WW3 ModelAdvance time:  4.757173    
+20111002  122000   44400 WW3 ModelAdvance time since last step:  1.289420    
+20111002  123000   45000 WW3 ModelAdvance time:  4.724495    
+20111002  123000   45000 WW3 ModelAdvance time since last step:  1.291369    
+20111002  124000   45600 WW3 ModelAdvance time:  4.676103    
+20111002  124000   45600 WW3 ModelAdvance time since last step:  1.290361    
+20111002  125000   46200 WW3 ModelAdvance time:  4.682989    
+20111002  125000   46200 WW3 ModelAdvance time since last step:  1.266395    
+20111002  130000   46800 WW3 ModelAdvance time:  11.23003    
+20111002  130000   46800 WW3 ModelAdvance time since last step:  1.176162    
+20111002  131000   47400 WW3 ModelAdvance time:  5.139778    
+20111002  131000   47400 WW3 ModelAdvance time since last step:  1.229128    
+20111002  132000   48000 WW3 ModelAdvance time:  4.681475    
+20111002  132000   48000 WW3 ModelAdvance time since last step:  1.221478    
+20111002  133000   48600 WW3 ModelAdvance time:  4.630922    
+20111002  133000   48600 WW3 ModelAdvance time since last step:  1.229793    
+20111002  134000   49200 WW3 ModelAdvance time:  4.586948    
+20111002  134000   49200 WW3 ModelAdvance time since last step:  1.231772    
+20111002  135000   49800 WW3 ModelAdvance time:  4.581422    
+20111002  135000   49800 WW3 ModelAdvance time since last step:  1.244794    
+20111002  140000   50400 WW3 ModelAdvance time:  11.24065    
+20111002  140000   50400 WW3 ModelAdvance time since last step:  1.705105    
+20111002  141000   51000 WW3 ModelAdvance time:  4.059646    
+20111002  141000   51000 WW3 ModelAdvance time since last step:  1.256427    
+20111002  142000   51600 WW3 ModelAdvance time:  4.519835    
+20111002  142000   51600 WW3 ModelAdvance time since last step:  1.257722    
+20111002  143000   52200 WW3 ModelAdvance time:  4.577815    
+20111002  143000   52200 WW3 ModelAdvance time since last step:  1.261722    
+20111002  144000   52800 WW3 ModelAdvance time:  4.529583    
+20111002  144000   52800 WW3 ModelAdvance time since last step:  1.262096    
+20111002  145000   53400 WW3 ModelAdvance time:  4.576896    
+20111002  145000   53400 WW3 ModelAdvance time since last step:  1.267930    
+20111002  150000   54000 WW3 ModelAdvance time:  11.32960    
+20111002  150000   54000 WW3 ModelAdvance time since last step:  2.058757    
+20111002  151000   54600 WW3 ModelAdvance time:  3.928879    
+20111002  151000   54600 WW3 ModelAdvance time since last step:  1.260829    
+20111002  152000   55200 WW3 ModelAdvance time:  4.581153    
+20111002  152000   55200 WW3 ModelAdvance time since last step:  1.245657    
+20111002  153000   55800 WW3 ModelAdvance time:  4.580642    
+20111002  153000   55800 WW3 ModelAdvance time since last step:  1.226475    
+20111002  154000   56400 WW3 ModelAdvance time:  4.607524    
+20111002  154000   56400 WW3 ModelAdvance time since last step:  1.199072    
+20111002  155000   57000 WW3 ModelAdvance time:  4.614053    
+20111002  155000   57000 WW3 ModelAdvance time since last step:  1.164351    
+20111002  160000   57600 WW3 ModelAdvance time:  11.48904    
+20111002  160000   57600 WW3 ModelAdvance time since last step:  1.829199    
+20111002  161000   58200 WW3 ModelAdvance time:  3.923753    
+20111002  161000   58200 WW3 ModelAdvance time since last step:  1.132762    
+20111002  162000   58800 WW3 ModelAdvance time:  4.716789    
+20111002  162000   58800 WW3 ModelAdvance time since last step:  1.137154    
+20111002  163000   59400 WW3 ModelAdvance time:  4.692701    
+20111002  163000   59400 WW3 ModelAdvance time since last step:  1.150912    
+20111002  164000   60000 WW3 ModelAdvance time:  4.718774    
+20111002  164000   60000 WW3 ModelAdvance time since last step:  1.188108    
+20111002  165000   60600 WW3 ModelAdvance time:  4.710827    
+20111002  165000   60600 WW3 ModelAdvance time since last step:  1.220262    
+20111002  170000   61200 WW3 ModelAdvance time:  11.41984    
+20111002  170000   61200 WW3 ModelAdvance time since last step:  1.369742    
+20111002  171000   61800 WW3 ModelAdvance time:  4.242407    
+20111002  171000   61800 WW3 ModelAdvance time since last step:  1.232753    
+20111002  172000   62400 WW3 ModelAdvance time:  4.642096    
+20111002  172000   62400 WW3 ModelAdvance time since last step:  1.231917    
+20111002  173000   63000 WW3 ModelAdvance time:  4.659096    
+20111002  173000   63000 WW3 ModelAdvance time since last step:  1.223897    
+20111002  174000   63600 WW3 ModelAdvance time:  4.676256    
+20111002  174000   63600 WW3 ModelAdvance time since last step:  1.223043    
+20111002  175000   64200 WW3 ModelAdvance time:  4.658574    
+20111002  175000   64200 WW3 ModelAdvance time since last step:  1.231481    
+20111002  180000   64800 WW3 ModelAdvance time:  11.61927    
+20111002  180000   64800 WW3 ModelAdvance time since last step:  34.77111    
+20111002  181000   65400 WW3 ModelAdvance time:  9.296152    
+20111002  181000   65400 WW3 ModelAdvance time since last step:  1.229766    
+20111002  182000   66000 WW3 ModelAdvance time:  4.739356    
+20111002  182000   66000 WW3 ModelAdvance time since last step:  1.181242    
+20111002  183000   66600 WW3 ModelAdvance time:  4.663540    
+20111002  183000   66600 WW3 ModelAdvance time since last step:  1.195476    
+20111002  184000   67200 WW3 ModelAdvance time:  4.642067    
+20111002  184000   67200 WW3 ModelAdvance time since last step:  1.209594    
+20111002  185000   67800 WW3 ModelAdvance time:  4.560263    
+20111002  185000   67800 WW3 ModelAdvance time since last step:  1.223766    
+20111002  190000   68400 WW3 ModelAdvance time:  11.36754    
+20111002  190000   68400 WW3 ModelAdvance time since last step:  1.061536    
+20111002  191000   69000 WW3 ModelAdvance time:  4.152191    
+20111002  191000   69000 WW3 ModelAdvance time since last step:  1.249086    
+20111002  192000   69600 WW3 ModelAdvance time:  4.543338    
+20111002  192000   69600 WW3 ModelAdvance time since last step:  1.249373    
+20111002  193000   70200 WW3 ModelAdvance time:  4.499940    
+20111002  193000   70200 WW3 ModelAdvance time since last step:  1.257035    
+20111002  194000   70800 WW3 ModelAdvance time:  4.562102    
+20111002  194000   70800 WW3 ModelAdvance time since last step:  1.262546    
+20111002  195000   71400 WW3 ModelAdvance time:  4.502019    
+20111002  195000   71400 WW3 ModelAdvance time since last step:  1.271791    
+20111002  200000   72000 WW3 ModelAdvance time:  11.36017    
+20111002  200000   72000 WW3 ModelAdvance time since last step:  1.520037    
+20111002  201000   72600 WW3 ModelAdvance time:  3.866445    
+20111002  201000   72600 WW3 ModelAdvance time since last step:  1.281090    
+20111002  202000   73200 WW3 ModelAdvance time:  4.530141    
+20111002  202000   73200 WW3 ModelAdvance time since last step:  1.287768    
+20111002  203000   73800 WW3 ModelAdvance time:  4.494663    
+20111002  203000   73800 WW3 ModelAdvance time since last step:  1.292905    
+20111002  204000   74400 WW3 ModelAdvance time:  4.576821    
+20111002  204000   74400 WW3 ModelAdvance time since last step:  1.294021    
+20111002  205000   75000 WW3 ModelAdvance time:  4.612294    
+20111002  205000   75000 WW3 ModelAdvance time since last step:  1.289515    
+20111002  210000   75600 WW3 ModelAdvance time:  11.50966    
+20111002  210000   75600 WW3 ModelAdvance time since last step:  1.383246    
+20111002  211000   76200 WW3 ModelAdvance time:  4.198124    
+20111002  211000   76200 WW3 ModelAdvance time since last step:  1.297258    
+20111002  212000   76800 WW3 ModelAdvance time:  4.642570    
+20111002  212000   76800 WW3 ModelAdvance time since last step:  1.301978    
+20111002  213000   77400 WW3 ModelAdvance time:  4.616129    
+20111002  213000   77400 WW3 ModelAdvance time since last step:  1.296415    
+20111002  214000   78000 WW3 ModelAdvance time:  4.666924    
+20111002  214000   78000 WW3 ModelAdvance time since last step:  1.301365    
+20111002  215000   78600 WW3 ModelAdvance time:  4.657433    
+20111002  215000   78600 WW3 ModelAdvance time since last step:  1.300333    
+20111002  220000   79200 WW3 ModelAdvance time:  11.80839    
+20111002  220000   79200 WW3 ModelAdvance time since last step:  1.375853    
+20111002  221000   79800 WW3 ModelAdvance time:  3.954664    
+20111002  221000   79800 WW3 ModelAdvance time since last step:  1.296982    
+20111002  222000   80400 WW3 ModelAdvance time:  4.741033    
+20111002  222000   80400 WW3 ModelAdvance time since last step:  1.299912    
+20111002  223000   81000 WW3 ModelAdvance time:  4.728350    
+20111002  223000   81000 WW3 ModelAdvance time since last step:  1.306361    
+20111002  224000   81600 WW3 ModelAdvance time:  4.740822    
+20111002  224000   81600 WW3 ModelAdvance time since last step:  1.306400    
+20111002  225000   82200 WW3 ModelAdvance time:  4.755165    
+20111002  225000   82200 WW3 ModelAdvance time since last step:  1.291038    
+20111002  230000   82800 WW3 ModelAdvance time:  11.93654    
+20111002  230000   82800 WW3 ModelAdvance time since last step:  1.237483    
+20111002  231000   83400 WW3 ModelAdvance time:  4.088817    
+20111002  231000   83400 WW3 ModelAdvance time since last step:  1.240653    
+20111002  232000   84000 WW3 ModelAdvance time:  4.879967    
+20111002  232000   84000 WW3 ModelAdvance time since last step:  1.225569    
+20111002  233000   84600 WW3 ModelAdvance time:  4.901523    
+20111002  233000   84600 WW3 ModelAdvance time since last step:  1.227007    
+20111002  234000   85200 WW3 ModelAdvance time:  4.920468    
+20111002  234000   85200 WW3 ModelAdvance time since last step:  1.208439    
+20111002  235000   85800 WW3 ModelAdvance time:  4.969939    
+20111002  235000   85800 WW3 ModelAdvance time since last step:  1.227547    
+20111003       0       0 WW3 ModelAdvance time:  12.17525    
+20111003       0       0 WW3 ModelFinalize time: 0.1099763E-02
