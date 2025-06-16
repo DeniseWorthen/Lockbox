@@ -9,7 +9,7 @@ module wav_restart_mod
   use w3parall      , only : init_get_isea
   use w3adatmd      , only : nsealm
   use w3gdatmd      , only : nth, nk, nx, ny, mapsf, nspec, nseal, nsea
-  use w3odatmd      , only : ndso, iaproc, addrstflds, rstfldlist, rstfldcnt, multifield
+  use w3odatmd      , only : ndso, iaproc, addrstflds, rstfldlist, rstfldcnt, multifield, setnofillmode
   use w3wdatmd      , only : ice
   use wav_pio_mod   , only : pio_iotype, pio_ioformat, wav_pio_subsystem
   use wav_pio_mod   , only : handle_err, wav_pio_initdecomp
@@ -17,14 +17,14 @@ module wav_restart_mod
     use yowNodepool , only : ng
 #endif
   use pio
-  use netcdf
-
+  use netcdf, only : nf90_fill_int, nf90_fill_float
   implicit none
 
   private
 
   type(file_desc_t) :: pioid
   type(var_desc_t)  :: varid
+
   type(io_desc_t)   :: iodesc2dint
   type(io_desc_t)   :: iodesc2d
   type(io_desc_t)   :: iodesc3dk
@@ -57,17 +57,21 @@ contains
 
     use w3odatmd , only : time_origin, calendar_name, elapsed_secs
 
-    real            , intent(in) :: va(1:nspec,0:nsealm)
+    real            , intent(in) :: va(1:nspec,1:nsealm)
     integer         , intent(in) :: mapsta(ny,nx)
     character(len=*), intent(in) :: fname
 
     ! local variables
+    type(var_desc_t)  :: varidk(nspec)
     integer              :: timid, xtid, ytid, ztid
     integer              :: nseal_cpl, nmode
     integer              :: dimid3(3)
     integer              :: dimid4(4)
-    real   , allocatable :: lva(:,:)
+    !real   , allocatable :: lva(:,:)
     integer, allocatable :: lmap(:)
+    ! debug
+    integer :: old_mode
+    integer :: idstart
     !-------------------------------------------------------------------------------
 
 #ifdef W3_PDLIB
@@ -75,13 +79,12 @@ contains
 #else
     nseal_cpl = nseal
 #endif
-    ! if (.not. multifield) then
-    !   allocate(lva(1:nseal_cpl,1:nspec))
-    !   lva(:,:) = 0.0
-    ! end if
     allocate(lmap(1:nseal_cpl))
     lmap(:) = 0
-
+    ! if (.not. multifield) then
+    !   allocate(lva(1:nsealm,1:nspec))
+    !   lva = transpose(va)
+    ! end if
 
     ! create the netcdf file
     frame = 1
@@ -94,6 +97,20 @@ contains
     ierr = pio_createfile(wav_pio_subsystem, pioid, pio_iotype, trim(fname), nmode)
     call handle_err(ierr, 'pio_create')
     if (iaproc == 1) write(ndso,'(a)')' Writing restart file '//trim(fname)
+    if (setnofillmode) then
+      ierr = pio_set_fill(pioid, PIO_NOFILL, old_mode)
+      call handle_err(ierr, 'setting NC_NOFILL')
+      if (iaproc == 1) write(ndso,'(a)')' Setting nofillmode for restart file '//trim(fname)
+   else
+      if (iaproc == 1) write(ndso,'(a)')' Using fillmode for restart file '//trim(fname)
+    end if
+    if (iaproc == 1) then
+      if (multifield) then
+        write(ndso,'(a)')' VA will be written as separate fields '
+      else
+        write(ndso,'(a)')' VA will be written as single field '
+      end if
+    end if
 
     ierr = pio_def_dim(pioid,    'nx',    nx, xtid)
     ierr = pio_def_dim(pioid,    'ny',    ny, ytid)
@@ -124,9 +141,9 @@ contains
         write(cspec,'(i4.4)')kk
         vname = 'va'//cspec
         dimid3 = (/xtid, ytid, timid/)
-        ierr = pio_def_var(pioid, trim(vname), PIO_REAL, dimid3, varid)
+        ierr = pio_def_var(pioid, trim(vname), PIO_REAL, dimid3, varidk(kk))
         call handle_err(ierr, 'define variable '//trim(vname))
-        ierr = pio_put_att(pioid, varid, '_FillValue', nf90_fill_float)
+        ierr = pio_put_att(pioid, varidk(kk), '_FillValue', nf90_fill_float)
         call handle_err(ierr, 'define _FillValue '//trim(vname))
       end do
     else
@@ -206,24 +223,29 @@ contains
     !   end do
     ! end do
 
+    !va(1:nspec,1:nsealm)
+    !lva(1:nseal_cpl,1:nspec)
     if (multifield) then
+      !write(cspec,'(i4.4)')1
+      !vname = 'va'//cspec
+      !ierr = pio_inq_varid(varidk(1)%pioid,  trim(vname), varidk)
+      !idstart = varidk(1)%varID
+      !if(iaproc.eq.1)print *,'XXX ',varid%varID
+      !do kk = idstart,idstart+nspec-1
       do kk = 1,nspec
         write(cspec,'(i4.4)')kk
         vname = 'va'//cspec
-        ierr = pio_inq_varid(pioid,  trim(vname), varid)
-        call handle_err(ierr, 'inquire variable '//trim(vname))
-        call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
-        call pio_write_darray(pioid, varid, iodesc2d, va(kk,1:nseal_cpl), ierr)
+        !call handle_err(ierr, 'inquire variable '//trim(vname))
+        !call pio_setframe(pioid, varidk(kk), int(1,kind=PIO_OFFSET_KIND))
+        call pio_write_darray(pioid, varidk(kk), iodesc2d, va(kk,1:nseal_cpl), ierr)
         call handle_err(ierr, 'put variable '//trim(vname))
       end do
     else
-      !lva(1:nseal_cpl,:) = transpose(va(:,1:nseal_cpl))
       vname = 'va'
       ierr = pio_inq_varid(pioid,  trim(vname), varid)
       call handle_err(ierr, 'inquire variable '//trim(vname))
       call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
-      !call pio_write_darray(pioid, varid, iodesc3dk, lva, ierr)
-      call pio_write_darray(pioid, varid, iodesc3dk, transpose(va(:,1:nseal_cpl)), ierr)
+      call pio_write_darray(pioid, varid, iodesc3dk, transpose(va(1:nspec,1:nseal_cpl)), ierr)
       call handle_err(ierr, 'put variable '//trim(vname))
     end if
 
