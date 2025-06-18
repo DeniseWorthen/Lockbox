@@ -1,0 +1,221 @@
+++ date +%s
++ echo -n ' 1750255598,'
++ set +x
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) ncarenv/24.12
+
+The following have been reloaded with a version change:
+  1) ncarenv/24.12 => ncarenv/23.09
+
+
+Currently Loaded Modules:
+  1) ecflow/5.8.4                 42) fms/2023.04
+  2) mysql/8.0.33                 43) libjpeg/2.1.0
+  3) ncarenv/23.09           (S)  44) jasper/2.0.32
+  4) intel-classic/2023.2.1       45) libpng/1.6.37
+  5) stack-intel/2021.10.0        46) w3emc/2.10.0
+  6) craype/2.7.20                47) g2/3.5.1
+  7) cray-mpich/8.1.25            48) g2tmpl/1.13.0
+  8) libfabric/1.15.2.0           49) sp/2.5.0
+  9) cray-pals/1.2.11             50) ip/4.3.0
+ 10) stack-cray-mpich/8.1.25      51) gftl/1.10.0
+ 11) nghttp2/1.57.0               52) gftl-shared/1.6.1
+ 12) zlib/1.2.13                  53) fargparse/1.5.0
+ 13) curl/8.4.0                   54) mapl/2.40.3-esmf-8.6.0
+ 14) cmake/3.23.1                 55) scotch/7.0.4
+ 15) tar/1.34                     56) openblas/0.3.24
+ 16) gettext/0.21.1               57) py-setuptools/63.4.3
+ 17) libxcrypt/4.4.35             58) py-numpy/1.22.3
+ 18) sqlite/3.43.2                59) py-cftime/1.0.3.4
+ 19) util-linux-uuid/2.38.1       60) py-cython/0.29.36
+ 20) python/3.10.13               61) py-f90nml/1.4.3
+ 21) stack-python/3.10.13         62) py-markupsafe/2.1.3
+ 22) bacio/2.4.1                  63) py-jinja2/3.0.3
+ 23) git/2.41.0                   64) py-netcdf4/1.5.8
+ 24) pkg-config/0.29.2            65) py-bottleneck/1.3.7
+ 25) hdf5/1.14.0                  66) py-numexpr/2.8.4
+ 26) snappy/1.1.10                67) py-et-xmlfile/1.0.1
+ 27) zstd/1.5.2                   68) py-openpyxl/3.1.2
+ 28) c-blosc/1.21.5               69) py-six/1.16.0
+ 29) netcdf-c/4.9.2               70) py-python-dateutil/2.8.2
+ 30) nccmp/1.9.0.1                71) py-pytz/2023.3
+ 31) netcdf-fortran/4.6.1         72) py-pyxlsb/1.0.10
+ 32) parallel-netcdf/1.12.2       73) py-xlrd/2.0.1
+ 33) parallelio/2.5.10            74) py-xlsxwriter/3.1.7
+ 34) py-pip/23.1.2                75) py-xlwt/1.3.0
+ 35) wget/1.20.3                  76) py-pandas/1.5.3
+ 36) base-env/1.0.0               77) libyaml/0.2.5
+ 37) cprnc/1.0.3                  78) py-pyyaml/6.0
+ 38) crtm-fix/2.4.0.1_emc         79) ufs-pyenv/1.0.0
+ 39) git-lfs/3.3.0                80) ufs-weather-model-env/1.0.0
+ 40) crtm/2.4.0.1                 81) modules.fv3
+ 41) esmf/8.6.0
+
+  Where:
+   S:  Module is Sticky, requires --force to unload or purge
+
+ 
+
+++ date
++ echo 'Model started:  ' Wed 18 Jun 2025 08:06:42 AM MDT
++ export MPI_TYPE_DEPTH=20
++ MPI_TYPE_DEPTH=20
++ export OMP_STACKSIZE=512M
++ OMP_STACKSIZE=512M
++ export OMP_NUM_THREADS=1
++ OMP_NUM_THREADS=1
++ export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
++ ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
++ export ESMF_RUNTIME_PROFILE=ON
++ ESMF_RUNTIME_PROFILE=ON
++ export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
++ ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
++ export MPICH_ENV_DISPLAY=1
++ MPICH_ENV_DISPLAY=1
++ export MPICH_OFI_NIC_VERBOSE=1
++ MPICH_OFI_NIC_VERBOSE=1
++ sync
++ sleep 1
++ '[' NO = WHEN_RUNNING ']'
++ mpiexec -n 1280 -ppn 80 --hostfile /var/spool/pbs/aux/9801049.desched1 ./fv3.exe
+PE 0: MPICH processor detected:
+PE 0:   AMD Milan (25:1:1) (family:model:stepping)
+PE 0: MPICH environment settings =====================================
+PE 0:   MPICH_ENV_DISPLAY                              = 1
+PE 0:   MPICH_VERSION_DISPLAY                          = 0
+PE 0:   MPICH_ABORT_ON_ERROR                           = 0
+PE 0:   MPICH_CPUMASK_DISPLAY                          = 0
+PE 0:   MPICH_STATS_DISPLAY                            = 0
+PE 0:   MPICH_RANK_REORDER_METHOD                      = 1
+PE 0:   MPICH_RANK_REORDER_DISPLAY                     = 0
+PE 0:   MPICH_MEMCPY_MEM_CHECK                         = 0
+PE 0:   MPICH_USE_SYSTEM_MEMCPY                        = 0
+PE 0:   MPICH_OPTIMIZED_MEMCPY                         = 1
+PE 0:   MPICH_ALLOC_MEM_PG_SZ                          = 4096
+PE 0:   MPICH_ALLOC_MEM_POLICY                         = PREFERRED
+PE 0:   MPICH_ALLOC_MEM_AFFINITY                       = SYS_DEFAULT
+PE 0:   MPICH_MALLOC_FALLBACK                          = 0
+PE 0:   MPICH_MEM_DEBUG_FNAME                          = 
+PE 0:   MPICH_INTERNAL_MEM_AFFINITY                    = SYS_DEFAULT
+PE 0:   MPICH_NO_BUFFER_ALIAS_CHECK                    = 0
+PE 0:   MPICH_COLL_SYNC                                = 0
+PE 0:   MPICH_SINGLE_HOST_ENABLED                        = 1
+PE 0: MPICH/RMA environment settings =================================
+PE 0:   MPICH_RMA_MAX_PENDING                          = 128
+PE 0:   MPICH_RMA_SHM_ACCUMULATE                       = 0
+PE 0: MPICH/Dynamic Process Management environment settings ==========
+PE 0:   MPICH_DPM_DIR                                  = 
+PE 0:   MPICH_LOCAL_SPAWN_SERVER                       = 0
+PE 0:   MPICH_SPAWN_USE_RANKPOOL                       = 1
+PE 0: MPICH/SMP environment settings =================================
+PE 0:   MPICH_SMP_SINGLE_COPY_MODE                     = CMA
+PE 0:   MPICH_SMP_SINGLE_COPY_SIZE                     = 8192
+PE 0:   MPICH_SHM_PROGRESS_MAX_BATCH_SIZE              = 8
+PE 0: MPICH_OFI_NIC_POLICY = BLOCK
+PE 0: ======================== Display NIC Addrs  ========================
+PE 0: Hostname: dec0797
+PE 0:   MPICH_OFI_NIC_POLICY: BLOCK
+PE 0:   Number of NICs: 1
+PE 0:     nic_index 0: domain_name=cxi0, numa_domain=2, addr=0x2002
+PE 0:   Number of NUMA domains: 8
+PE 0:     numa_domain 0: cpu_list=[0-15,128-143]
+PE 0:     numa_domain 1: cpu_list=[16-31,144-159]
+PE 0:     numa_domain 2: cpu_list=[32-47,160-175]
+PE 0:     numa_domain 3: cpu_list=[48-63,176-191]
+PE 0:     numa_domain 4: cpu_list=[64-79,192-207]
+PE 0:     numa_domain 5: cpu_list=[80-95,208-223]
+PE 0:     numa_domain 6: cpu_list=[96-111,224-239]
+PE 0:     numa_domain 7: cpu_list=[112-127,240-255]
+PE 0: ====================================================================
+PE 0: MPICH/OFI environment settings =================================
+PE 0:   MPICH_OFI_USE_PROVIDER                         = cxi
+PE 0:   MPICH_OFI_VERBOSE                              = 0
+PE 0:   MPICH_OFI_NIC_VERBOSE                          = 1
+PE 0:   FI_CXI_RDZV_THRESHOLD                          = 16384
+PE 0:   FI_CXI_RDZV_EAGER_SIZE                         = 2048
+PE 0:   FI_CXI_DEFAULT_CQ_SIZE                         = 131072
+PE 0:   FI_CXI_OFLOW_BUF_SIZE                          = 12582912
+PE 0:   FI_CXI_OFLOW_BUF_COUNT                         = 3
+PE 0:   FI_CXI_RX_MATCH_MODE                           = hybrid
+PE 0:   FI_CXI_REQ_BUF_MIN_POSTED                      = 6
+PE 0:   FI_CXI_REQ_BUF_SIZE                            = 12582912
+PE 0:   FI_CXI_REQ_BUF_MAX_CACHED                      = 0
+PE 0:   FI_MR_CACHE_MAX_SIZE                           = -1
+PE 0:   FI_MR_CACHE_MAX_COUNT                          = 524288
+PE 0:   MPICH_OFI_DEFAULT_TCLASS                       = TC_BEST_EFFORT
+PE 0:   MPICH_OFI_TCLASS_ERRORS                        = warn
+PE 0:   MPICH_OFI_CXI_PID_BASE                         = 0
+PE 0:   MPICH_OFI_USE_SCALABLE_STARTUP                 = 1
+PE 0:   MPICH_OFI_CXI_COUNTER_REPORT                   = 1
+PE 0:   MPICH_OFI_CXI_COUNTER_VERBOSE                  = 0
+PE 0:   MPICH_OFI_CXI_COUNTER_FILE                     = NULL
+PE 0:   MPICH_OFI_CXI_COUNTER_REPORT_FILE              = NULL
+PE 0:   MPICH_OFI_NIC_POLICY                           = BLOCK
+PE 0:   MPICH_OFI_NIC_MAPPING                          = NULL
+PE 0:   MPICH_OFI_NUM_NICS                             = NULL
+PE 0:   MPICH_CH4_OFI_ENABLE_CONTROL_AUTO_PROGRESS     = -1
+PE 0:   MPICH_CH4_OFI_ENABLE_DATA_AUTO_PROGRESS        = -1
+PE 0:   MPICH_OFI_RMA_STARTUP_CONNECT                  = 0
+PE 0:   MPICH_OFI_SKIP_NIC_SYMMETRY_TEST               = 0
+PE 0:   MPICH_OFI_STARTUP_CONNECT                      = 0
+PE 0: MPICH/COLLECTIVE environment settings ==========================
+PE 0:   MPICH_COLL_OPT_OFF                             = 0
+PE 0:   MPICH_BCAST_ONLY_TREE                          = 1
+PE 0:   MPICH_BCAST_INTERNODE_RADIX                    = 4
+PE 0:   MPICH_BCAST_INTRANODE_RADIX                    = 4
+PE 0:   MPICH_ALLTOALL_SHORT_MSG                       = 64-512
+PE 0:   MPICH_ALLTOALL_SYNC_FREQ                       = 1-24
+PE 0:   MPICH_ALLTOALL_BLK_SIZE                        = 16384
+PE 0:   MPICH_ALLTOALL_CHUNKING_MAX_NODES              = 90
+PE 0:   MPICH_ALLTOALLV_THROTTLE                       = 8
+PE 0:   MPICH_ALLGATHER_VSHORT_MSG                     = 8192-16384
+PE 0:   MPICH_ALLGATHERV_VSHORT_MSG                    = 8192-16384
+PE 0:   MPICH_GATHERV_SHORT_MSG                        = 131072
+PE 0:   MPICH_GATHERV_MIN_COMM_SIZE                    = 64
+PE 0:   MPICH_GATHERV_MAX_TMP_SIZE                     = 536870912
+PE 0:   MPICH_GATHERV_SYNC_FREQ                        = 16
+PE 0:   MPICH_IGATHERV_MIN_COMM_SIZE                   = 1000
+PE 0:   MPICH_IGATHERV_SYNC_FREQ                       = 100
+PE 0:   MPICH_IGATHERV_RAND_COMMSIZE                   = 2048
+PE 0:   MPICH_IGATHERV_RAND_RECVLIST                   = 0
+PE 0:   MPICH_SCATTERV_SHORT_MSG                       = 2048-8192
+PE 0:   MPICH_SCATTERV_MIN_COMM_SIZE                   = 64
+PE 0:   MPICH_SCATTERV_MAX_TMP_SIZE                    = 536870912
+PE 0:   MPICH_SCATTERV_SYNC_FREQ                       = 16
+PE 0:   MPICH_SCATTERV_SYNCHRONOUS                     = 0
+PE 0:   MPICH_ALLREDUCE_MAX_SMP_SIZE                   = 262144
+PE 0:   MPICH_ALLREDUCE_BLK_SIZE                       = 716800
+PE 0:   MPICH_GPU_ALLGATHER_VSHORT_MSG_ALGORITHM       = 1
+PE 0:   MPICH_GPU_ALLREDUCE_USE_KERNEL                 = 0
+PE 0:   MPICH_GPU_COLL_STAGING_BUF_SIZE                = 1048576
+PE 0:   MPICH_GPU_ALLREDUCE_STAGING_THRESHOLD          = 256
+PE 0:   MPICH_ALLREDUCE_NO_SMP                         = 0
+PE 0:   MPICH_REDUCE_NO_SMP                            = 0
+PE 0:   MPICH_REDUCE_SCATTER_COMMUTATIVE_LONG_MSG_SIZE = 524288
+PE 0:   MPICH_REDUCE_SCATTER_MAX_COMMSIZE              = 1000
+PE 0:   MPICH_SHARED_MEM_COLL_OPT                      = 1
+PE 0:   MPICH_SHARED_MEM_COLL_NCELLS                   = 8
+PE 0:   MPICH_SHARED_MEM_COLL_CELLSZ                   = 256
+PE 0: MPICH MPIIO environment settings ===============================
+PE 0:   MPICH_MPIIO_HINTS_DISPLAY                      = 0
+PE 0:   MPICH_MPIIO_HINTS                              = NULL
+PE 0:   MPICH_MPIIO_ABORT_ON_RW_ERROR                  = disable
+PE 0:   MPICH_MPIIO_CB_ALIGN                           = 2
+PE 0:   MPICH_MPIIO_DVS_MAXNODES                       = -1
+PE 0:   MPICH_MPIIO_AGGREGATOR_PLACEMENT_DISPLAY       = 0
+PE 0:   MPICH_MPIIO_AGGREGATOR_PLACEMENT_STRIDE        = -1
+PE 0:   MPICH_MPIIO_MAX_NUM_IRECV                      = 50
+PE 0:   MPICH_MPIIO_MAX_NUM_ISEND                      = 50
+PE 0:   MPICH_MPIIO_MAX_SIZE_ISEND                     = 10485760
+PE 0:   MPICH_MPIIO_OFI_STARTUP_CONNECT                = disable
+PE 0:   MPICH_MPIIO_OFI_STARTUP_NODES_AGGREGATOR        = 2
+PE 0: MPICH MPIIO statistics environment settings ====================
+PE 0:   MPICH_MPIIO_STATS                              = 0
+PE 0:   MPICH_MPIIO_TIMERS                             = 0
+PE 0:   MPICH_MPIIO_WRITE_EXIT_BARRIER                 = 1
+PE 0: MPICH Thread Safety settings ===================================
+PE 0:   MPICH_ASYNC_PROGRESS                           = 0
+PE 0:   MPICH_OPT_THREAD_SYNC                          = 1
+PE 0:   rank 0 required = multiple, was provided = multiple
