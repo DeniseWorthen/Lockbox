@@ -1,0 +1,26 @@
+&input_nml
+  input%forcing%water_levels	= 'F'
+  input%forcing%winds      = 'C'
+  input%forcing%currents   = 'C'
+  input%forcing%ice_conc   = 'C'
+  input%forcing%ice_param1 = 'F'
+  input%forcing%ice_param5 = 'F'
+/
+
+&output_type_nml
+  type%field%list = 'WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR CHA'
+  type%point%file = 'ww3_points.list'
+  type%restart%extra = 'ice'
+/
+
+&output_date_nml
+  date%field%outffile  = '1'
+  date%field%stride    = '3600'
+  date%point%outffile  = '1'
+  date%point%stride    = '3600'
+/
+&output_path_nml
+  path%grd_out = './'
+  path%pnt_out = './'
+  path%rst_out = './'
+/

@@ -1,0 +1,40 @@
+start_year:              2024
+start_month:             12
+start_day:               07
+start_hour:              18
+start_minute:            0
+start_second:            0
+nhours_fcst:             15
+fhrot:                   3
+
+dt_atmos:                300
+restart_interval:        3 6 9
+restart_fh:              6 9 12 15 18
+
+quilting:                .true.
+quilting_restart:        .true.
+write_groups:            4
+write_tasks_per_group:   60
+itasks:                  1
+output_history:          .true.
+history_file_on_native_grid: .false.
+write_dopost:            .false.
+write_nsflip:            .true.
+num_files:               2
+fv3atm_output_dir:       ./
+filename_base:           'atm' 'sfc'
+output_grid:             gaussian_grid
+output_file:             'netcdf' 'netcdf'
+zstandard_level:         0
+ideflate:                1
+quantize_mode:           'quantize_bitround'
+quantize_nsd:            14
+ichunk2d:                1536
+jchunk2d:                768
+ichunk3d:                1536
+jchunk3d:                768
+kchunk3d:                1
+imo:                     1536
+jmo:                     768
+output_fh:                3 4 5 6 7 8 9
+iau_offset:              6
