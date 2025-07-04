@@ -68,6 +68,8 @@ contains
     nstreams = size(sdat%stream)
     if (mytask == 0) print *,'XX1 nstreams = ',nstreams
     nfiles = size(sdat%stream%nfiles)
+    ! abort if stream mesh is not same for all files?
+
     !do ns = 1,nstreams
     !   if (mytask == 0) print *,'XX1 ',ns,sdat%stream(ns)%nfiles
     !end do
@@ -75,17 +77,28 @@ contains
     !nfiles = sdat%stream(1)%nfiles
     nvars = size(sdat%stream%nvars)
     if (mytask == 0) print *,'XX1 nvars = ',nvars
-
+    ! abort if stream filevars not same for all files?
     allocate(streamfilelist(1:nfiles))
+    allocate(streamyears(1:nfiles,3))          ! first, last, align
+    allocate(streaminterpolation(1:nfiles,3))  ! mapalgo, taxmode, tinterpalgo
+    allocate(streadtlimit(1:nfiles))
     allocate(streamfilevars(1:nvars,2))
 
-    ! build the file and variable lists
+    ! build the stream lists
     fcnt = 0
     vcnt = 0
     do ns = 1,nstreams
        do nf = 1,nfiles
           fcnt = fcnt + 1
+          streammeshfile(fcnt) = trim(sdat%stream(ns)%meshfile)
           streamfilelist(fcnt) = trim(sdat%stream(ns)%file(nf)%name)
+          streamyears(fcnt,1) = sdat%stream(ns)%yearFirst
+          streamyears(fcnt,2) = sdat%stream(ns)%yearLast
+          streamyears(fcnt,3) = sdat%stream(ns)%yearAlign
+          streaminterpolation(fcnt,1) = trim(sdat%stream(ns)%mapalgo)
+          streaminterpolation(fcnt,2) = trim(sdat%stream(ns)%taxmode)
+          streaminterpolation(fcnt,3) = trim(sdat%stream(ns)%tinterpalgo)
+          streamdtlimit(fcnt) = sdat%stream(ns)%dtlimit
        end do
        do nv = 1,nvars
           vcnt = vcnt + 1
@@ -94,6 +107,7 @@ contains
        end do
     end do
 
+    ! do checks=== mesh file are same, interpolation modes all the same, filevars all the same?
     ! if (mytask == 0) then
     !    write(logunit,'(a)')  ' stream settings: '
     !    write(logunit,'(a)' )  '  stream_mesh_filename = '//trim(sdat%stream(1)%meshfile)
@@ -110,25 +124,25 @@ contains
     ! endif
 
     ! initialize sdat
-    call shr_strdata_init_from_inline(sdat,                      &
-         my_task             = mytask,                           &
-         logunit             = logunit,                          &
-         compname            = 'OCN',                            &
-         model_clock         = model_clock,                      &
-         model_mesh          = model_mesh,                       &
-         stream_meshfile     = sdat%stream%meshfile,    &
-         stream_lev_dimname  = 'null',                           &
-         stream_mapalgo      = sdat%stream%mapalgo,     &
-         stream_filenames    = streamfilelist,                   &
-         stream_fldlistFile  = streamfilevars(:,1),              &
-         stream_fldListModel = streamfilevars(:,2),              &
-         stream_yearFirst    = sdat%stream%yearFirst,         &
-         stream_yearLast     = sdat%stream%yearLast,          &
-         stream_yearAlign    = sdat%stream%yearAlign ,        &
-         stream_offset       = 0,                                &
-         stream_taxmode      = sdat%stream%taxmode,     &
-         stream_dtlimit      = sdat%stream%dtlimit,           &
-         stream_tintalgo     = sdat%stream%tinterpalgo, &
+    call shr_strdata_init_from_inline(sdat,              &
+         my_task             = mytask,                   &
+         logunit             = logunit,                  &
+         compname            = 'OCN',                    &
+         model_clock         = model_clock,              &
+         model_mesh          = model_mesh,               &
+         stream_meshfile     = streammeshfile,           &
+         stream_lev_dimname  = 'null',                   &
+         stream_mapalgo      = streaminterpolation(:,1), &
+         stream_filenames    = streamfilelist,           &
+         stream_fldlistFile  = streamfilevars(:,1),      &
+         stream_fldListModel = streamfilevars(:,2),      &
+         stream_yearFirst    = streamyears(:,1),         &
+         stream_yearLast     = streamyears(:,2),         &
+         stream_yearAlign    = streamyears(:.3) ,        &
+         stream_offset       = 0,                        &
+         stream_taxmode      = streaminterpolation(:,2), &
+         stream_dtlimit      = streamdtlimit,            &
+         stream_tintalgo     = streaminterpolation(:,3), &
          rc                  = rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
