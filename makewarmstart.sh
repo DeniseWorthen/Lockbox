@@ -12,19 +12,19 @@ datetype1=${year}${mon}${day}.${hour}"0000"
 datetype2=${year}-${mon}-${day}-${hour}
 datetype3=${year}-${mon}-${day}-${secs}
 
-inputroot=/scratch1/NCEPDEV/stmp4/Denise.Worthen/input-data-20250331
+inputroot=/gpfs/f6/infra-cpu/world-shared/Denise.Worthen/input-data-2025XXXX/
 
 ##C48-5deg
- # ares=48
- # ores=500
- # tres=5deg
- # levels=127
+#  ares=48
+#  ores=500
+#  tres=5deg
+#  levels=127
 
 ##C24-5deg
- # ares=24
- # ores=500
- # tres=5deg
- # levels=41
+#  ares=24
+#  ores=500
+#  tres=5deg
+#  levels=41
 
 ##C24-9deg
 # ares=24
@@ -39,28 +39,34 @@ inputroot=/scratch1/NCEPDEV/stmp4/Denise.Worthen/input-data-20250331
  levels=41
 
 # From control run
-sorc=/scratch1/NCEPDEV/stmp4/Denise.Worthen/bl.ultra.4c9f8e4f/cpld_control_c${ares}_${tres}_intel
+#sorc=/gpfs/f6/infra-cpu/proj-shared/Denise.Worthen/bl.sfs.51689a69/cpld_control_c${ares}_${tres}_intel
+sorc=/gpfs/f6/infra-cpu/proj-shared/Denise.Worthen/RT_BASELINE/Denise.Worthen/FV3_RT/REGRESSION_TEST/cpld_control_c${ares}_${tres}_intel
 
 # MOM6
 dest=${inputroot}/MOM6_IC/C${ares}mx${ores}/2021032306
+mkdir -p ${dest}
 cp ${sorc}/RESTART/${datetype1}.MOM.res.nc  ${dest}/MOM.res.nc
 
 # CICE6
 dest=${inputroot}/CICE_IC/C${ares}mx${ores}/2021032306
+mkdir -p ${dest}
 cp ${sorc}/RESTART/iced.${datetype3}.nc ${dest}/iced.${datetype3}.nc
 echo INPUT/iced.${datetype3}.nc>${dest}/ice.restart_file
 
 # CMEPS
 dest=${inputroot}/CMEPS_IC/C${ares}mx${ores}/2021032306
+mkdir -p ${dest}
 cp ${sorc}/RESTART/ufs.cpld.cpl.r.${datetype3}.nc ${dest}
 echo ufs.cpld.cpl.r.${datetype3}.nc>${dest}/rpointer.cpl
 
 #WW3
 dest=${inputroot}/WW3_IC/C${ares}mx${ores}/2021032306
+mkdir -p ${dest}
 cp ${sorc}/ufs.cpld.ww3.r.${datetype3}.nc ${dest}
 
 # #FV3 restarts
 dest=${inputroot}/FV3_input_data${ares}/INPUT_L${levels}_mx${ores}/2021032306
+mkdir -p ${dest}
 
 cp ${sorc}/RESTART/${datetype1}.fv_core.res.nc  ${dest}/fv_core.res.nc
 cp ${sorc}/RESTART/${datetype1}.fv_core.res.tile1.nc  ${dest}/fv_core.res.tile1.nc
