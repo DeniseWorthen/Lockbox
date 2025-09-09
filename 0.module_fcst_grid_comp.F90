@@ -201,7 +201,7 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
       grid_typekind = ESMF_TYPEKIND_R8
     endif
 
-    if (trim(name)=="global") then
+    if (trim(name) == "global" .and. Atmos%grid_type /= 4) then
       ! global domain
       call ESMF_InfoGet(info, key="tilesize", value=tilesize, rc=rc); ESMF_ERR_ABORT(rc)
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
@@ -219,7 +219,7 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
                                         name="fcst_grid", rc=rc)
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
     else
-      ! nest domain
+      ! nest and doubly periodic domain
       call ESMF_InfoGet(info, key="nx", value=nx, rc=rc)
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
       call ESMF_InfoGet(info, key="ny", value=ny, rc=rc)
@@ -238,6 +238,7 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
     endif
 
     ! - Create coordinate arrays around allocations held within Atmos data structure and set in Grid
+
 
     call ESMF_GridGet(grid, staggerloc=ESMF_STAGGERLOC_CENTER, distgrid=distgrid, rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
@@ -441,6 +442,7 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
 !
   subroutine init_advertise(nest, importState, exportState, clock, rc)
 !
+
     type(ESMF_GridComp)                    :: nest
     type(ESMF_State)                       :: importState, exportState
     type(ESMF_Clock)                       :: clock
@@ -449,24 +451,62 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
 !***  local variables
 !
     integer       :: i
+    logical, allocatable :: valid(:)
 
     rc     = ESMF_SUCCESS
-!
+
+    !
+    if (mype == 0)print *,'XXX0 ','cplchm=',GFS_control%cplchm,'  cplflx=',GFS_control%cplflx, &
+         " cplice=",GFS_control%cplice," cplwav=",GFS_control%cplwav, &
+         " cplwav2atm= ",GFS_control%cplwav2atm," cpllnd= ",GFS_control%cpllnd,&
+         " cpllnd2atm ",GFS_control%cpllnd2atm
+
+    allocate(valid(size(importFieldsInfo)))
+    valid(:) = .true.
+
+    do i = 1,size(importFieldsInfo)
+       if (trim(importFieldsInfo(i)%tag) == 'none') valid(i) = .false.
+       if (.not. GFS_control%cplchm .and. trim(importFieldsInfo(i)%tag) == 'cplchm') valid(i) = .false.
+       if (.not. GFS_control%cplice .and. trim(importFieldsInfo(i)%tag) == 'cplice') valid(i) = .false.
+       if (.not. GFS_control%cplaqm .and. trim(importFieldsInfo(i)%tag) == 'cplaqm') valid(i) = .false.
+       if (.not. GFS_control%cpl_fire .and. trim(importFieldsInfo(i)%tag) == 'cpl_fire') valid(i) = .false.
+       !if(mype == 0)print *,'XXX1 import ',i,trim(importFieldsInfo(i)%name),valid(i)
+    end do
+
     ! importable fields:
     do i = 1, size(importFieldsInfo)
-      call NUOPC_Advertise(importState, &
-                           StandardName=trim(importFieldsInfo(i)%name), &
-                           SharePolicyField='share', rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+       if (valid(i)) then
+          if (mype ==0) print *,'XXX1a advertise import state field '//trim(importFieldsInfo(i)%name)
+          call NUOPC_Advertise(importState, &
+                               StandardName=trim(importFieldsInfo(i)%name), &
+                               SharePolicyField='share', rc=rc)
+          if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+       end if
+    end do
+    deallocate(valid)
+
+    allocate(valid(size(exportFieldsInfo)))
+    valid(:) = .true.
+    do i = 1,size(exportFieldsInfo)
+       if (trim(exportFieldsInfo(i)%tag) == 'none') valid(i) = .false.
+       if (.not. GFS_control%cplchm .and. trim(exportFieldsInfo(i)%tag) == 'cplchm') valid(i) = .false.
+       if (.not. GFS_control%cplice .and. trim(exportFieldsInfo(i)%tag) == 'cplice') valid(i) = .false.
+       if (.not. GFS_control%cplaqm .and. trim(exportFieldsInfo(i)%tag) == 'cplaqm') valid(i) = .false.
+       if (.not. GFS_control%cpl_fire .and. trim(exportFieldsInfo(i)%tag) == 'cpl_fire') valid(i) = .false.
+       !if(mype == 0)print *,'XXX2 export ',i,trim(exportFieldsInfo(i)%name),valid(i)
     end do
 
     ! exportable fields:
     do i = 1, size(exportFieldsInfo)
-      call NUOPC_Advertise(exportState, &
-                           StandardName=trim(exportFieldsInfo(i)%name), &
-                           SharePolicyField='share', rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+       if (valid(i)) then
+          if (mype ==0) print *,'XXX2a advertise export state field '//trim(exportFieldsInfo(i)%name)
+          call NUOPC_Advertise(exportState, &
+                               StandardName=trim(exportFieldsInfo(i)%name), &
+                               SharePolicyField='share', rc=rc)
+          if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+       end if
     end do
+    deallocate(valid)
 
 !
 !-----------------------------------------------------------------------
@@ -525,7 +565,7 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
     end if
 
     ! -- initialize export fields if applicable
-    call setup_exportdata(Atmos, rc=rc)
+    call setup_exportdata(rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__,  file=__FILE__)) return
 
     ! -- realize connected fields in importState
@@ -535,7 +575,7 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__,  file=__FILE__)) return
 !
 !-----------------------------------------------------------------------
-!
+!2
    end subroutine init_realize
 !
 !-----------------------------------------------------------------------
@@ -594,8 +634,8 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
     logical               :: top_parent_is_global
     logical               :: history_file_on_native_grid
 
-    integer                       :: num_restart_interval, restart_starttime
-    real,dimension(:),allocatable :: restart_interval
+    integer                       :: num_restart_fh, restart_starttime
+    real,dimension(:),allocatable :: restart_fh
 
     integer           :: urc
     type(ESMF_State)  :: tempState
@@ -633,16 +673,16 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
     call ESMF_ConfigLoadFile(config=CF ,filename='model_configure' ,rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
 
-    num_restart_interval = ESMF_ConfigGetLen(config=CF, label ='restart_interval:',rc=rc)
+    num_restart_fh = ESMF_ConfigGetLen(config=CF, label ='restart_interval:',rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-    if (mype == 0) print *,'af ufs config,num_restart_interval=',num_restart_interval
-    if (num_restart_interval<=0) num_restart_interval = 1
-    allocate(restart_interval(num_restart_interval))
-    restart_interval = 0
-    call ESMF_ConfigGetAttribute(CF,valueList=restart_interval,label='restart_interval:', &
-                                 count=num_restart_interval, rc=rc)
+    if (mype == 0) print *,'af ufs config,num_restart_fh=',num_restart_fh
+    if (num_restart_fh<=0) num_restart_fh = 1
+    allocate(restart_fh(num_restart_fh))
+    restart_fh = 0
+    call ESMF_ConfigGetAttribute(CF,valueList=restart_fh,label='restart_interval:', &
+                                 count=num_restart_fh, rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-    if (mype == 0) print *,'af ufs config,restart_interval=',restart_interval
+    if (mype == 0) print *,'af ufs config,restart_fh=',restart_fh
 !
     call fms_init(fcst_mpi_comm%mpi_val)
     call mpp_init()
@@ -760,56 +800,9 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
     Time_step = set_time (dt_atmos,0)
     if (mype == 0) write(*,*)'time_init=', date_init,'time=',date,'time_end=',date_end,'dt_atmos=',dt_atmos
 
-! set up forecast time array that controls when to write out restart files
-    frestart = 0
-    call get_time(Time_end - Time_init, total_inttime)
-! set iau offset time
-    Atmos%iau_offset    = iau_offset
-    if(iau_offset > 0 ) then
-      iautime =  set_time(iau_offset * 3600, 0)
-    endif
-! if the second item is -1, the first number is frequency
-    freq_restart = .false.
-    if(num_restart_interval == 2) then
-      if(restart_interval(2)== -1) freq_restart = .true.
-    endif
-    if(freq_restart) then
-      if(restart_interval(1) >= 0) then
-        tmpvar = restart_interval(1) * 3600
-        Time_step_restart = set_time (tmpvar, 0)
-        if(iau_offset > 0 ) then
-          Time_restart = Time_init + iautime + Time_step_restart
-          frestart(1) = tmpvar + iau_offset *3600
-        else
-          Time_restart = Time_init + Time_step_restart
-          frestart(1) = tmpvar
-        endif
-        if(restart_interval(1) > 0) then
-          i = 2
-          do while ( Time_restart < Time_end )
-            frestart(i) = frestart(i-1) + tmpvar
-            Time_restart = Time_restart + Time_step_restart
-             i = i + 1
-          enddo
-        endif
-      endif
-! otherwise it is an array with forecast time at which the restart files will be written out
-    else if(num_restart_interval >= 1) then
-      if(num_restart_interval == 1 .and. restart_interval(1) == 0 ) then
-        frestart(1) = total_inttime
-      else
-        if(iau_offset > 0 ) then
-          restart_starttime = iau_offset *3600
-        else
-          restart_starttime = 0
-        endif
-        do i=1,num_restart_interval
-          frestart(i) = restart_interval(i) * 3600. + restart_starttime
-        enddo
-      endif
-    endif
-! if to write out restart at the end of forecast
-    if (mype == 0) print *,'frestart=',frestart(1:10)/3600, 'total_inttime=',total_inttime
+    call fcst_time_array_setup(Time_init, Time_end, Time_step_restart, &
+                                   Time_restart, num_restart_fh, &
+                                   restart_fh)
 
 !------ initialize component models ------
 
@@ -888,7 +881,8 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
           call ESMF_InfoGetFromHost(fcstGridComp(n), info=info, rc=rc); ESMF_ERR_ABORT(rc)
           call ESMF_InfoSet(info, key="layout", values=layout, rc=rc); ESMF_ERR_ABORT(rc)
           call ESMF_InfoSet(info, key="tilesize", value=Atmos%mlon, rc=rc); ESMF_ERR_ABORT(rc)
-
+          call ESMF_InfoSet(info, key="nx", value=nx, rc=rc); ESMF_ERR_ABORT(rc)
+          call ESMF_InfoSet(info, key="ny", value=ny, rc=rc); ESMF_ERR_ABORT(rc)
           call ESMF_GridCompSetServices(fcstGridComp(n), SetServicesNest, userrc=urc, rc=rc)
           if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
           if (ESMF_LogFoundError(rcToCheck=urc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__, rcToReturn=rc)) return
@@ -1159,6 +1153,9 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
                                          nsoillev=numSoilLayers, &
                                          ntracers=numTracers)
 
+      call ESMF_ConfigDestroy(cf, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+
       if (mype == 0) write(*,*)'fcst_initialize total time: ', mpi_wtime() - timeis
 !
 !-----------------------------------------------------------------------
@@ -1194,6 +1191,69 @@ if (rc /= ESMF_SUCCESS) write(0,*) 'rc=',rc,__FILE__,__LINE__; if(ESMF_LogFoundE
      end subroutine create_bundle_and_add_it_to_state
 
    end subroutine fcst_initialize
+
+  !> Create forecast hour time array. This will be used
+  !> to dictate when restart files are going to be written.
+  !>
+  !> @param[inout] Time_init model initialization time
+  !> @param[inout] Time_end model end time
+  !> @param[inout] Time_step_restart restart time based on restart_fh
+  !> @param[inout] Time_restart calculated restart time
+  !> @param[inout] num_restart_fh user defined restart interval
+  !> @param[inout] restart_fh restart interval, allocatable
+  !>
+  !> @author Daniel Sarmiento @date May 16, 2025
+  subroutine fcst_time_array_setup(Time_init, Time_end, Time_step_restart, &
+                                   Time_restart, num_restart_fh, &
+                                   restart_fh)
+
+    type(time_type), intent(inout)                 :: Time_init, Time_end, &
+                                                      Time_step_restart, &
+                                                      Time_restart
+    type(time_type)                                :: iautime
+    integer,         intent(inout)                 :: num_restart_fh
+    integer                                        :: total_inttime, tmpvar, &
+                                                      i, restart_starttime
+    logical                                        :: freq_restart
+    real, dimension(:), allocatable, intent(inout) :: restart_fh
+
+    ! set up forecast time array that controls when to write out restart files
+    frestart = 0
+    call get_time(Time_end - Time_init, total_inttime)
+    ! if the second item is -1, the first number is frequency
+    freq_restart = .false.
+    if(num_restart_fh == 2) then
+      if(restart_fh(2)== -1) freq_restart = .true.
+    endif
+    if(freq_restart) then
+      if(restart_fh(1) >= 0) then
+        tmpvar = restart_fh(1) * 3600
+        Time_step_restart = set_time (tmpvar, 0)
+        Time_restart = Time_init + Time_step_restart
+        frestart(1) = tmpvar
+        if(restart_fh(1) > 0) then
+          i = 2
+          do while ( Time_restart < Time_end )
+            frestart(i) = frestart(i-1) + tmpvar
+            Time_restart = Time_restart + Time_step_restart
+            i = i + 1
+          enddo
+        endif
+      endif
+    ! otherwise it is an array with forecast time at which the restart files will be written out
+    else if(num_restart_fh >= 1) then
+      if(num_restart_fh == 1 .and. restart_fh(1) == 0 ) then
+        frestart(1) = total_inttime
+      else
+        restart_starttime = 0
+        do i=1,num_restart_fh
+          frestart(i) = restart_fh(i) * 3600. + restart_starttime
+        enddo
+      endif
+    endif
+    ! if to write out restart at the end of forecast
+    if (mype == 0) print *,'frestart=',frestart(1:10)/3600, 'total_inttime=',total_inttime
+  end subroutine fcst_time_array_setup
 !
 !-----------------------------------------------------------------------
 !#######################################################################

@@ -1,0 +1,6 @@
+npt_unit       = 'y'
+npt            = 1
+dumpfreq       = 'm'
+dumpfreq_n     = 12
+diagfreq       = 24
+

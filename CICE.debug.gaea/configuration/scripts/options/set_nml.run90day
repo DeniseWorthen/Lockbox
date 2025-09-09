@@ -1,0 +1,4 @@
+npt_unit       = 'd'
+npt            = 90
+dumpfreq       = 'd'
+dumpfreq_n     = 30
