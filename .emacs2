@@ -10,27 +10,19 @@
 ;      (expand-file-name "custom.el"
 ;                        (expand-file-name ".xemacs" "~")))
 
-
-;(require 'package)
-;(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-;; and `package-pinned-packages`. Most users will not need or want to do this.
-;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-;(package-initialize)
-
-
 ;(setq lazy-highlight-cleanup nil)
 (setq column-number-mode t)
 (setq show-paren-mode 1)
-(setq reb-re-syntax 'string)
-(setq-default fill-column 100)
-;(load "~/bin/columnize" nil t)
 
 (setq-default indent-tabs-mode nil)
 (setq fortran-blink-matching-if nil)
 
 ;(load-file user-init-file)
 ;(load-file custom-file)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; multiple cursors                                                       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "C-c m c") 'mc/edit-lines)
 
 ; Fortran-90 mode
 (autoload 'f90-mode "f90"
@@ -83,22 +75,10 @@
 ;  )
 ;)
 
-(defun batch-replace-strings (replacement-alist)
-  "Prompt user for pairs of strings to search/replace, then do so in the current buffer"
-  (interactive (list (batch-replace-strings-prompt)))
-  (dolist (pair replacement-alist)
-    (save-excursion
-      (replace-string (car pair) (cdr pair)))))
-
-(defun batch-replace-strings-prompt ()
-  "prompt for string pairs and return as an association list"
-  (let (from-string
-        ret-alist)
-    (while (not (string-equal "" (setq from-string (read-string "String to search (RET to stop): "))))
-      (setq ret-alist
-            (cons (cons from-string (read-string (format "Replace %s with: " from-string)))
-                  ret-alist)))
-    ret-alist))
+(defun my-align-quotes (start end)
+  "Align quoted strings in the region."
+  (interactive "r")
+  (align-regexp start end "\\(\"\\s-*\\)" 1 1 t))
 
 (add-hook 'before-save-hook
           'delete-trailing-whitespace)
