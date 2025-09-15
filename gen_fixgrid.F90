@@ -16,76 +16,91 @@
 program gen_fixgrid
 
   use ESMF
+  use mpi_f08
 
   use grdvars
   use inputnml
-  use gengrid_kinds,     only: CL, CS, dbl_kind, real_kind, int_kind
-  use angles,            only: find_angq, find_ang
-  use vertices,          only: fill_vertices, fill_bottom, fill_top
-  use mapped_mask,       only: make_frac_land
-  use postwgts,          only: make_postwgts
-  use tripolegrid,       only: write_tripolegrid
-  use cicegrid,          only: write_cicegrid
-  use scripgrid,         only: write_scripgrid
-  use topoedits,         only: add_topoedits, apply_topoedits
-  use charstrings,       only: logmsg, res, dirsrc, dirout, atmres, fv3dir, editsfile
-  use charstrings,       only: maskfile, maskname, topofile, toponame, editsfile, staggerlocs, cdate, history
-  use debugprint,        only: checkseam, checkxlatlon, checkpoint
+  use gengrid_kinds, only: CL, CS, dbl_kind, real_kind, int_kind
+  use angles,        only: find_ang, find_angq, find_angchk
+  use vertices,      only: fill_vertices, fill_bottom, fill_top
+  use mapped_mask,   only: make_frac_land
+  use postwgts,      only: make_postwgts
+  use tripolegrid,   only: write_tripolegrid
+  use cicegrid,      only: write_cicegrid
+  use scripgrid,     only: write_scripgrid, reshape_staggers
+  use topoedits,     only: add_topoedits, apply_topoedits
+  use charstrings,   only: logmsg, res, atmres, dirsrc, dirout, fv3dir, editsfile
+  use charstrings,   only: maskfile, maskname, topofile, toponame, editsfile, staggerlocs, cdate, history
+  use debugprint,    only: checkseam, checkxlatlon, checkpoint
+  use vartypedefs,   only: scripvars_typedefine
+  use weights4rhs,   only: addmask2grid
   use netcdf
 
   implicit none
 
-  include "mpif.h"
   ! local variables
+  type(MPI_Comm) :: mpic  ! mpi_f08
   real(dbl_kind) :: dxT, dyT
 
-  real(kind=dbl_kind), parameter :: pi = 3.14159265358979323846_dbl_kind
-  real(kind=dbl_kind), parameter :: deg2rad = pi/180.0_dbl_kind
+  real(dbl_kind), parameter :: pi = 3.14159265358979323846_dbl_kind
+  real(dbl_kind), parameter :: deg2rad = pi/180.0_dbl_kind
 
-  real(kind=dbl_kind), allocatable, dimension(:)   :: cnlons, cnlats
-  real(kind=dbl_kind), allocatable, dimension(:,:) :: crlons, crlats
-  real(real_kind),     allocatable, dimension(:,:) :: ww3dpth
-  integer(int_kind),   allocatable, dimension(:,:) :: ww3mask
+  real(dbl_kind),    allocatable, dimension(:)   :: cnlons, cnlats
+  real(dbl_kind),    allocatable, dimension(:,:) :: crlons, crlats
+  real(real_kind),   allocatable, dimension(:,:) :: ww3dpth
+  integer(int_kind), allocatable, dimension(:,:) :: ww3mask
 
-  character(len=CL) :: fsrc, fdst, fwgt, fatm
+  character(len=CL) :: fsrc, fdst, fwgt
   character(len= 2) :: cstagger
 
+  integer :: int_mpic
   integer :: rc,ncid,id,xtype
-  integer :: i,j,k,i2,j2
-  integer :: ii,jj
-  integer :: mpi_comm, mpi_dup, ierr
+  integer :: i,j,k,n,i2,j2,nvalid
+  integer :: ii
+  integer :: ierr
   integer :: localPet, nPet
   logical :: fexist = .false.
+  logical :: maintask
 
   type(ESMF_RegridMethod_Flag) :: method
-  type(ESMF_VM) :: vm
-
+  type(ESMF_VM)                :: vm
+  type(ESMF_Grid)              :: AtmGrid
+  type(ESMF_Mesh)              :: AtmMesh
   !WW3 file format for mod_def generation
   character(len= 6) :: i4fmt = '(i4.4)'
   character(len=CS) :: form1
   character(len=CS) :: form2
   character(len= 6) :: cnx
 
+  ! debug
+  !integer :: ndims, nelements, nnodes
+  !real(dbl_kind), allocatable :: ownedElemCoords(:), ownedElemCoords_x(:), ownedElemCoords_y(:)
+  !real(dbl_kind), allocatable :: nodeCoords(:)
   !-------------------------------------------------------------------------
-  ! Initialize esmf environment.
-  ! Everthing except the generation of the weights to map the ocean mask to
-  ! the ATM tiles and generation of the tripole:tripole weights is done on
-  ! the root PE.
+  ! Initialize esmf environment. Everything except the generation of the
+  ! ESMF weights is done on the root PE.
   !-------------------------------------------------------------------------
 
-  ! Providing the optional vm argument to ESMF_Initialize() is one way of obtaining the global VM.
-  call ESMF_Initialize(VM=vm, logkindflag=ESMF_LOGKIND_MULTI, rc=rc)
-  call ESMF_VMGet(vm, localPet=localPet, peCount=nPet, mpiCommunicator=mpi_comm, rc=rc)
+  call ESMF_Initialize()
+  call ESMF_VMGetGlobal(vm)
+  call ESMF_VMGet(vm, localPet=localPet, peCount=nPet, mpiCommunicator=int_mpic, rc=rc)
   if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
        line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-  ! Duplicate the MPI communicator not to interfere with ESMF communications.
-  call MPI_Comm_dup(mpi_comm, mpi_dup, ierr)
 
+  mpic%mpi_val = int_mpic
   maintask = .false.
   if (localPet == 0) maintask=.true.
-
   if (maintask) then
-     print '(a,i4,a)','Running on = ',npet,' tasks'
+
+     if (mod(nPet,6) /= 0) then
+        print '(a)', 'nPets not a multiple of 6; Aborting '
+        call ESMF_Finalize(endflag=ESMF_END_ABORT)
+     else
+        print '(a,i4,a)','Running on = ',npet,' tasks'
+     end if
+     !---------------------------------------------------------------------
+     !
+     !---------------------------------------------------------------------
 
      call read_inputnml('grid.nml')
 
@@ -94,8 +109,6 @@ program gen_fixgrid
      print '(a)',' output grid tag '//trim(res)
      print '(a)',' supergrid source directory '//trim(dirsrc)
      print '(a)',' output grid directory '//trim(dirout)
-     print '(a)',' atm resolution '//trim(atmres)
-     print '(a,i6)',' fv3 tile grid size ',npx
      print '(a)',' atm mosaic directory '//trim(fv3dir)
      print '(a)',' MOM6 topography file '//trim(topofile)
      print '(a)',' MOM6 edits file '//trim(editsfile)
@@ -152,9 +165,6 @@ program gen_fixgrid
 
      if(xtype.eq. 6)wet4 = real(wet8,4)
 
-     print *,minval(wet8),maxval(wet8)
-     print *,minval(wet4),maxval(wet4)
-
      !---------------------------------------------------------------------
      ! read the MOM6 depth file
      !---------------------------------------------------------------------
@@ -174,17 +184,22 @@ program gen_fixgrid
 
      if(xtype.eq. 6)dp4 = real(dp8,4)
 
-     print *,minval(dp8),maxval(dp8)
-     print *,minval(dp4),maxval(dp4)
-
      if(editmask)then
         !---------------------------------------------------------------------
-        !  apply topoedits run time mask changes if required for this config
+        ! apply topoedits run time mask changes if required for this config
+        ! this will create a modified topoedits file which accounts for any
+        ! land mask changes created at run time by MOM6
         !---------------------------------------------------------------------
 
         if(trim(editsfile)  == 'none')then
            print '(a)', 'Need a valid editsfile to make mask edits '
-           stop
+           call abort()
+        end if
+        inquire(file=trim(dirsrc)//'/'//trim(editsfile),exist=fexist)
+        if (.not. fexist) then
+           print '(a)', 'Required topoedits file '//trim(editsfile) &
+                //'for land mask changes is missing '
+           call abort()
         end if
 
         fsrc = trim(dirsrc)//'/'//trim(editsfile)
@@ -196,10 +211,21 @@ program gen_fixgrid
      ! MOM6 reads the depth file, applies the topo edits and then adjusts
      ! depth using masking_depth and min/max depth. This call mimics
      ! MOM6 routines apply_topography_edits_from_file and limit_topography
+     ! If the the topoedits file has been modified to account for MOM6 run
+     ! time land mask changes (above), then the depth will be created using
+     ! this modified topoedits file
      !---------------------------------------------------------------------
 
      fsrc = trim(dirsrc)//'/'//trim(editsfile)
      if(editmask)fsrc = trim(dirout)//'/'//'ufs.'//trim(editsfile)
+
+     if (trim(editsfile) /= 'none') then
+        inquire(file=trim(fsrc),exist=fexist)
+        if (.not. fexist) then
+           print '(a)', 'Required topoedits file '//trim(fsrc)//' is missing '
+           call abort()
+        end if
+     end if
      call apply_topoedits(fsrc)
 
      !---------------------------------------------------------------------
@@ -225,15 +251,9 @@ program gen_fixgrid
      rc = nf90_get_var(ncid,     id, dy)
 
      rc = nf90_close(ncid)
-     print *,'super grid size ',size(y,1),size(y,2)
-     print *,'max lat in super grid ',maxval(y)
      sg_maxlat = maxval(y)
-
-     !---------------------------------------------------------------------
-     ! find the angle on corners---this requires the supergrid
-     !---------------------------------------------------------------------
-
-     call find_angq
+     write(logmsg,'(a,f12.2)')'max lat in super grid ',maxval(y)
+     print '(a)',trim(logmsg)
 
      !---------------------------------------------------------------------
      ! fill grid variables
@@ -245,8 +265,6 @@ program gen_fixgrid
            !deg->rad
            ulon(i,j) =     x(i2,j2)*deg2rad
            ulat(i,j) =     y(i2,j2)*deg2rad
-           !in rad already
-           angle(i,j) = -angq(i2,j2)
            !m->cm
            htn(i,j) = (dx(i2-1,j2) + dx(i2,j2))*100._dbl_kind
            hte(i,j) = (dy(i2,j2-1) + dy(i2,j2))*100._dbl_kind
@@ -269,47 +287,7 @@ program gen_fixgrid
      enddo
 
      !---------------------------------------------------------------------
-     ! find the angle on centers---this does not requires the supergrid
-     !---------------------------------------------------------------------
-
-     call find_ang
-
-     print *,'ANGLET ',minval(anglet),maxval(anglet)
-     print *,'ANGLE  ',minval(angle),maxval(angle)
-
-     !---------------------------------------------------------------------
-     ! For the 1/4deg grid, hte at j=720 and j = 1440 is identically=0.0 for
-     ! j > 840 (64.0N). These are land points, but since CICE uses hte to
-     ! generate remaining variables, setting them to zero will cause problems
-     ! For 1deg grid, hte at ni/2 and ni are very small O~10-12, so test for
-     ! hte < 1.0
-     !---------------------------------------------------------------------
-
-     write(logmsg,'(a,2e12.5)')'min vals of hte at folds ', &
-          minval(hte(ni/2,:)),minval(hte(ni,:))
-     print '(a)',trim(logmsg)
-     do j = 1,nj
-        ii = ni/2
-        if(hte(ii,j) .le. 1.0)hte(ii,j) = 0.5*(hte(ii-1,j) + hte(ii+1,j))
-        ii = ni
-        if(hte(ii,j) .le. 1.0)hte(ii,j) = 0.5*(hte(ii-1,j) + hte(   1,j))
-     enddo
-     write(logmsg,'(a,2e12.5)')'min vals of hte at folds ', &
-          minval(hte(ni/2,:)),minval(hte(ni,:))
-     print '(a)',trim(logmsg)
-
-     !---------------------------------------------------------------------
-     !
-     !---------------------------------------------------------------------
-
-     where(lonCt .lt. 0.0)lonCt = lonCt + 360._dbl_kind
-     where(lonCu .lt. 0.0)lonCu = lonCu + 360._dbl_kind
-     where(lonCv .lt. 0.0)lonCv = lonCv + 360._dbl_kind
-     where(lonBu .lt. 0.0)lonBu = lonBu + 360._dbl_kind
-
-     !---------------------------------------------------------------------
-     ! some basic error checking
-     ! find the i-th index of the poles at j= nj
+     ! locate the ith index of the two poles on j=nj
      ! the corner points must lie on the pole
      !---------------------------------------------------------------------
 
@@ -321,9 +299,74 @@ program gen_fixgrid
      do i = ni/2+1,ni
         if(latBu(i,j) .eq. sg_maxlat)ipole(2) = i
      enddo
-     write(logmsg,'(a,2i6,2f12.2)')'poles found at i = ',ipole,latBu(ipole(1),nj), &
+     write(logmsg,'(a,2i6,2f12.2)')'poles found at i = ',ipole, latBu(ipole(1),nj), &
           latBu(ipole(2),nj)
      print '(a)',trim(logmsg)
+
+     !---------------------------------------------------------------------
+     ! find the angle on centers using the same procedure as MOM6
+     !---------------------------------------------------------------------
+
+     call find_ang((/1,ni/),(/1,nj/),lonBu,latBu,lonCt,anglet)
+     write(logmsg,'(a,2f12.2)')'ANGLET min,max: ',minval(anglet),maxval(anglet)
+     print '(a)',trim(logmsg)
+     write(logmsg,'(a,2f12.2)')'ANGLET edges i=1,i=ni: ',anglet(1,nj),anglet(ni,nj)
+     print '(a)',trim(logmsg)
+
+     xangCt(:) = 0.0
+     do i = 1,ni
+        i2 = ipole(2)+(ipole(1)-i)+1
+        xangCt(i) = -anglet(i2,nj)       ! angle changes sign across seam
+     end do
+
+     !---------------------------------------------------------------------
+     ! find the angle on corners using the same procedure as CICE6
+     !---------------------------------------------------------------------
+
+     call find_angq((/1,ni/),(/1,nj/),xangCt,anglet,angle)
+     angle(ni,:) = -angle(1,:)
+     ! reverse angle for CICE
+     angle = -angle
+     write(logmsg,'(a,2f12.2)')'ANGLE min,max: ',minval(angle),maxval(angle)
+     print '(a)',trim(logmsg)
+     write(logmsg,'(a,2f12.2)')'ANGLE edges i=1,i=ni: ',angle(1,nj),angle(ni,nj)
+     print '(a)',trim(logmsg)
+
+     !---------------------------------------------------------------------
+     ! check the Bu angle
+     !---------------------------------------------------------------------
+
+     call find_angchk((/1,ni/),(/1,nj/),angle,angchk)
+     angchk(1,:) = -angchk(ni,:)
+     ! reverse angle for MOM6
+     angchk = -angchk
+     write(logmsg,'(a,2f12.2)')'ANGCHK min,max: ',minval(angchk),maxval(angchk)
+     print '(a)',trim(logmsg)
+     write(logmsg,'(a,2f12.2)')'ANGCHK edges i=1,i=ni: ',angchk(1,nj),angchk(ni,nj)
+     print '(a)',trim(logmsg)
+
+     !---------------------------------------------------------------------
+     ! For the 1/4deg grid, hte at j=720 and j = 1440 is identically=0.0 for
+     ! j > 840 (64.0N). These are land points, but since CICE uses hte to
+     ! generate remaining variables, setting them to zero will cause problems
+     ! For 1deg grid, hte at ni/2 and ni are very small O~10-12, so test for
+     ! hte < 1.0
+     !---------------------------------------------------------------------
+
+     write(logmsg,'(a,2e12.5)')'min vals of hte at folds ', minval(hte(ni/2,:)),minval(hte(ni,:))
+     print '(a)',trim(logmsg)
+     do j = 1,nj
+        ii = ni/2
+        if(hte(ii,j) .le. 1.0)hte(ii,j) = 0.5*(hte(ii-1,j) + hte(ii+1,j))
+        ii = ni
+        if(hte(ii,j) .le. 1.0)hte(ii,j) = 0.5*(hte(ii-1,j) + hte(   1,j))
+     enddo
+     write(logmsg,'(a,2e12.5)')'min vals of hte at folds ', minval(hte(ni/2,:)),minval(hte(ni,:))
+     print '(a)',trim(logmsg)
+
+     !---------------------------------------------------------------------
+     ! find required extended values for setting all vertices
+     !---------------------------------------------------------------------
 
      if(debug)call checkseam
 
@@ -394,8 +437,10 @@ program gen_fixgrid
      fdst = trim(dirout)//'/'//'grid_cice_NEMS_mx'//trim(res)//'.nc'
      call write_cicegrid(trim(fdst))
      deallocate(ulon, ulat, htn, hte)
-     ! write scrip grids; only the Ct is required, the remaining
-     ! staggers are used only in the postweights generation
+
+     ! define the output variables and file name
+     call scripvars_typedefine
+     ! write SCRIP files for generation of positional weights
      allocate(cnlons(1:ni*nj), cnlats(1:ni*nj))
      allocate(crlons(4,1:ni*nj), crlats(4,1:ni*nj))
      do k = 1,nv
@@ -413,8 +458,7 @@ program gen_fixgrid
 	     cnlons,cnlats,crlons,crlats)
         call write_scripgrid(trim(fdst),ni,nj,cnlons,cnlats,crlons,crlats)
 
-        ! write SCRIP file with land mask, used for mapped ocean mask
-        ! and  mesh creation
+        ! write SCRIP file with land mask, used for mapped ocean mask and  mesh creation
         if (cstagger == 'Ct') then
            fdst= trim(dirout)//'/'//trim(cstagger)//'.mx'//trim(res)//'_SCRIP_land.nc'
            logmsg = 'creating SCRIP file '//trim(fdst)
@@ -429,12 +473,6 @@ program gen_fixgrid
      deallocate(latBu_vert, lonBu_vert)
      deallocate(cnlons, cnlats, crlons, crlats)
 
-     !cstagger = trim(staggerlocs(1))
-     !fdst= trim(dirout)//'/'//trim(cstagger)//'.mx'//trim(res)//'_SCRIP_land.nc'
-     !logmsg = 'creating SCRIP file '//trim(fdst)
-     !print '(a)',trim(logmsg)
-     !call write_scripgrid(trim(fdst),,imask=reshape(int(wet4),(/ni*nj/)))
-
      !---------------------------------------------------------------------
      ! write lat,lon,depth and mask arrays required by ww3 in creating
      ! mod_def file
@@ -444,7 +482,7 @@ program gen_fixgrid
      write(form1,'(a)')'('//trim(cnx)//'f14.8)'
      write(form2,'(a)')'('//trim(cnx)//'i2)'
 
-     allocate(ww3mask(1:ni,1:nj)); ww3mask = wet4
+     allocate(ww3mask(1:ni,1:nj)); ww3mask = int(wet4)
      allocate(ww3dpth(1:ni,1:nj)); ww3dpth = dp4
 
      where(latCt .ge. maximum_lat)ww3mask = 3
@@ -474,96 +512,208 @@ program gen_fixgrid
      deallocate(ww3mask); deallocate(ww3dpth)
      deallocate(wet4, wet8)
 
-  end if ! if (maintask)
+     nvalid = size(catm)
 
-  call mpi_bcast(dirout, len(dirout), MPI_CHARACTER, 0, mpi_dup, ierr)
-  call mpi_bcast(res,    len(res),    MPI_CHARACTER, 0, mpi_dup, ierr)
-  call mpi_bcast(fv3dir, len(fv3dir), MPI_CHARACTER, 0, mpi_dup, ierr)
-  call mpi_bcast(atmres, len(atmres), MPI_CHARACTER, 0, mpi_dup, ierr)
-
-  !---------------------------------------------------------------------
-  ! use ESMF regridding to produce mapped ocean mask; first generate
-  ! conservative regrid weights from ocean to tiles; these are used to
-  ! generate the tiled files containing the mapped ocean mask
-  !---------------------------------------------------------------------
-
-  method=ESMF_REGRIDMETHOD_CONSERVE
-  fsrc = trim(dirout)//'/'//'Ct.mx'//trim(res)//'_SCRIP_land.nc'
-  fdst = trim(fv3dir)//'/'//trim(atmres)//'/'//trim(atmres)//'_mosaic.nc'
-  fwgt = trim(dirout)//'/'//'Ct.mx'//trim(res)//'.to.'//trim(atmres)//'.nc'
-  fatm = trim(fv3dir)//'/'//trim(atmres)//'/'
-  if(maintask) then
-     logmsg = 'creating weight file '//trim(fwgt)
-     print '(a)',trim(logmsg)
-  end if
-
-  ! call ESMF_RegridWeightGen(srcFile=trim(fsrc),dstFile=trim(fdst),      &
-  !      weightFile=trim(fwgt), regridmethod=method,                      &
-  !      unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, largefileFlag=.true., &
-  !      ignoreDegenerate=.true., verboseFlag=debug, tileFilePath=trim(fatm), rc=rc)
-  call ESMF_RegridWeightGen(srcFile=trim(fsrc),dstFile=trim(fdst),      &
-       weightFile=trim(fwgt), regridmethod=method,                      &
-       unmappedaction=ESMF_UNMAPPEDACTION_IGNORE,                       &
-       ignoreDegenerate=.true., verboseFlag=debug, tileFilePath=trim(fatm), rc=rc)
-  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-       line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-
-  !---------------------------------------------------------------------
-  ! use ESMF to find the tripole:tripole weights for creation
-  ! of CICE ICs; the source grid is always mx025; don't create this
-  ! file if destination is also mx025
-  !---------------------------------------------------------------------
-
-  if(trim(res) .ne. '025') then
-     fsrc = trim(dirout)//'/'//'Ct.mx025_SCRIP.nc'
-     inquire(FILE=trim(fsrc), EXIST=fexist)
-     if (fexist ) then
-        method=ESMF_REGRIDMETHOD_NEAREST_STOD
-        fdst = trim(dirout)//'/'//'Ct.mx'//trim(res)//'_SCRIP.nc'
-        fwgt = trim(dirout)//'/'//'tripole.mx025.Ct.to.mx'//trim(res)//'.Ct.neareststod.nc'
-        if(maintask) then
-           logmsg = 'creating weight file '//trim(fwgt)
-           print '(a)',trim(logmsg)
-        end if
-        ! call ESMF_RegridWeightGen(srcFile=trim(fsrc),dstFile=trim(fdst),       &
-        !      weightFile=trim(fwgt), regridmethod=method,                       &
-        !      ignoreDegenerate=.true., verboseFlag=debug, largefileFlag=.true., &
-        !      unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-        call ESMF_RegridWeightGen(srcFile=trim(fsrc),dstFile=trim(fdst),       &
-             weightFile=trim(fwgt), regridmethod=method,                       &
-             ignoreDegenerate=.true., verboseFlag=debug,                       &
-             unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-             line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-     else
-        if(maintask) then
-           logmsg = 'ERROR: '//trim(fsrc)//' is required to generate tripole:tripole weights'
-           print '(a)',trim(logmsg)
-        end if
-        stop
-     end if
-  end if
-
-  if (maintask) then
      !---------------------------------------------------------------------
-     ! make mapped ocean mask file and clean up
+     ! clean up
      !---------------------------------------------------------------------
 
-     logmsg = 'creating mapped ocean mask for '//trim(atmres)
-     print '(a)',trim(logmsg)
-
-     fsrc = trim(dirout)//'/'//'Ct.mx'//trim(res)//'_SCRIP_land.nc'
-     fwgt = trim(dirout)//'/'//'Ct.mx'//trim(res)//'.to.'//trim(atmres)//'.nc'
-     call make_frac_land(trim(fsrc), trim(fwgt))
-
-     if(do_postwgts)call make_postwgts
-
-     deallocate(x,y, angq, dx, dy, xsgp1, ysgp1)
-     deallocate(areaCt, anglet, angle)
+     deallocate(x, y, dx, dy)
+     deallocate(areaCt, anglet, angle, angchk)
      deallocate(latCt, lonCt)
      deallocate(latCv, lonCv)
      deallocate(latCu, lonCu)
      deallocate(latBu, lonBu)
+  end if ! if (maintask)
 
+  !---------------------------------------------------------------------
+  ! set up for parallel work
+  !---------------------------------------------------------------------
+  call mpi_bcast(nvalid, 1, MPI_INTEGER, 0, mpic, ierr)
+  if (ierr /= MPI_SUCCESS) then
+     print *,' error in mpi broadcast for size(catm) '
+     call mpi_abort(mpic, rc)
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end if
+  if (.not. maintask) then
+     allocate(catm(nvalid))
+  end if
+  call mpi_bcast(catm, size(catm), MPI_INTEGER, 0, mpic, ierr)
+  if (ierr /= MPI_SUCCESS) then
+     print '(a)',' error in mpi broadcast for catm '
+     call mpi_abort(mpic, rc)
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end if
+  call mpi_bcast(dirout, len(dirout), MPI_CHARACTER, 0, mpic, ierr)
+  if (ierr /= MPI_SUCCESS) then
+     print '(a)',' error in mpi broadcast for dirout '
+     call mpi_abort(mpic, rc)
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end if
+  call mpi_bcast(res,    len(res),    MPI_CHARACTER, 0, mpic, ierr)
+  if (ierr /= MPI_SUCCESS) then
+     print '(a)',' error in mpi broadcast for res '
+     call mpi_abort(mpic, rc)
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end if
+  call mpi_bcast(fv3dir, len(fv3dir), MPI_CHARACTER, 0, mpic, ierr)
+  if (ierr /= MPI_SUCCESS) then
+     print '(a)',' error in mpi broadcast for fv3dir '
+     call mpi_abort(mpic, rc)
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end if
+  call mpi_bcast(do_postwgts, 1, MPI_LOGICAL, 0, mpic, ierr)
+  if (ierr /= MPI_SUCCESS) then
+     print '(a)',' error in mpi broadcast for do_postwgts '
+     call mpi_abort(mpic, rc)
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end if
+  !---------------------------------------------------------------------
+  ! use ESMF regridding to generate conservative regrid weights from
+  ! ocean to tiles
+  !---------------------------------------------------------------------
+
+  do n = 1,size(catm)
+     npx = catm(n)
+     if (npx < 100) then
+        write(atmres,'(a,i2)')'C',npx
+     elseif (npx < 1000) then
+        write(atmres,'(a,i3)')'C',npx
+     else
+        write(atmres,'(a,i4)')'C',npx
+     end if
+
+     method=ESMF_REGRIDMETHOD_CONSERVE
+     fsrc = trim(dirout)//'/'//'Ct.mx'//trim(res)//'_SCRIP_land.nc'
+     fdst = trim(fv3dir)//'/'//trim(atmres)//'/'//trim(atmres)//'_mosaic.nc'
+     fwgt = trim(dirout)//'/'//'Ct.mx'//trim(res)//'.to.'//trim(atmres)//'.nc'
+     logmsg = 'creating weight file '//trim(fwgt)
+     if (maintask) print '(a)',trim(logmsg)
+
+     call ESMF_RegridWeightGen(srcFile=trim(fsrc),dstFile=trim(fdst),         &
+          weightFile=trim(fwgt), regridmethod=method,                         &
+          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, ignoreDegenerate=.true., &
+          netcdf4fileFlag=.true., tileFilePath=trim(fv3dir)//'/'//trim(atmres)//'/', rc=rc)
+     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+     !atmGrid = ESMF_GridCreateMosaic('/scratch4/NCEPDEV/stmp/Denise.Worthen/CPLD_GRIDGEN/rt_2270741/test/C384_mosaic.new.nc', &
+     !     staggerLocList = (/ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER/), rc=rc)
+     !if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+     !     line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end do
+#ifdef test
+  !---------------------------------------------------------------------
+  ! use ESMF to create positional weights for mapping a tripole field
+  ! from its native stagger location (Cu,Cv,Bu) onto the center (Ct)
+  ! grid location
+  !---------------------------------------------------------------------
+
+  method=ESMF_REGRIDMETHOD_BILINEAR
+  fdst = trim(dirout)//'/'//'Ct.mx'//trim(res)//'_SCRIP.nc'
+  do k = 2,nv
+     cstagger = trim(staggerlocs(k))
+     fsrc = trim(dirout)//'/'//trim(cstagger)//'.mx'//trim(res)//'_SCRIP.nc'
+     fwgt = trim(dirout)//'/'//'tripole.mx'//trim(res)//'.'//trim(cstagger)//'.to.Ct.bilinear.nc'
+     logmsg = 'creating weight file '//trim(fwgt)
+     if (maintask) print '(a)',trim(logmsg)
+
+     call ESMF_RegridWeightGen(srcFile=trim(fsrc),dstFile=trim(fdst), &
+          weightFile=trim(fwgt), regridmethod=method,                 &
+          ignoreDegenerate=.true.,                                    &
+          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end do
+
+  !---------------------------------------------------------------------
+  ! use ESMF to create positional weights for mapping a tripole field
+  ! from the center (Ct) grid location back to the native stagger location
+  ! (Cu,Cv,Bu)
+  !---------------------------------------------------------------------
+
+  method=ESMF_REGRIDMETHOD_BILINEAR
+  fsrc = trim(dirout)//'/'//'Ct.mx'//trim(res)//'_SCRIP.nc'
+  do k = 2,nv
+     cstagger = trim(staggerlocs(k))
+     fdst = trim(dirout)//'/'//trim(cstagger)//'.mx'//trim(res)//'_SCRIP.nc'
+     fwgt = trim(dirout)//'/'//'tripole.mx'//trim(res)//'.Ct.to.'//trim(cstagger)//'.bilinear.nc'
+     logmsg = 'creating weight file '//trim(fwgt)
+     if (maintask) print '(a)',trim(logmsg)
+
+     call ESMF_RegridWeightGen(srcFile=trim(fsrc),dstFile=trim(fdst), &
+          weightFile=trim(fwgt), regridmethod=method,                 &
+          ignoreDegenerate=.true.,                                    &
+          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  end do
+  if(do_postwgts)call make_postwgts(maintask)
+#endif
+
+  if (maintask) then
+     !---------------------------------------------------------------------
+     ! make mapped ocean mask file; the mapped ocean mask file is required
+     ! to add the mask to the AtmGrid
+     !---------------------------------------------------------------------
+
+     do n = 1,size(catm)
+        npx = catm(n)
+        if (npx < 100) then
+           write(atmres,'(a,i2)')'C',npx
+        elseif (npx < 1000) then
+           write(atmres,'(a,i3)')'C',npx
+        else
+           write(atmres,'(a,i4)')'C',npx
+        end if
+        fsrc = trim(dirout)//'/'//'Ct.mx'//trim(res)//'_SCRIP_land.nc'
+        fwgt = trim(dirout)//'/'//'Ct.mx'//trim(res)//'.to.'//trim(atmres)//'.nc'
+        logmsg = 'creating mapped ocean mask for '//trim(atmres)
+        print '(a)',trim(logmsg)
+        call make_frac_land(trim(fsrc), trim(fwgt))
+     end do
   endif ! if (maintask)
+
+  !---------------------------------------------------------------------
+  !
+  !---------------------------------------------------------------------
+
+  do n = 1,size(catm)
+     npx = catm(n)
+     if (npx < 100) then
+        write(atmres,'(a,i2)')'C',npx
+     elseif (npx < 1000) then
+        write(atmres,'(a,i3)')'C',npx
+     else
+        write(atmres,'(a,i4)')'C',npx
+     end if
+
+     fsrc = trim(fv3dir)//'/'//trim(atmres)//'/'//trim(atmres)//'_mosaic.nc'
+     logmsg = 'creating AtmGrid from '//trim(fsrc)
+     if (maintask) print '(a)',trim(logmsg)
+
+     atmGrid = ESMF_GridCreateMosaic(filename=trim(fsrc),    &
+          tileFilePath=trim(fv3dir)//'/'//trim(atmres)//'/', &
+          staggerLocList = (/ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER/), rc=rc)
+     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+
+     fsrc = trim(dirout)//'/'//trim(atmres)//'.mx'//trim(res)//'.tile*.nc'
+     logmsg = 'adding land_frac from  '//trim(fsrc)//' to grid'
+     if (maintask) print '(a)',trim(logmsg)
+     call addmask2grid(trim(fsrc), 'land_frac', atmGrid)
+
+     ! create atm mesh from grid
+
+     ! atm->ocn & ice
+     srcMesh = meshAtm
+     dstMesh = meshOcn
+     srcMask = spval
+     dstMask = 1
+     method = 'consf'
+     fname = trim(atmres)//'2'////'.mx'//trim(res)//'.'//trim(method)//'weights.nc'
+     call create_weights(meshAtm, meshOcn, srcMask, dstMask, method, trim(fname))
+
+
+  end do
+
 end program gen_fixgrid
