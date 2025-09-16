@@ -1,0 +1,20 @@
+ ! NOAA/PMEL TMAP
+ ! FERRET v7.6 (optimized)
+ ! Linux 5.14.0-162.23.1.el9_1.x86_64 64-bi - 06/10/25
+ ! 22-Aug-25 16:56     
+
+set data /scratch4/NCEPDEV/global/John.Steffen/hpss_arch/cp4.02d-parallel-obsforge/gdas.20250820/00/model/ice/history/gdas.ice.t00z.ic.nc
+show data
+shade hi_h
+shade if tmask eq 1 then hi_h
+plot hi_h[i=@max]
+shade if tmask eq 1 then hi_h
+shade/j=1:200 if tmask eq 1 then hi_h
+plot/j=1:200 hi_h[i=@max]
+shade/j=1:200 if tmask eq 1 then hi_h
+shade/j=1:200/i=1:200 if tmask eq 1 then hi_h
+shade/j=120:200/i=1:200 if tmask eq 1 then hi_h
+shade/j=200:1080/i=200:1440
+shade/j=1:200/i=1:200 if tmask eq 1 then hi_h
+shade/j=100:200/i=120:200 if tmask eq 1 then hi_h
+quit
