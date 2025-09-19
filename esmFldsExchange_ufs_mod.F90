@@ -17,13 +17,9 @@ module esmFldsExchange_ufs_mod
   integer :: lnd2atm_maptype
 
   ! optional mapping files
-  character(len=CL) :: map.atm2ice.bilnr = 'unset'
-  character(len=CL) :: map.atm2ice.patchuv = 'unset'
-  character(len=CL) :: map.atm2ocn.patchuv = 'unset'
-
-  ! unset
-  !map.C96.to.mx100.patch_uv3d.nc
-  !map.C96.to.mx100.bilnr.nc
+  character(len=CL) :: atm2ice_bilnr = 'unset'
+  character(len=CL) :: atm2ice_patchuv = 'unset'
+  character(len=CL) :: atm2ocn_patchuv = 'unset'
 
   character(*), parameter :: u_FILE_u = &
        __FILE__
@@ -113,26 +109,26 @@ contains
     end if
 
     ! to ice
-    call NUOPC_CompAttributeGet(gcomp, name='map.atm2ice.bilnr', isPresent=isPresent, rc=rc)
+    call NUOPC_CompAttributeGet(gcomp, name='map_atm2ice_bilnr', isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (isPresent) then
-       call NUOPC_CompAttributeGet(gcomp, name='map.atm2ice.bilnr', value=cvalue, rc=rc)
+       call NUOPC_CompAttributeGet(gcomp, name='map_atm2ice_bilnr', value=cvalue, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-       map.atm2ice.bilnr = trim(cvalue)//'.nc'
+       atm2ice_bilnr = trim(cvalue)
     end if
-    call NUOPC_CompAttributeGet(gcomp, name='map.atm2ice.patchuv', isPresent=isPresent, rc=rc)
+    call NUOPC_CompAttributeGet(gcomp, name='map_atm2ice_patchuv', isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (isPresent) then
-       call NUOPC_CompAttributeGet(gcomp, name='map.atm2ice.patchuv', value=cvalue, rc=rc)
+       call NUOPC_CompAttributeGet(gcomp, name='map_atm2ice_patchuv', value=cvalue, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-       map.atm2ice.patchuv = trim(cvalue)//'.nc'
+       atm2ice_patchuv = trim(cvalue)
     end if
-    call NUOPC_CompAttributeGet(gcomp, name='map.atm2ocn.patchuv', isPresent=isPresent, rc=rc)
+    call NUOPC_CompAttributeGet(gcomp, name='map_atm2ocn_patchuv', isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (isPresent) then
-       call NUOPC_CompAttributeGet(gcomp, name='map.atm2ocn.patchuv', value=cvalue, rc=rc)
+       call NUOPC_CompAttributeGet(gcomp, name='map_atm2ocn_patchuv', value=cvalue, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-       map.atm2ocn.patchuv = trim(cvalue)//'.nc'
+       atm2ocn_patchuv = trim(cvalue)
     end if
 
     if (trim(coupling_mode) == 'ufs.nfrac.aoflux' .or. trim(coupling_mode) == 'ufs.frac.aoflux') then
@@ -503,7 +499,7 @@ contains
                   fldchk(is_local%wrap%FBImp(compatm,compatm), 'Faxa_'//fldname, rc=rc)) then
                 call addmap_from(compice, 'Fioi_'//fldname, compocn, mapfcopy, 'unset', 'unset')
                 if (mapuv_with_cart3d) then
-                   call addmap_from(compatm, 'Faxa_'//fldname, compocn, mapconsf_uv3d, 'aofrac', 'unset')
+                   call addmap_from(compatm, 'Faxa_'//fldname, compocn, mapconsf_uv3d, 'aofrac', atm2ocn_patchuv)
                 else
                    call addmap_from(compatm, 'Faxa_'//fldname, compocn, mapconsf_aofrac, 'aofrac', 'unset')
                 end if
@@ -691,7 +687,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compice)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
-             call addmap_from(compatm, fldname, compice, mapbilnr, 'one', trim(map.atm2ice.bilnr))
+             call addmap_from(compatm, fldname, compice, mapbilnr, 'one', atm2ice_bilnr)
              call addmrg_to(compice, fldname, mrg_from=compatm, mrg_fld=fldname, mrg_type='copy')
           end if
        end if
@@ -711,8 +707,7 @@ contains
           if ( fldchk(is_local%wrap%FBexp(compice)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
              if (mapuv_with_cart3d) then
-                !call addmap_from(compatm, fldname, compice, mappatch_uv3d, 'one', 'map.C96.to.mx100.patch_uv3d.nc')
-                call addmap_from(compatm, fldname, compice, mappatch_uv3d, 'one', 'unset')
+                call addmap_from(compatm, fldname, compice, mappatch_uv3d, 'one', atm2ice_patchuv)
              else
                 call addmap_from(compatm, fldname, compice, mappatch, 'one', 'unset')
              end if
