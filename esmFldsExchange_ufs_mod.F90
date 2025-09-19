@@ -6,6 +6,8 @@ module esmFldsExchange_ufs_mod
   ! mapping and merging
   !---------------------------------------------------------------------
 
+  use med_kind_mod , only : CX=>SHR_KIND_CX, CS=>SHR_KIND_CS, CL=>SHR_KIND_CL, R8=>SHR_KIND_R8
+
   implicit none
   public
 
@@ -13,6 +15,15 @@ module esmFldsExchange_ufs_mod
 
   integer :: atm2lnd_maptype
   integer :: lnd2atm_maptype
+
+  ! optional mapping files
+  character(len=CL) :: map.atm2ice.bilnr = 'unset'
+  character(len=CL) :: map.atm2ice.patchuv = 'unset'
+  character(len=CL) :: map.atm2ocn.patchuv = 'unset'
+
+  ! unset
+  !map.C96.to.mx100.patch_uv3d.nc
+  !map.C96.to.mx100.bilnr.nc
 
   character(*), parameter :: u_FILE_u = &
        __FILE__
@@ -25,7 +36,7 @@ contains
 
     use ESMF
     use NUOPC
-    use med_kind_mod          , only : CX=>SHR_KIND_CX, CS=>SHR_KIND_CS, CL=>SHR_KIND_CL, R8=>SHR_KIND_R8
+
     use med_utils_mod         , only : chkerr => med_utils_chkerr
     use med_methods_mod       , only : fldchk => med_methods_FB_FldChk
     use med_internalstate_mod , only : InternalState
@@ -99,6 +110,29 @@ contains
        if (trim(cvalue) == 'false') then
           mapuv_with_cart3d = .false.
        end if
+    end if
+
+    ! to ice
+    call NUOPC_CompAttributeGet(gcomp, name='map.atm2ice.bilnr', isPresent=isPresent, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent) then
+       call NUOPC_CompAttributeGet(gcomp, name='map.atm2ice.bilnr', value=cvalue, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       map.atm2ice.bilnr = trim(cvalue)//'.nc'
+    end if
+    call NUOPC_CompAttributeGet(gcomp, name='map.atm2ice.patchuv', isPresent=isPresent, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent) then
+       call NUOPC_CompAttributeGet(gcomp, name='map.atm2ice.patchuv', value=cvalue, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       map.atm2ice.patchuv = trim(cvalue)//'.nc'
+    end if
+    call NUOPC_CompAttributeGet(gcomp, name='map.atm2ocn.patchuv', isPresent=isPresent, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent) then
+       call NUOPC_CompAttributeGet(gcomp, name='map.atm2ocn.patchuv', value=cvalue, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       map.atm2ocn.patchuv = trim(cvalue)//'.nc'
     end if
 
     if (trim(coupling_mode) == 'ufs.nfrac.aoflux' .or. trim(coupling_mode) == 'ufs.frac.aoflux') then
@@ -657,7 +691,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compice)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
-             call addmap_from(compatm, fldname, compice, mapbilnr, 'one', 'map.C96.to.mx100.bilnr.nc')
+             call addmap_from(compatm, fldname, compice, mapbilnr, 'one', trim(map.atm2ice.bilnr))
              call addmrg_to(compice, fldname, mrg_from=compatm, mrg_fld=fldname, mrg_type='copy')
           end if
        end if
