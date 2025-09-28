@@ -68,11 +68,14 @@ subroutine med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex,
   if (chkerr(rc,__LINE__,u_FILE_u)) return
 
   ! probably never true for CESM
-  if (saved_routehandles) then
+  if (rw_routehandles) then
      !if (coupling_mode(1:3) == 'ufs') then
-        rh_filename = 'cpl.routehandle_'//trim(dstatname)
+        rh_filename = 'cmeps.rh_'//trim(dstatname)
         inquire(FILE=trim(rh_filename), EXIST=rh_file_exist)
         if (rh_file_exist) then
+           if (maintask) then
+              write(logunit,'(A)') trim(subname)//' Reading RH from file: '//trim(rh_filename)
+           end if
            routehandles(mapindex) = ESMF_RouteHandleCreate(fileName=trim(rh_filename), rc=rc)
            if (chkerr(rc,__LINE__,u_FILE_u)) return
            return
@@ -309,13 +312,16 @@ subroutine med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex,
 
   ! Save route handle to file if requested
   !use_saved_routehandles = .true.  ! FIXME retrieve this from some config file
-  if (saved_routehandles) then
-     rh_filename = 'cpl.routehandle_'//trim(dstatname)
+  if (rw_routehandles) then
+     rh_filename = 'cmeps.rh_'//trim(dstatname)
+     if (maintask) then
+        write(logunit,'(a)') trim(subname)//trim(string)//": saving  RH for "//trim(dstatname)
+     end if
      call ESMF_RouteHandleWrite(routehandles(mapindex), fileName=trim(rh_filename), rc=rc)
      if (chkerr(rc,__LINE__,u_FILE_u)) return
   endif
 
-  ! Copy R8 values into a returned field
+  ! Copy R8 values into a returned field; for nstod/consf_nstod/consd_nstod this will be the nstod map
   if (present(dstatfield)) then
      dstatfield = ESMF_FieldCreate(mesh_dst, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, &
           name=trim(dstatname), rc=rc)
