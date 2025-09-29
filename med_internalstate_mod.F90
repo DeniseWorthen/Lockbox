@@ -77,7 +77,8 @@ module med_internalstate_mod
   integer , public, parameter :: mapfillv_bilnr    = 15 ! fill value followed by bilinear
   integer , public, parameter :: mapbilnr_nstod    = 16 ! bilinear with nstod extrapolation
   integer , public, parameter :: mapconsf_aofrac   = 17 ! conservative with aofrac normalization (ufs only)
-  integer , public, parameter :: nmappers          = 17
+  integer , public, parameter :: mapconsf_uv3d     = 18 ! conservative with uv3d mapping
+  integer , public, parameter :: nmappers          = 18
   character(len=*) , public, parameter :: mapnames(nmappers) = &
        (/'bilnr       ',&
          'consf       ',&
@@ -95,7 +96,8 @@ module med_internalstate_mod
          'glc2ocn_liq ',&
          'fillv_bilnr ',&
          'bilnr_nstod ',&
-         'consf_aofrac'/)
+         'consf_aofrac',&
+         'consf_uv3d  '/)
 
   type, public :: packed_data_type
      integer, allocatable :: fldindex(:) ! size of number of packed fields
@@ -106,7 +108,8 @@ module med_internalstate_mod
      type(ESMF_Field)     :: field_fracdst
   end type packed_data_type
 
-  logical, public :: dststatus_print = .false.
+  logical, public :: write_dststatus = .false.
+  logical, public :: rw_routehandles = .false.
 
   ! Mesh info
   type, public ::  mesh_info_type
@@ -191,7 +194,7 @@ module med_internalstate_mod
     type(ESMF_FieldBundle) , pointer :: FBData(:)    ! Background data for various components, on their grid, provided by CDEPS inline
     ! DstStatus
     type(ESMF_FieldBundle) , pointer :: FBDstStatus(:) ! DstStatus fields for components for each source component and maptype
-    
+
     ! Accumulators for export field bundles
     type(ESMF_FieldBundle) :: FBExpAccumOcn      ! Accumulator for Ocn export on Ocn grid
     integer                :: ExpAccumOcnCnt = 0 ! Accumulator counter for FBExpAccumOcn
@@ -261,6 +264,23 @@ contains
       end if
     else
       samegrid_atmlnd = .true.
+    end if
+
+    ! flexibility to overwrite samegrid_atmlnd option
+    call NUOPC_CompAttributeGet(gcomp, name='samegrid_atmlnd', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       if (trim(cvalue) == '.true.' .or. trim(cvalue) == 'true') then
+          samegrid_atmlnd = .true.
+       else
+          samegrid_atmlnd = .false.
+       end if
+    end if
+
+    if (maintask) then
+       write(logunit,'(a,l)') trim(subname)//' atm and lnd is on same grid = ', samegrid_atmlnd
     end if
 
     ! See med_fraction_mod for the following definitions
@@ -431,12 +451,22 @@ contains
        write(logunit,*)
     end if
 
-    ! Obtain dststatus_print setting if present
-    call NUOPC_CompAttributeGet(gcomp, name='dststatus_print', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    ! Allow use of read/write of routehandles
+    call NUOPC_CompAttributeGet(gcomp, name='rw_routehandles', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent .and. isSet) dststatus_print=(trim(cvalue) == "true")
-    write(msgString,*) trim(subname)//': Mediator dststatus_print is ',dststatus_print
+    if (isPresent .and. isSet) rw_routehandles=(trim(cvalue) == "true")
+    write(msgString,*) trim(subname)//': Mediator rw_routehandles is ',rw_routehandles
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+    ! Allocate dststatus FB if needed
+    call NUOPC_CompAttributeGet(gcomp, name='write_dststatus', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) write_dststatus=(trim(cvalue) == "true")
+    write(msgString,*) trim(subname)//': Mediator write_dststatus is ',write_dststatus
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    if (write_dststatus) then
+       allocate(is_local%wrap%FBDstStatus(ncomps))
+    end if
 
     ! Initialize flag for background fill using data
     is_local%wrap%med_data_active(:,:) = .false.
@@ -668,17 +698,16 @@ contains
     if (is_local%wrap%comp_present(compice)) defaultMasks(compice,:) = 0
     if (is_local%wrap%comp_present(compwav)) defaultMasks(compwav,:) = 0
     if ( coupling_mode(1:3) == 'ufs') then
-       if (is_local%wrap%comp_present(compatm)) defaultMasks(compatm,:) = 1
+       if (is_local%wrap%comp_present(compatm)) defaultMasks(compatm,2) = 1
     endif
-    if ( trim(coupling_mode) == 'hafs') then
+    if ( trim(coupling_mode) == 'hafs') then  ! not hafs.mom6
        if (is_local%wrap%comp_present(compatm)) defaultMasks(compatm,1) = 1
     endif
-    if ( trim(coupling_mode) /= 'cesm') then
-       if (is_local%wrap%comp_present(compatm) .and. trim(atm_name(1:4)) == 'datm') then
+    if ( coupling_mode /= 'cesm') then
+       if (is_local%wrap%comp_present(compatm) .and. atm_name(1:4) == 'datm') then
           defaultMasks(compatm,1) = 0
        end if
     end if
-
   end subroutine med_internalstate_defaultmasks
 
 end module med_internalstate_mod
