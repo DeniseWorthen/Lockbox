@@ -37,7 +37,7 @@ subroutine med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex,
   type(ESMF_Field)           :: lfield
   character(len=CS)          :: string
   character(len=CS)          :: mapname
-  character(len=CS)          :: dstatname
+  character(len=CS)          :: dstatname, rhname
   integer                    :: srcMaskValue
   integer                    :: dstMaskValue
   real(R8), pointer          :: r8ptr(:)
@@ -61,13 +61,15 @@ subroutine med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex,
   call ESMF_LogWrite(trim(subname)//": mapname "//trim(mapname), ESMF_LOGMSG_INFO)
 
   ! create a name for the dststatus field and/or saved RH file
-  if (mapindex == mapnstod_consd) then
-     dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_consd'
-  else if (mapindex == mapnstod_consf) then
-     dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_consf'
-  else
-     dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_'//mapname
-  end if
+  ! set saved_name(n1,n2,mapname)
+  !if (mapindex == mapnstod_consd) then
+  !    dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_consd'
+  ! else if (mapindex == mapnstod_consf) then
+  !    dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_consf'
+  ! else
+  !    dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_'//mapname
+  !end if
+  ! mapindex is map_nstodconsf etc to
   if (maintask) print *,'XXX0 '//trim(dstatname)//'   '//trim(mapname)
 
   call ESMF_FieldGet(flddst, mesh=mesh_dst, rc=rc)
@@ -76,228 +78,84 @@ subroutine med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex,
   if (chkerr(rc,__LINE__,u_FILE_u)) return
 
   if (rw_routehandles) then
-     rh_filename = 'cmeps.rh_'//trim(dstatname)
-     inquire(FILE=trim(rh_filename), EXIST=rh_file_exists)
-     if (rh_file_exists) then
-        if (maintask) write(logunit,'(A)') trim(subname)//' Reading RH from file: '//trim(rh_filename)
-        if (write_dststatus) then
-           if (maintask) write(logunit,'(A)') 'ERROR: dststatus not available when RHs are read from file'
-           rc = ESMF_FAILURE
-           return
+     if ((mapindex == mapnstod_consd) .or  (mapindex == mapnstod_consf)) then
+        call rhfiles(compname(n1),compname(n2),'nstod',routehandles(mapnstod), 'read', isCreated)
+        if (isCreated) then
+           if (mapindex == mapnstod_consd) then
+              call rhfiles(compname(n1),compname(n2),'consd',routehandles(mapconsd), 'read', isCreated)
+              if (isCreated) return
+           else if (mapindex == mapnstod_consf) then
+              call rhfiles(compname(n1),compname(n2),'consf',routehandles(mapconsf), 'read', isCreated)
+              if (isCreated) return
+           end if
         end if
-        routehandles(mapindex) = ESMF_RouteHandleCreate(fileName=trim(rh_filename), rc=rc)
-        if (chkerr(rc,__LINE__,u_FILE_u)) return
-        return
-     end if
-  end if
-
-  ! set src and dst masking using defaults
-  srcMaskValue = defaultMasks(n1,1)
-  dstMaskValue = defaultMasks(n2,2)
-
-  ! override defaults for specific cases
-  if (trim(coupling_mode) == 'cesm') then
-     if (n1 == compwav .and. n2 == compocn) then
-        srcMaskValue = 0
-        dstMaskValue = ispval_mask
+     else
+        call rhfiles(compname(n1),compname(2),trim(mapname),routehandles(mapindex), 'read', isCreated)
+        if (isCreated) return
      endif
   end if
-  if (coupling_mode(1:3) == 'ufs') then
-     if (n1 == compatm .and. n2 == complnd) then
-        srcMaskValue = ispval_mask
-        dstMaskValue = ispval_mask
-     end if
-     if (n1 == complnd .and. n2 == compatm) then
-        srcMaskValue = ispval_mask
-        dstMaskValue = ispval_mask
-     end if
-  end if
-  if (coupling_mode(1:4) == 'hafs') then
-     if (n1 == compatm .and. n2 == compwav) then
-        srcMaskValue = ispval_mask
-     end if
-  end if
-  write(string,'(a,i10,a,i10)') trim(compname(n1))//' to '//trim(compname(n2))//' srcMask = ', &
-       srcMaskValue,' dstMask = ',dstMaskValue
-  call ESMF_LogWrite(trim(string), ESMF_LOGMSG_INFO)
 
-  polemethod=ESMF_POLEMETHOD_ALLAVG
-  if (trim(coupling_mode) == 'cesm' .or. coupling_mode(1:3) == 'ufs') then
-     if (n1 == compwav .or. n2 == compwav) then
-        polemethod = ESMF_POLEMETHOD_NONE ! todo: remove this when ESMF tripolar mapping fix is in place.
-     endif
-  end if
-  if (trim(coupling_mode) == 'hafs.mom6') then
-     polemethod = ESMF_POLEMETHOD_NONE
-  endif
+
+  !    rh_filename = 'cmeps.rh_'//trim(dstatname)
+  !    inquire(FILE=trim(rh_filename), EXIST=rh_file_exists)
+  !    if (rh_file_exists) then
+  !       if (maintask) write(logunit,'(A)') trim(subname)//' Reading RH from file: '//trim(rh_filename)
+  !       if (write_dststatus) then
+  !          if (maintask) write(logunit,'(A)') 'ERROR: dststatus not available when RHs are read from file'
+  !          rc = ESMF_FAILURE
+  !          return
+  !       end if
+  !       routehandles(mapindex) = ESMF_RouteHandleCreate(fileName=trim(rh_filename), rc=rc)
+  !       if (chkerr(rc,__LINE__,u_FILE_u)) return
+  !       return
+  !    end if
+  ! end if
+
+  ! Set masking
 
   ! Create route handle
   if (mapindex == mapfcopy) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH redist for '//trim(string)
-     end if
-     call ESMF_FieldRedistStore(fldsrc, flddst, routehandle=routehandles(mapfcopy), &
-          ignoreUnmatchedIndices = .true., rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (lmapfile /= 'unset') then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//&
-             ' via input file '//trim(mapfile)//' for '//trim(string)
-     end if
-     call ESMF_FieldSMMStore(fldsrc, flddst, mapfile, routehandle=routehandles(mapindex), &
-          ignoreUnmatchedIndices=.true., &
-          srcTermProcessing=srcTermProcessing_Value, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mapbilnr ) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapbilnr), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_BILINEAR,   &
-          polemethod=polemethod,                     &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mapbilnr_uv3d ) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapbilnr_uv3d), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_BILINEAR,   &
-          polemethod=polemethod,                     &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mapfillv_bilnr) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapfillv_bilnr), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_BILINEAR,   &
-          polemethod=polemethod,                     &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mapbilnr_nstod) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapbilnr_nstod), &
-          srcMaskValues=(/srcMaskValue/),              &
-          dstMaskValues=(/dstMaskValue/),              &
-          regridmethod=ESMF_REGRIDMETHOD_BILINEAR,     &
-          extrapMethod=ESMF_EXTRAPMETHOD_NEAREST_STOD, &
-          polemethod=polemethod,                       &
-          srcTermProcessing=srcTermProcessing_Value,   &
-          ignoreDegenerate=.true.,                     &
-          dstStatusField=lfield,                       &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mapconsf .or. mapindex == mapnstod_consf) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapconsf), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_CONSERVE,   &
-          normType=ESMF_NORMTYPE_FRACAREA,           &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mapconsf_aofrac) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapconsf_aofrac), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_CONSERVE,   &
-          normType=ESMF_NORMTYPE_FRACAREA,           &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mapconsf_uv3d) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapconsf_uv3d), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_CONSERVE,   &
-          normType=ESMF_NORMTYPE_FRACAREA,           &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mapconsd .or. mapindex == mapnstod_consd) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapconsd), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_CONSERVE,   &
-          normType=ESMF_NORMTYPE_DSTAREA,            &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mappatch ) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mappatch), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_PATCH,      &
-          polemethod=polemethod,                     &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else if (mapindex == mappatch_uv3d ) then
-     if (maintask) then
-        write(logunit,'(A)') trim(subname)//' creating RH '//trim(mapname)//' for '//trim(string)
-     end if
-     call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mappatch_uv3d), &
-          srcMaskValues=(/srcMaskValue/),            &
-          dstMaskValues=(/dstMaskValue/),            &
-          regridmethod=ESMF_REGRIDMETHOD_PATCH,      &
-          polemethod=polemethod,                     &
-          srcTermProcessing=srcTermProcessing_Value, &
-          ignoreDegenerate=.true.,                   &
-          dstStatusField=lfield,                     &
-          unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-     if (chkerr(rc,__LINE__,u_FILE_u)) return
-  else
-     call shr_log_error(trim(subname)//' mapindex '//trim(mapname)//' not supported for '//trim(string), &
-          line=__LINE__, file=u_FILE_u, rc=rc)
-     return
   end if
-  if (maintask) print *,'XXX done w/ RH creation '//trim(dstatname)
+  !if (maintask) print *,'XXX done w/ RH creation '//trim(dstatname)
 
-  ! Copy R8 values into a returned field
+  ! Save route handle to file if requested; for conserv+nstod methods, need to
+  ! first save the conservative RH
+  if (rw_routehandles) then
+     if (mapindex == mapnstod_consd) then
+        call rhfiles(compname(n1),compname(n2),'consd',routehandles(mapconsd), 'write')
+     else if (mapindex == mapnstod_consf) then
+        call rhfiles(compname(n1),compname(n2),'consf',routehandles(mapconsf), 'write')
+     else
+        call rhfiles(compname(n1),compname(n2),trim(mapname),routehandles(mapindex), 'write')
+     end if
+  end if
+
+
+  !    rh_filename = 'cmeps.rh_'//trim(dstatname)
+  !    if (maintask) then
+  !       write(logunit,'(a)') trim(subname)//": saving  RH for "//trim(dstatname)
+  !    end if
+  !    if (mapindex == mapnstod_consd) then
+  !       !rh_name = 'consd'
+  !       call ESMF_RouteHandleWrite(routehandles(mapconsd), fileName=trim(rh_filename), rc=rc)
+  !       if (chkerr(rc,__LINE__,u_FILE_u)) return
+  !    else if (mapindex == mapnstod_consf) then
+  !       call ESMF_RouteHandleWrite(routehandles(mapconsf), fileName=trim(rh_filename), rc=rc)
+  !       if (chkerr(rc,__LINE__,u_FILE_u)) return
+  !    else
+  !       call ESMF_RouteHandleWrite(routehandles(mapindex), fileName=trim(rh_filename), rc=rc)
+  !       if (chkerr(rc,__LINE__,u_FILE_u)) return
+  !    end if
+  ! endif
+  ! if(maintask) print *,'XXX done w/ RH write '//trim(dstatname)
+
+  ! Copy dstatus field R8 values into a returned field; for nstod+conservative this will just be the conservative
   if (present(dstatfield)) then
+     ! reset dstatname == mapindex; this will write consf part of nstodconsf to that name, which will
+     ! be a bit confusing, but I"m the only one using this and I can add a note in med write to clarify?
+     ! or I could actually combine the fields in med writing?
+     ! dstatname == mapindex
+     !
      dstatfield = ESMF_FieldCreate(mesh_dst, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, &
           name=trim(dstatname), rc=rc)
      if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -309,29 +167,8 @@ subroutine med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex,
      if (maintask) print *,'XXX done w/ dstat field '//trim(dstatname)
   end if
 
-  ! Save route handle to file if requested; for conserv+nstod methods, need to
-  ! first save the conservative RH
-  if (rw_routehandles) then
-     rh_filename = 'cmeps.rh_'//trim(dstatname)
-     if (maintask) then
-        write(logunit,'(a)') trim(subname)//": saving  RH for "//trim(dstatname)
-     end if
-     if (mapindex == mapnstod_consd) then
-        call ESMF_RouteHandleWrite(routehandles(mapconsd), fileName=trim(rh_filename), rc=rc)
-        if (chkerr(rc,__LINE__,u_FILE_u)) return
-     else if (mapindex == mapnstod_consf) then
-        call ESMF_RouteHandleWrite(routehandles(mapconsf), fileName=trim(rh_filename), rc=rc)
-        if (chkerr(rc,__LINE__,u_FILE_u)) return
-     else
-        call ESMF_RouteHandleWrite(routehandles(mapindex), fileName=trim(rh_filename), rc=rc)
-        if (chkerr(rc,__LINE__,u_FILE_u)) return
-     end if
-  endif
-  if(maintask) print *,'XXX done w/ RH write '//trim(dstatname)
-
   ! conservative+nstod methods requires a second routehandle
   if (mapindex == mapnstod .or. mapindex == mapnstod_consd .or. mapindex == mapnstod_consf) then
-     dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_nstod'
      if(maintask) print *,'XXX1 '//trim(dstatname)
      call ESMF_FieldRegridStore(fldsrc, flddst, routehandle=routehandles(mapnstod), &
           srcMaskValues=(/srcMaskValue/),              &
@@ -344,8 +181,24 @@ subroutine med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex,
           rc=rc)
      if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-     ! Copy R8 values into a returned field
+     ! Save nstod route handle to file if requested
+     if (rw_routehandles) then
+        call rhfiles(compname(n1),compname(n2),'nstod',routehandles(mapnstod), 'write')
+     end if
+
+     !    rh_filename = 'cmeps.rh_'//trim(dstatname)
+     !    if (maintask) print *,'XXX2 '//trim(rh_filename)
+     !    if (maintask) then
+     !       write(logunit,'(a)') trim(subname)//": saving  RH for "//trim(dstatname)
+     !    end if
+     !     dstatname = trim(compname(n1))//'_'//trim(compname(n2))//'_nstod'
+     !    call ESMF_RouteHandleWrite(routehandles(mapnstod), fileName=trim(rh_filename), rc=rc)
+     !    if (chkerr(rc,__LINE__,u_FILE_u)) return
+     ! endif
+
+     ! Copy dstatus field R8 values into a returned field
      if (present(dstatfield)) then
+        !dstatname = ...
         dstatfield = ESMF_FieldCreate(mesh_dst, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, &
              name=trim(dstatname), rc=rc)
         if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -355,17 +208,6 @@ subroutine med_map_routehandles_initfrom_field(n1, n2, fldsrc, flddst, mapindex,
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         r8ptr = real(i4ptr,R8)
      end if
-
-     ! Save nstod route handle to file if requested
-     if (rw_routehandles) then
-        rh_filename = 'cmeps.rh_'//trim(dstatname)
-        if (maintask) print *,'XXX2 '//trim(rh_filename)
-        if (maintask) then
-           write(logunit,'(a)') trim(subname)//": saving  RH for "//trim(dstatname)
-        end if
-        call ESMF_RouteHandleWrite(routehandles(mapnstod), fileName=trim(rh_filename), rc=rc)
-        if (chkerr(rc,__LINE__,u_FILE_u)) return
-     endif
   end if
 
   ! Output route handle to file if requested
