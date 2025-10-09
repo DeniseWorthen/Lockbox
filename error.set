@@ -1,0 +1,13 @@
+cancel data/all
+
+define axis/t="01-may-2021:06:00:00":"16-aug-2021:00:00:00":6/units=hours tax
+define grid/t=tax gd
+
+file/var="hen,hes"/grid=gd heat.zap.dat
+
+!file/var="hen,hes"/grid=gd heat.dev.dat
+!file/var="hen,hes"/grid=gd heat.ec.dat
+!file/var="hen,hes"/grid=gd heat.ec.mod.dat
+
+!file/var="sen,ses"/grid=gd salt.dev.dat
+!file/var="sen,ses"/grid=gd salt.ec.dat

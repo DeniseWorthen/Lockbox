@@ -1,0 +1,40 @@
+start_year:              2025
+start_month:             01
+start_day:               01
+start_hour:              06
+start_minute:            0
+start_second:            0
+nhours_fcst:             6
+fhrot:                   3
+
+dt_atmos:                150
+restart_interval:        3 -1
+restart_fh:
+
+quilting:                .false.
+quilting_restart:        .true.
+write_groups:            1
+write_tasks_per_group:   120
+itasks:                  1
+output_history:          .true.
+history_file_on_native_grid: .false.
+write_dopost:            .false.
+write_nsflip:            .true.
+num_files:               2
+fv3atm_output_dir:       ./FV3ATM_OUTPUT
+filename_base:           'atm' 'sfc'
+output_grid:             gaussian_grid
+output_file:             'netcdf_parallel' 'netcdf_parallel'
+zstandard_level:         0
+ideflate:                1
+quantize_mode:           'quantize_bitround'
+quantize_nsd:            14
+ichunk2d:                3072
+jchunk2d:                1536
+ichunk3d:                3072
+jchunk3d:                1536
+kchunk3d:                1
+imo:                     3072
+jmo:                     1536
+output_fh:               0 3 6
+iau_offset:              6
