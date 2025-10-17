@@ -2,11 +2,14 @@ program tasks
 
   implicit none
 
-  integer, parameter :: res=1152, tpn=128
-  integer, parameter :: tocn = 240, tice = 240, twav = 4000
+  integer, parameter :: res=1152
+  !integer, parameter :: tocn = 240, tice = 240, twav = 4000
+  integer, parameter :: tice = 80, tocn = 120, twav = 1200
   integer, parameter :: medmax = 1200
 
   integer :: inpes, jnpes, blocksize, blocks, atmthrd
+  integer :: nt128, nt192
+
   !integer, parameter :: inpes=16, jnpes=24, res=1152
   !integer, parameter :: wrtg=1, wrtt=120
   !integer, parameter :: blocksize=32
@@ -55,8 +58,11 @@ program tasks
      ubwav = lbwav+(twav-1)
      print '(a,2i6)','WAV_petlist_bounds: ',lbwav,ubwav
 
-     print '(a,i6)','total nodes @128 ',1+ubwav/128
-     print '(a,i6)','total nodes @192 ',1+ubwav/192
+     nt128 = 1+(1+ubwav)/128
+     nt192 = 1+(1+ubwav)/192
+
+     print '(a,2i6)','total nodes @128 ',nt128,nt128*128
+     print '(a,2i6)','total nodes @192 ',nt192,nt192*192
   end if
 
 end program tasks
