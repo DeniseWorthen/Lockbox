@@ -1,0 +1,301 @@
+********
+IMPORTANT: Large deviations between Connector times on different PETs
+are typically indicators of load imbalance in the system. The following
+Connectors in this profile may indicate a load imbalance:
+	 - [MED-TO-WAV] RunPhase1
+	 - [MED-TO-ATM] RunPhase1
+	 - [MED-TO-OCN] RunPhase1
+	 - [MED-TO-ICE] RunPhase1
+********
+
+Region                                                                  PETs   PEs    Count    Mean (s)    Min (s)     Min PET Max (s)     Max PET
+  [ESMF]                                                                53760  53760  1        1084.2253   340.1581    53753   1086.1322   3065   
+    [UFS Driver Grid Comp] RunPhase1                                    53760  53760  1        743.2937    0.4594      53753   745.2407    1819   
+      [ATM] RunPhase1                                                   49152  49152  1080     703.9318    666.2086    33108   744.1622    31490  
+        [ufsatm_fcst] RunPhase1                                         12288  49152  1080     451.4189    410.4634    7548    530.3209    20864  
+        [ufsatm_fcst] phase1                                            12288  49152  1080     214.7630    136.2480    20864   256.0261    7548   
+      [WAV] RunPhase1                                                   4000   4000   90       490.0785    451.6214    52696   561.9479    51215  
+      [MED-TO-WAV] RunPhase1                                            23200  23200  90       43.5794     0.0088      3970    290.7445    52696  
+      [MED-TO-ATM] RunPhase1                                            49152  49152  1080     12.3513     0.1601      20587   77.7771     34588  
+      [ICE] RunPhase1                                                   240    240    1080     555.3671    503.3051    49512   613.0874    49600  
+      [OCN] RunPhase1                                                   240    240    90       472.9939    472.5396    49254   474.1132    49152  
+      [MED] med_phases_post_ice                                         4800   19200  1080     15.7762     3.7377      7036    24.2510     1048   
+        MED:(med_phases_post_ice)                                       4800   19200  1080     15.6693     3.6294      7036    24.1461     1048   
+          MED: (med_fraction_set)                                       4800   19200  1080     15.0184     3.1158      7036    23.4742     416    
+            MED: (med_fraction_set) fbfrac(compocn)                     4800   19200  1080     12.7545     1.6279      16600   22.7957     900    
+            MED: (med_fraction_set) fbfrac(compatm)                     4800   19200  1080     2.2517      0.2205      4984    7.8403      19108  
+          MED:(med_phases_post_ice) map_ice2ocn                         4800   19200  1080     0.3242      0.1618      2900    0.7294      988    
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1080     0.3232      0.1608      2900    0.7285      988    
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  1080     0.2365      0.0763      2900    0.6423      988    
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  1080     0.0134      0.0121      9164    0.0205      8064   
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  1080     0.0125      0.0112      17352   0.0221      3200   
+          MED:(med_phases_post_ice) map_ice2wav                         4800   19200  1080     0.3176      0.1047      2276    0.6256      4400   
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1080     0.3168      0.1039      2276    0.6247      4400   
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  1080     0.2646      0.0523      2276    0.5715      4400   
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  1080     0.0023      0.0020      18260   0.0037      6904   
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  1080     0.0020      0.0016      3692    0.0030      16256  
+          MED:(med_phases_history_write_comp_aux)                       4800   19200  1080     0.0006      0.0005      11204   0.0015      9504   
+          MED:(med_phases_history_write_inst_comp)                      4800   19200  1080     0.0005      0.0004      9700    0.0013      4976   
+          MED:(med_phases_history_write_comp_avg)                       4800   19200  1080     0.0004      0.0004      14892   0.0013      14608  
+      [MED-TO-OCN] RunPhase1                                            19440  19440  90       3.3412      0.0108      258     270.1617    49254  
+      [WAV-TO-MED] RunPhase1                                            23200  23200  90       2.7145      0.0072      446     21.1959     7652   
+      [MED-TO-ICE] RunPhase1                                            19440  19440  1080     2.4767      0.1465      641     239.9158    49512  
+      [ATM-TO-MED] RunPhase1                                            49152  49152  1080     0.9463      0.2326      31490   9.9188      2960   
+      [ICE-TO-MED] RunPhase1                                            19440  19440  1080     2.3131      0.1742      12275   20.6899     7036   
+      [MED] med_phases_post_atm                                         4800   19200  1080     9.3112      5.2264      3160    11.1210     10548  
+        MED:(med_phases_post_atm)                                       4800   19200  1080     9.1687      5.0833      3160    10.9816     10552  
+          MED:(med_phases_post_atm) map_atm2ocn                         4800   19200  1080     5.5813      0.5617      2424    9.1465      10404  
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1080     5.5789      0.5596      2424    9.1448      10404  
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  3240     4.5099      0.1008      2424    7.8846      10404  
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  3240     0.0809      0.0580      12716   0.1300      3584   
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  3240     0.0294      0.0246      11344   0.0414      6400   
+          MED:(med_phases_post_atm) map_atm2ice                         4800   19200  1080     2.3122      0.3393      8088    8.9949      12720  
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1080     2.3111      0.3384      8088    8.9938      12720  
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  2160     1.6138      0.0438      2492    8.3633      12720  
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  2160     0.0323      0.0218      15184   0.0559      16896  
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  2160     0.0159      0.0138      13964   0.0227      768    
+          MED:(med_phases_post_atm) map_atm2wav                         4800   19200  1080     1.2610      0.2104      5000    8.5323      17524  
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1080     1.2601      0.2095      5000    8.5313      17524  
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  1080     1.1979      0.1489      5000    8.4711      17524  
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  1080     0.0075      0.0052      2652    0.0141      10644  
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  1080     0.0048      0.0041      8184    0.0077      16640  
+          MED:(med_phases_history_write_comp_aux)                       4800   19200  1080     0.0012      0.0009      4876    0.0022      13772  
+          MED:(med_phases_history_write_inst_comp)                      4800   19200  1080     0.0007      0.0005      8552    0.0016      12788  
+          MED:(med_phases_history_write_comp_avg)                       4800   19200  1080     0.0006      0.0005      6228    0.0015      15492  
+      [MED] med_phases_post_ocn                                         4800   19200  90       7.9454      0.5376      16316   14.3278     19172  
+        MED:(med_phases_post_ocn)                                       4800   19200  90       7.9370      0.5292      16316   14.3193     19172  
+          MED:(med_phases_post_ocn) map_ocn2ice                         4800   19200  90       4.0781      0.0286      4340    11.8640     1772   
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  90       4.0780      0.0285      4340    11.8639     1772   
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  90       4.0720      0.0226      4340    11.8579     1772   
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  90       0.0009      0.0008      12996   0.0019      11604  
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  90       0.0009      0.0008      6316    0.0018      8652   
+          MED:(med_phases_post_ocn) map_ocn2wav                         4800   19200  90       3.8581      0.0354      416     11.3336     11456  
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  90       3.8581      0.0353      416     11.3336     11456  
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  90       3.8541      0.0313      416     11.3296     11456  
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  90       0.0003      0.0003      4332    0.0012      7552   
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  90       0.0002      0.0002      1064    0.0011      1312   
+          MED:(med_phases_history_write_comp_aux)                       4800   19200  90       0.0001      0.0001      13972   0.0010      7776   
+          MED:(med_phases_history_write_inst_comp)                      4800   19200  90       0.0001      0.0001      5216    0.0010      14068  
+          MED:(med_phases_history_write_comp_avg)                       4800   19200  90       0.0000      0.0000      9060    0.0009      17008  
+      [MED] med_phases_post_wav                                         4800   19200  90       4.4147      0.8091      2488    8.9412      9480   
+        MED:(med_phases_post_wav)                                       4800   19200  90       4.4064      0.8009      2488    8.9328      9480   
+          MED: (med_map_mod:med_map_field_packed)                       4800   19200  270      4.4056      0.8002      2488    8.9320      9480   
+            MED: (med_map_mod:med_map_field_packed) map                 4800   19200  180      4.3965      0.7915      2488    8.9231      9480   
+            MED: (med_map_mod:med_map_field_packed) copy from src       4800   19200  180      0.0008      0.0007      9920    0.0018      10072  
+            MED: (med_map_mod:med_map_field_packed) copy to dest        4800   19200  180      0.0005      0.0004      1636    0.0023      4452   
+          MED:(med_phases_history_write_comp_aux)                       4800   19200  90       0.0001      0.0001      13004   0.0002      12072  
+          MED:(med_phases_history_write_inst_comp)                      4800   19200  90       0.0001      0.0000      2512    0.0001      11396  
+          MED:(med_phases_history_write_comp_avg)                       4800   19200  90       0.0000      0.0000      17988   0.0001      13260  
+      [MED] med_phases_prep_atm                                         4800   19200  1080     3.5357      2.7281      3884    5.6638      2496   
+        MED:(med_phases_prep_atm)                                       4800   19200  1080     3.4369      2.6289      3884    5.5664      2496   
+          MED: (med_map_mod:med_map_field_packed)                       4800   19200  2160     3.2639      2.4460      3908    5.4055      2496   
+            MED: (med_map_mod:med_map_field_packed) map                 4800   19200  2160     3.0761      2.2340      3908    5.2391      2496   
+            MED: (med_map_mod:med_map_field_packed) copy to dest        4800   19200  2160     0.0472      0.0330      9152    0.1081      7680   
+            MED: (med_map_mod:med_map_field_packed) copy from src       4800   19200  2160     0.0205      0.0189      11436   0.0274      5120   
+          MED: (module_med_merge_mod: med_merge_auto)                   4800   19200  1080     0.1595      0.1396      6096    0.2239      3712   
+      [MED] med_phases_prep_ocn_accum                                   4800   19200  1080     0.8539      0.8355      6232    0.9088      384    
+        MED:(med_phases_prep_ocn_accum)                                 4800   19200  1080     0.7654      0.7482      6232    0.8185      384    
+          MED:(med_phases_prep_ocn_custom)                              4800   19200  1080     0.2536      0.2474      6212    0.2691      12160  
+          MED: (module_med_merge_mod: med_merge_auto)                   4800   19200  1080     0.1071      0.1025      1888    0.1303      18048  
+      [MED] med_phases_prep_wav_accum                                   4800   19200  1080     0.2995      0.2926      18668   0.3255      0      
+        MED:(med_phases_prep_wav_accum)                                 4800   19200  1080     0.2091      0.2037      1236    0.2281      3072   
+          MED: (module_med_merge_mod: med_merge_auto)                   4800   19200  1080     0.0417      0.0395      16104   0.0527      15488  
+      [MED] med_phases_prep_ice                                         4800   19200  1080     0.2092      0.2005      11132   0.2501      0      
+        MED:(med_phases_prep_ice)                                       4800   19200  1080     0.1125      0.1045      8196    0.1500      13952  
+          MED: (module_med_merge_mod: med_merge_auto)                   4800   19200  1080     0.1108      0.1027      8196    0.1481      13952  
+      [MED] med_phases_ocnalb_run                                       4800   19200  1080     0.1583      0.1447      18188   0.1934      0      
+        MED:(med_phases_ocnalb_run)                                     4800   19200  1080     0.0591      0.0464      18180   0.0778      0      
+      [MED] med_phases_prep_ocn_avg                                     4800   19200  90       0.0725      0.0713      11092   0.0764      13728  
+        MED:(med_phases_prep_ocn_avg)                                   4800   19200  90       0.0646      0.0634      4948    0.0683      13728  
+      [OCN-TO-MED] RunPhase1                                            19440  19440  90       0.0123      0.0098      10497   0.1738      49260  
+      [MED] med_phases_prep_wav_avg                                     4800   19200  90       0.0352      0.0346      13012   0.0387      1816   
+        MED:(med_phases_prep_wav_avg)                                   4800   19200  90       0.0274      0.0268      15968   0.0304      16572  
+      [MED] med_phases_restart_write                                    4800   19200  90       0.0186      0.0171      13044   0.0233      14456  
+        MED:(med_phases_restart_write)                                  4800   19200  90       0.0110      0.0096      13452   0.0157      14456  
+    [UFS Driver Grid Comp] Init 1                                       53760  53760  1        327.6244    327.6092    18512   327.6395    795    
+      [ATM] IPDvXp01                                                    49152  49152  1        192.1490    192.0590    2292    192.1847    33311  
+        [ufsatm_fcst] Init 1                                            12288  49152  1        188.4813    188.4327    22160   188.5106    33024  
+        [ufsatm_fcst] Init 2                                            12288  49152  1        0.0420      0.0407      48724   0.0464      13596  
+          [global] Init 3                                               12288  49152  1        0.0420      0.0407      48724   0.0464      13596  
+      [WAV] IPDv01p1                                                    4000   4000   1        99.8892     99.5712     49636   100.4257    52247  
+      [ATM-TO-MED] IPDv05p5                                             49152  49152  1        6.0346      3.4520      14614   7.6965      46593  
+      [ATM-TO-MED] IPDv05p6b                                            49152  49152  1        3.5072      1.6908      5117    4.6720      30805  
+      [MED-TO-ATM] IPDv05p5                                             49152  49152  1        3.4028      3.3994      43643   3.4169      10503  
+      [MED] IPDv03p7                                                    4800   19200  2        32.0094     31.7843     14024   32.2542     5360   
+        MED: (med_map_mod: RouteHandles_init)                           4800   19200  1        14.8166     14.8102     10240   14.8185     5520   
+        MED:(med_phases_restart_read)                                   4800   19200  1        14.5014     14.5007     18192   14.5024     2076   
+        MED: (med_fraction_init)                                        4800   19200  1        1.9701      1.7606      15036   2.2051      11440  
+          MED: (med_map_mod:med_map_routehandles_initfrom_fieldbundle)  4800   19200  2        1.9681      1.7584      19176   2.2033      11440  
+        MED:(med_phases_post_atm)                                       4800   19200  1        0.5130      0.4486      10284   0.5695      9936   
+          MED:(med_phases_post_atm) map_atm2ocn                         4800   19200  1        0.2350      0.0006      2424    0.3604      13232  
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1        0.2350      0.0006      2424    0.3603      13232  
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  3        0.1850      0.0001      2492    0.3116      7832   
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  3        0.0001      0.0000      15804   0.0002      4352   
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  3        0.0000      0.0000      1948    0.0009      15788  
+          MED:(med_phases_post_atm) map_atm2ice                         4800   19200  1        0.1755      0.0003      8088    0.5189      17560  
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1        0.1755      0.0003      8088    0.5189      17560  
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  2        0.1215      0.0000      5124    0.4251      2340   
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  2        0.0000      0.0000      8536    0.0007      876    
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  2        0.0000      0.0000      1948    0.0000      17032  
+          MED:(med_phases_post_atm) map_atm2wav                         4800   19200  1        0.1026      0.0001      3112    0.5239      2412   
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1        0.1026      0.0001      3112    0.5239      2412   
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  1        0.1025      0.0000      3112    0.5238      2412   
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  1        0.0000      0.0000      14428   0.0008      1808   
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  1        0.0000      0.0000      18476   0.0000      17384  
+        MED:(med_phases_post_ice)                                       4800   19200  1        0.0888      0.0290      9936    0.1527      10284  
+          MED: (med_fraction_set)                                       4800   19200  1        0.0567      0.0001      9936    0.1209      10284  
+            MED: (med_fraction_set) fbfrac(compocn)                     4800   19200  1        0.0526      0.0000      1932    0.1206      10284  
+            MED: (med_fraction_set) fbfrac(compatm)                     4800   19200  1        0.0041      0.0000      5688    0.0218      12664  
+          MED:(med_phases_post_ice) map_ice2ocn                         4800   19200  1        0.0288      0.0044      0       0.0424      16596  
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1        0.0288      0.0044      0       0.0424      16596  
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  1        0.0287      0.0043      0       0.0423      16596  
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  1        0.0000      0.0000      2312    0.0000      6272   
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  1        0.0000      0.0000      11780   0.0005      6000   
+          MED:(med_phases_post_ice) map_ice2wav                         4800   19200  1        0.0033      0.0001      18248   0.0268      8704   
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1        0.0033      0.0001      18248   0.0268      8704   
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  1        0.0033      0.0000      9452    0.0268      8704   
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  1        0.0000      0.0000      18248   0.0000      19032  
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  1        0.0000      0.0000      18248   0.0000      13572  
+        MED:(med_phases_post_wav)                                       4800   19200  1        0.0300      0.0002      16      0.0620      380    
+          MED: (med_map_mod:med_map_field_packed)                       4800   19200  3        0.0300      0.0002      16      0.0619      380    
+            MED: (med_map_mod:med_map_field_packed) map                 4800   19200  2        0.0299      0.0001      16      0.0618      380    
+            MED: (med_map_mod:med_map_field_packed) copy from src       4800   19200  2        0.0000      0.0000      8252    0.0000      6412   
+            MED: (med_map_mod:med_map_field_packed) copy to dest        4800   19200  2        0.0000      0.0000      2080    0.0000      4432   
+        MED:(med_phases_post_ocn)                                       4800   19200  1        0.0265      0.0123      708     0.0590      568    
+          MED:(med_phases_post_ocn) map_ocn2ice                         4800   19200  1        0.0210      0.0001      7868    0.0589      568    
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1        0.0210      0.0001      7868    0.0589      568    
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  1        0.0209      0.0000      7868    0.0588      568    
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  1        0.0000      0.0000      12508   0.0004      5140   
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  1        0.0000      0.0000      1984    0.0000      16904  
+          MED:(med_phases_post_ocn) map_ocn2wav                         4800   19200  1        0.0055      0.0001      976     0.0364      11628  
+            MED: (med_map_mod:med_map_field_packed)                     4800   19200  1        0.0055      0.0001      976     0.0364      11628  
+              MED: (med_map_mod:med_map_field_packed) map               4800   19200  1        0.0054      0.0000      976     0.0364      11628  
+              MED: (med_map_mod:med_map_field_packed) copy to dest      4800   19200  1        0.0000      0.0000      15592   0.0000      14664  
+              MED: (med_map_mod:med_map_field_packed) copy from src     4800   19200  1        0.0000      0.0000      6408    0.0009      536    
+        MED: (med_fraction_set)                                         4800   19200  1        0.0011      0.0001      17192   0.0023      6924   
+          MED: (med_fraction_set) fbfrac(compocn)                       4800   19200  1        0.0006      0.0000      16924   0.0013      7180   
+          MED: (med_fraction_set) fbfrac(compatm)                       4800   19200  1        0.0005      0.0000      1776    0.0015      6924   
+        MED:(med_phases_ocnalb_run)                                     4800   19200  1        0.0003      0.0002      4368    0.0012      10812  
+          MED:(med_phases_ocnalb_init)                                  4800   19200  1        0.0002      0.0002      296     0.0003      8936   
+        MED:(med_phases_profile)                                        4800   19200  1        0.0001      0.0001      1456    0.0009      864    
+      [MED-TO-ATM] IPDv05p6b                                            49152  49152  1        1.6018      1.1240      16383   1.9539      37385  
+      [WAV-TO-MED] IPDv05p5                                             23200  23200  1        2.2183      0.9764      5763    8.0964      51256  
+      [WAV] IPDv01p3                                                    4000   4000   1        12.8419     12.8399     49653   12.8440     51833  
+      [MED-TO-WAV] IPDv05p5                                             23200  23200  1        2.1381      0.9827      9009    7.6390      50402  
+      [ATM-TO-MED] IPDv05p6a                                            49152  49152  1        1.0030      0.4669      18952   1.3525      48276  
+      [ATM-TO-MED] IPDv05p4                                             49152  49152  1        0.8880      0.4065      8587    1.1794      20218  
+      [WAV-TO-MED] IPDv05p6b                                            23200  23200  1        1.8126      0.9849      1375    5.7822      52981  
+      [ICE-TO-MED] IPDv05p5                                             19440  19440  1        1.9444      1.8640      7052    8.0959      49606  
+      [OCN-TO-MED] IPDv05p5                                             19440  19440  1        1.8551      1.7750      9085    7.8647      49346  
+      [ICE-TO-MED] IPDv05p6b                                            19440  19440  1        1.7179      1.6706      16051   5.4354      49615  
+      [MED-TO-ICE] IPDv05p5                                             19440  19440  1        1.6981      1.6280      15105   6.6456      49445  
+      [MED-TO-OCN] IPDv05p5                                             19440  19440  1        1.6476      1.5926      10503   5.0095      49183  
+      [OCN-TO-MED] IPDv05p6b                                            19440  19440  1        1.4754      1.4310      4354    4.9523      49245  
+      [MED-TO-WAV] IPDv05p6b                                            23200  23200  1        1.2361      0.6381      14815   4.1381      49635  
+      [ATM-TO-MED] IPDv05p3                                             49152  49152  1        0.4893      0.2659      5381    0.6346      47529  
+      [MED-TO-ICE] IPDv05p6b                                            19440  19440  1        1.2196      1.1865      11785   3.7678      49393  
+      [MED-TO-ATM] IPDv05p3                                             49152  49152  1        0.4692      0.2938      10113   0.5800      32772  
+      [MED-TO-OCN] IPDv05p6b                                            19440  19440  1        1.1712      1.1495      5612    2.8213      49282  
+      [MED-TO-ATM] IPDv05p6a                                            49152  49152  1        0.4580      0.4014      1672    0.4843      16250  
+      [OCN] IPDv03p1                                                    240    240    1        78.0935     78.0929     49346   78.0946     49258  
+      [MED-TO-ATM] IPDv05p2a                                            49152  49152  1        0.3494      0.1537      18640   0.4787      36630  
+      [MED-TO-ATM] IPDv05p4                                             49152  49152  1        0.3399      0.3378      35670   0.3542      14244  
+      [ATM-TO-MED] IPDv05p1                                             49152  49152  1        0.3348      0.1608      4104    0.4486      43044  
+      [ATM-TO-MED] IPDv05p2b                                            49152  49152  1        0.3323      0.1599      11268   0.4471      42820  
+      [ATM-TO-MED] IPDv05p2a                                            49152  49152  1        0.3321      0.1613      9224    0.4452      19348  
+      [MED-TO-ATM] IPDv05p2b                                            49152  49152  1        0.3254      0.1596      16560   0.4358      39391  
+      [MED-TO-WAV] IPDv05p4                                             23200  23200  1        0.4565      0.3138      127     1.1242      50185  
+      [WAV-TO-MED] IPDv05p6a                                            23200  23200  1        0.4356      0.2368      16178   1.3357      52702  
+      [MED-TO-WAV] IPDv05p6a                                            23200  23200  1        0.4317      0.2626      14344   1.2248      53227  
+      [WAV-TO-MED] IPDv05p4                                             23200  23200  1        0.4285      0.2720      9047    1.1123      53520  
+      [MED] IPDv03p4                                                    4800   19200  1        1.9508      1.9354      15552   1.9568      1624   
+      [MED-TO-ATM] IPDv05p1                                             49152  49152  1        0.1734      0.1684      41480   0.1790      34149  
+      [ICE-TO-MED] IPDv05p6a                                            19440  19440  1        0.2732      0.2496      8756    1.3302      49515  
+      [OCN-TO-MED] IPDv05p6a                                            19440  19440  1        0.2688      0.2440      18904   1.3143      49261  
+      [MED-TO-OCN] IPDv05p6a                                            19440  19440  1        0.2661      0.2332      16169   0.7158      49216  
+      [MED-TO-ICE] IPDv05p6a                                            19440  19440  1        0.2525      0.2408      16121   0.9584      49496  
+      [WAV-TO-MED] IPDv05p3                                             23200  23200  1        0.2007      0.1084      17906   0.6398      49789  
+      [MED-TO-WAV] IPDv05p3                                             23200  23200  1        0.1933      0.0928      10891   0.6703      50835  
+      [WAV-TO-MED] IPDv05p1                                             23200  23200  1        0.1835      0.1190      16125   0.4850      51776  
+      [MED-TO-ICE] IPDv05p4                                             19440  19440  1        0.2076      0.1865      948     0.7518      49535  
+      [ICE-TO-MED] IPDv05p4                                             19440  19440  1        0.2051      0.1906      8872    1.1312      49513  
+      [MED-TO-OCN] IPDv05p4                                             19440  19440  1        0.2029      0.1847      14244   0.5530      49389  
+      [WAV-TO-MED] IPDv05p2b                                            23200  23200  1        0.1635      0.1048      10118   0.4429      51673  
+      [MED-TO-WAV] IPDv05p1                                             23200  23200  1        0.1593      0.0962      15957   0.4550      53347  
+      [MED-TO-WAV] IPDv05p2b                                            23200  23200  1        0.1588      0.0981      2581    0.4440      50825  
+      [WAV-TO-MED] IPDv05p2a                                            23200  23200  1        0.1537      0.0922      10063   0.4368      51767  
+      [MED-TO-WAV] IPDv05p2a                                            23200  23200  1        0.1534      0.0940      14744   0.4297      50869  
+      [OCN-TO-MED] IPDv05p4                                             19440  19440  1        0.1745      0.1559      8828    1.1382      49386  
+      [ICE-TO-MED] IPDv05p3                                             19440  19440  1        0.1727      0.1656      14675   0.6247      49440  
+      [MED-TO-ICE] IPDv05p3                                             19440  19440  1        0.1462      0.1383      6273    0.6813      49545  
+      [MED-TO-OCN] IPDv05p3                                             19440  19440  1        0.1371      0.1300      16549   0.6337      49289  
+      [ICE] IPDv01p3                                                    240    240    1        10.5802     10.5777     49404   10.5815     49412  
+      [ICE] IPDv01p1                                                    240    240    1        8.5519      8.5467      49394   8.5565      49630  
+      [MED] IPDv03p5                                                    4800   19200  1        0.4176      0.4155      10108   0.4196      380    
+      [ICE-TO-MED] IPDv05p1                                             19440  19440  1        0.1025      0.0943      14782   0.4619      49492  
+      [OCN-TO-MED] IPDv05p1                                             19440  19440  1        0.1024      0.0955      16194   0.4532      49313  
+      [OCN-TO-MED] IPDv05p3                                             19440  19440  1        0.1011      0.0923      17870   0.5961      49378  
+      [ICE-TO-MED] IPDv05p2a                                            19440  19440  1        0.0985      0.0921      6517    0.4390      49518  
+      [MED-TO-OCN] IPDv05p2a                                            19440  19440  1        0.0974      0.0867      16314   0.4673      49222  
+      [ICE-TO-MED] IPDv05p2b                                            19440  19440  1        0.0963      0.0888      5017    0.4365      49480  
+      [MED-TO-OCN] IPDv05p1                                             19440  19440  1        0.0934      0.0876      12146   0.2636      49244  
+      [MED-TO-ICE] IPDv05p1                                             19440  19440  1        0.0925      0.0870      16121   0.3559      49616  
+      [MED-TO-ICE] IPDv05p2b                                            19440  19440  1        0.0924      0.0864      6870    0.4322      49538  
+      [MED-TO-OCN] IPDv05p2b                                            19440  19440  1        0.0920      0.0835      16253   0.4376      49243  
+      [MED-TO-ICE] IPDv05p2a                                            19440  19440  1        0.0886      0.0819      9012    0.4537      49540  
+      [OCN-TO-MED] IPDv05p2a                                            19440  19440  1        0.0833      0.0720      7605    0.4271      49307  
+      [OCN-TO-MED] IPDv05p2b                                            19440  19440  1        0.0822      0.0734      18917   0.4328      49287  
+      [OCN] IPDv03p3                                                    240    240    1        5.2273      5.2266      49379   5.2285      49197  
+      [OCN-TO-MED] RunPhase1                                            19440  19440  1        0.0520      0.0001      11566   0.3016      49322  
+      [ATM] IPDvXp04                                                    49152  49152  1        0.0074      0.0066      9683    0.0123      48871  
+        [ufsatm_fcst] Init 3                                            12288  49152  1        0.0069      0.0063      11080   0.0098      48868  
+          [global] Init 4                                               12288  49152  1        0.0068      0.0063      11080   0.0098      48868  
+      [ICE-TO-MED] RunPhase1                                            19440  19440  1        0.0096      0.0001      11566   0.2090      76     
+      [MED] IPDv03p1                                                    4800   19200  1        0.0344      0.0326      8920    0.0458      2292   
+      [UFS Driver Grid Comp] IPDv04p2                                   53760  53760  1        0.0028      0.0001      53741   0.0074      10113  
+      [WAV-TO-MED] RunPhase1                                            23200  23200  1        0.0041      0.0001      16639   0.0346      51535  
+      [ATM-TO-MED] RunPhase1                                            49152  49152  1        0.0007      0.0001      32653   0.0063      2008   
+      [UFS Driver Grid Comp] IPDv05p3                                   53760  53760  1        0.0005      0.0002      53713   0.0016      149    
+      [MED] IPDv03p3                                                    4800   19200  1        0.0049      0.0046      13024   0.0061      16156  
+      [ATM] Init 0                                                      49152  49152  1        0.0004      0.0003      15088   0.0016      18170  
+      [ATM] IPDvXp07                                                    49152  49152  1        0.0003      0.0002      5448    0.0015      9057   
+      [WAV] IPDv01p5                                                    4000   4000   1        0.0041      0.0037      49645   0.0061      52276  
+      [MED-TO-ATM] Init 0                                               49152  49152  1        0.0002      0.0001      39166   0.0011      175    
+      [ATM-TO-MED] Init 0                                               49152  49152  1        0.0002      0.0001      30257   0.0011      38717  
+      [ATM] IPDvXp08                                                    49152  49152  1        0.0002      0.0001      14348   0.0011      39836  
+      [UFS Driver Grid Comp] IPDv05p1                                   53760  53760  1        0.0001      0.0000      53507   0.0010      24754  
+      [MED-TO-WAV] Init 0                                               23200  23200  1        0.0002      0.0001      18176   0.0012      12529  
+      [WAV-TO-MED] Init 0                                               23200  23200  1        0.0002      0.0001      7191    0.0012      5801   
+      [MED-TO-ICE] Init 0                                               19440  19440  1        0.0002      0.0001      49406   0.0012      2587   
+      [ICE-TO-MED] Init 0                                               19440  19440  1        0.0002      0.0001      4492    0.0011      16208  
+      [MED-TO-OCN] Init 0                                               19440  19440  1        0.0002      0.0001      13997   0.0011      11337  
+      [OCN-TO-MED] Init 0                                               19440  19440  1        0.0002      0.0001      9143    0.0011      20     
+      [UFS Driver Grid Comp] IPDv05p6                                   53760  53760  1        0.0001      0.0000      53724   0.0010      32791  
+      [UFS Driver Grid Comp] IPDv05p4                                   53760  53760  1        0.0001      0.0000      53692   0.0011      11995  
+      [UFS Driver Grid Comp] IPDv05p2                                   53760  53760  1        0.0001      0.0000      53721   0.0010      42387  
+      [UFS Driver Grid Comp] IPDv05p8                                   53760  53760  1        0.0001      0.0000      49398   0.0010      7656   
+      [MED] IPDv03p6                                                    4800   19200  1        0.0006      0.0005      15888   0.0016      14656  
+      [WAV] IPDv01p4                                                    4000   4000   1        0.0004      0.0001      51569   0.0012      53056  
+      [MED] Init 0                                                      4800   19200  1        0.0002      0.0002      6992    0.0406      0      
+      [WAV] Init 0                                                      4000   4000   1        0.0001      0.0001      49633   0.0003      52923  
+      [OCN] IPDv03p7                                                    240    240    1        0.0014      0.0012      49291   0.0016      49206  
+      [OCN] Init 0                                                      240    240    1        0.0006      0.0004      49157   0.0012      49170  
+      [OCN] IPDv03p6                                                    240    240    1        0.0004      0.0003      49168   0.0005      49175  
+      [ICE] IPDv01p4                                                    240    240    1        0.0004      0.0003      49400   0.0005      49437  
+      [ICE] Init 0                                                      240    240    1        0.0001      0.0001      49474   0.0002      49467  
+      [ICE] IPDv01p5                                                    240    240    1        0.0001      0.0001      49401   0.0001      49456  
+    [UFS Driver Grid Comp] FinalizePhase1                               53760  53760  1        1.2318      0.0002      53729   2.3561      50648  
+      [ATM] FinalizePhase1                                              49152  49152  1        1.1587      1.1354      7318    1.1831      31138  
+        [ufsatm_fcst] FinalizePhase1                                    12288  49152  1        1.1571      1.1344      7316    1.1721      29208  
+      [OCN] FinalizePhase1                                              240    240    1        0.1164      0.1153      49154   0.1168      49381  
+      [MED-TO-ATM] FinalizePhase1                                       49152  49152  1        0.0002      0.0001      48440   0.0011      5168   
+      [ATM-TO-MED] FinalizePhase1                                       49152  49152  1        0.0002      0.0001      34276   0.0011      4264   
+      [MED-TO-WAV] FinalizePhase1                                       23200  23200  1        0.0002      0.0001      2160    0.0010      6020   
+      [MED-TO-OCN] FinalizePhase1                                       19440  19440  1        0.0002      0.0001      14540   0.0005      7318   
+      [MED-TO-ICE] FinalizePhase1                                       19440  19440  1        0.0002      0.0001      52      0.0009      3312   
+      [WAV-TO-MED] FinalizePhase1                                       23200  23200  1        0.0002      0.0001      2744    0.0006      14579  
+      [ICE-TO-MED] FinalizePhase1                                       19440  19440  1        0.0002      0.0001      2648    0.0010      3572   
+      [OCN-TO-MED] FinalizePhase1                                       19440  19440  1        0.0002      0.0001      14300   0.0005      15522  
+      [MED] FinalizePhase1                                              4800   19200  1        0.0001      0.0000      2416    0.0009      6200   
+      [WAV] FinalizePhase1                                              4000   4000   1        0.0001      0.0001      50476   0.0001      53302  
+      [ICE] FinalizePhase1                                              240    240    1        0.0001      0.0001      49571   0.0002      49392  
