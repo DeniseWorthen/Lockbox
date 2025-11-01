@@ -56,7 +56,7 @@ contains
   integer, parameter, dimension(n_freq) :: freq = (/3, 6, 24/)
 
   ! the timeoffset interval is used only to construct the file name.
-  ! the file name must be set as the mid-point of the averaging period
+  ! the file name must be set as the mid-point of the averaging period.
   ! filenames will be given by
   !      T - (interval * offset + interval/2 * offset)
   ! where interval is the averaging interval in minutes
@@ -71,7 +71,7 @@ contains
   !
   !   00   .   24   .   48   .   72
   !       12 = 48 - (24 + 12)
-  !                 36 = 72 - (24+12)
+  !                 36 = 72 - (24 + 12)
   !
   type(ESMF_TimeInterval) :: timeoffset
 
@@ -252,14 +252,27 @@ contains
           !  write(olog(n)%filename,'(A,I4.4,3(A,I2.2),A)')trim(outputdir)//'ocn_',year,'_',month,'_',day,'_',hour,'.nc'
             !end if
             if (debug .and. is_root_pe()) then
-              print '(A)',trim(subname)//' fname '//trim(olog(n)%filename)//'  '//trim(importexport
+              print '(A)',trim(subname)//' fname '//trim(olog(n)%filename)//'  '//trim(importexport)
             end if
         end if
 
         if (debug) then
-          ! write import export
-          ! inquire if
-
+          fname = trim(olog(n)%filename)
+          inquire(file=fname, exist=existflag)
+          if (existflag) then
+            call nf90_err(nf90_open(fname, nf90_nowrite, ncid), 'nf90_open: '//fname)
+            call nf90_err(nf90_inquire(ncid, unlimiteddimid=dimid), 'inquire unlimiteddimid')
+            call nf90_err(nf90_inquire_dimension(ncid, dimid, len=nlen), 'inquire unlimited dimension')
+            call nf90_err(nf90_close(ncid), 'close: '//fname)
+            if (is_root_pe()) then
+              if (nlen > 0) then
+                print '(A)',trim(subname)//' fname exists '//trim(olog(n)%filename)//'  '//trim(importexport)//' complete'
+              else
+                print '(A)',trim(subname)//' fname exists '//trim(olog(n)%filename)//'  '//trim(importexport)//' still 0'
+              end if
+            end if
+          end if
+        end if
 
         if (olog(n)%chkfile_nextAdvance) then
           ! check if file is written
@@ -280,14 +293,6 @@ contains
                 !call log_restart_fh(currTime, startTime, 'mom6.'//chour, prefixtime=.true., appendtime=time_lastrestart, rc=rc)
                 !if (ChkErr(rc,__LINE__,u_FILE_u)) return
               endif
-            end if
-
-            if (debug .and. is_root_pe()) then
-              if (nlen > 0) then
-                print '(A)',trim(subname)//' fname '//trim(olog(n)%filename)//'  '//trim(importexport)//' complete'
-              else
-                print '(A)',trim(subname)//' fname '//trim(olog(n)%filename)//'  '//trim(importexport)//' still 0'
-              end if
             end if
           end if ! existflag
         end if ! chkfile_nextAdvance
