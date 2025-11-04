@@ -48,6 +48,8 @@ contains
   implicit none; private
 
   public :: outputlog_init, outputlog_run, outputlog_restart
+  !debug
+  public :: nf90_err
 
   ! the allowable output frequency for MOM6 history, in hours only
   ! TODO: 3hrly output reqs filename with minutes field
@@ -83,7 +85,7 @@ contains
   !                03 = 30 - (3)
   !
   ! since both the final interval and the next-to-final interval are
-  ! closed at the stop time,  a different log file name is required for
+  ! closed at the stop time, a different log file name is required for
   ! the final log file, otherwise we over-write the next-to-final log
   type(ESMF_TimeInterval) :: timeoffset
   type(ESMF_Time)         :: lastrestart
@@ -189,7 +191,7 @@ contains
       olog(n)%alarm_name = 'output_alarm'//trim(chour)
       olog(n)%opt_n = freq(n)
       olog(n)%filename_timeoffset = 90*freq(n)*timeoffset
-      olog(n)%chkfile_nextAdvance = .false.              !alarms ring at the freq, but files close on next advance
+      olog(n)%chkfile_nextAdvance = .false.               !alarms ring at the ouput freq, but files close on next advance
       olog(n)%filename = ''
       olog(n)%time_lastrestart = startTime
 
@@ -268,9 +270,9 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           write(olog(n)%filename,'(A,I4.4,4(A,I2.2),A)')trim(outputdir)//'ocn_',year,'_',month,'_',day,'_',hour,'_',minute,'.nc'
           if (debug .and. is_root_pe()) then
-            print '(A)',trim(subname)//' fname '//trim(olog(n)%filename)//'  '//trim(importexport)
+             print '(A)',trim(subname)//' fname '//trim(olog(n)%filename)//'  '//trim(importexport)
           end if
-        end if
+       end if
 
         if (olog(n)%chkfile_nextAdvance) then
           fname = trim(olog(n)%filename)
@@ -281,33 +283,35 @@ contains
             call nf90_err(nf90_inquire_dimension(ncid, dimid, len=nlen), 'inquire unlimited dimension')
             call nf90_err(nf90_close(ncid), 'close: '//fname)
             if (nlen > 0) then
-              olog(n)%chkfile_nextAdvance = .false.
-              olog(n)%time_lastrestart = lastrestart
-              ! the file check is taking place one advance after the end of the interval *after* the averaging
-              ! interval in the file (eg, 06 average file is checked for at hour=12+1), so the time
-              ! needed for logging the file completion is one full averaging interval prior to the current time
-              call ESMF_ClockGet(mclock, currTime=currTime, rc=rc)
-              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-              if (is_root_pe()) then
-                call log_restart_fh(currTime-60*freq(n)*timeoffset, startTime, logfile='mom6.'//chour, prefixtime=.true., &
-                     appendtime=olog(n)%time_lastrestart, rc=rc)
-                if (ChkErr(rc,__LINE__,u_FILE_u)) return
-              endif
+               olog(n)%chkfile_nextAdvance = .false.
+               olog(n)%time_lastrestart = lastrestart
+               ! the file check is taking place one advance after the end of the interval *after*
+               ! the averaging interval in the file (eg, 06 average file is checked for at hour=12+1)
+               ! so the time needed for logging the file completion is one full averaging interval
+               ! prior to the current time
+               call ESMF_ClockGet(mclock, currTime=currTime, rc=rc)
+               if (ChkErr(rc,__LINE__,u_FILE_u)) return
+               if (is_root_pe()) then
+                  call log_restart_fh(currTime-60*freq(n)*timeoffset, startTime, 'mom6.'//chour, prefixtime=.true., &
+                       appendtime=olog(n)%time_lastrestart, lastwritten=olog(n)%filename, rc=rc)
+                  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+               endif
             end if
-          end if ! existflag
-        end if
+         end if ! existflag
+      end if
 
-        if (lstop) then
-          call ESMF_TimeGet (currTime-30*freq(n)*timeoffset, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc )
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          write(olog(n)%filename,'(A,I4.4,4(A,I2.2),A)')trim(outputdir)//'ocn_',year,'_',month,'_',day,'_',hour,'_',minute,'.nc'
-          if (debug .and. is_root_pe()) then
-            print '(A)',trim(subname)//' fname XX '//trim(olog(n)%filename)//'  '//trim(importexport)
-          end if
+      if (lstop) then
+         call ESMF_TimeGet (currTime-30*freq(n)*timeoffset, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc )
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         if (is_root_pe())call ESMF_TimePrint(currTime-30*freq(n)*timeoffset, options="string", rc=rc)
+         write(olog(n)%filename,'(A,I4.4,4(A,I2.2),A)')trim(outputdir)//'ocn_',year,'_',month,'_',day,'_',hour,'_',minute,'.nc'
+         if (debug .and. is_root_pe()) then
+            print '(A)',trim(subname)//' fname at lstop '//trim(olog(n)%filename)//'  '//trim(importexport)
+         end if
 
-          fname = trim(olog(n)%filename)
-          inquire(file=fname, exist=existflag)
-          if (existflag) then
+         fname = trim(olog(n)%filename)
+         inquire(file=fname, exist=existflag)
+         if (existflag) then
             call nf90_err(nf90_open(fname, nf90_nowrite, ncid), 'nf90_open: '//fname)
             call nf90_err(nf90_inquire(ncid, unlimiteddimid=dimid), 'inquire unlimiteddimid')
             call nf90_err(nf90_inquire_dimension(ncid, dimid, len=nlen), 'inquire unlimited dimension')
@@ -319,34 +323,34 @@ contains
               call ESMF_ClockGet(mclock, currTime=currTime, rc=rc)
               if (ChkErr(rc,__LINE__,u_FILE_u)) return
               if (is_root_pe()) then
-                call log_restart_fh(currTime, startTime, logfile='mom6.stop.'//chour, prefixtime=.true., &
-                     appendtime=olog(n)%time_lastrestart, rc=rc)
-                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                 call log_restart_fh(currTime-60*freq(n)*timeoffset, startTime, 'mom6.stop.'//chour, prefixtime=.true., &
+                      appendtime=olog(n)%time_lastrestart, lastwritten=olog(n)%filename, rc=rc)
+                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
               end if
-            end if
-          end if
-        end if ! lstop
-
-        if (debug) then
-          fname = trim(olog(n)%filename)
-          inquire(file=fname, exist=existflag)
-          if (existflag) then
-            call nf90_err(nf90_open(fname, nf90_nowrite, ncid), 'nf90_open: '//fname)
-            call nf90_err(nf90_inquire(ncid, unlimiteddimid=dimid), 'inquire unlimiteddimid')
-            call nf90_err(nf90_inquire_dimension(ncid, dimid, len=nlen), 'inquire unlimited dimension')
-            call nf90_err(nf90_close(ncid), 'close: '//fname)
-            if (is_root_pe()) then
-              if (nlen > 0) then
-                print '(A,L)',trim(subname)//trim(fname)//' exists '//trim(importexport)//' complete ',olog(n)%chkfile_nextAdvance
-              else
-                print '(A,L)',trim(subname)//trim(fname)//' exists '//trim(importexport)//' still 0 ',olog(n)%chkfile_nextAdvance
-              end if
-            end if
-          end if
+           end if
         end if
+     end if ! lstop
 
-      end if ! chour = output_fh
-    end do
+     if (debug) then
+        fname = trim(olog(n)%filename)
+        inquire(file=fname, exist=existflag)
+        if (existflag) then
+           call nf90_err(nf90_open(fname, nf90_nowrite, ncid), 'nf90_open: '//fname)
+           call nf90_err(nf90_inquire(ncid, unlimiteddimid=dimid), 'inquire unlimiteddimid')
+           call nf90_err(nf90_inquire_dimension(ncid, dimid, len=nlen), 'inquire unlimited dimension')
+           call nf90_err(nf90_close(ncid), 'close: '//fname)
+           if (is_root_pe()) then
+              if (nlen > 0) then
+                 print '(A,L)',trim(subname)//trim(fname)//' exists '//trim(importexport)//' complete ',olog(n)%chkfile_nextAdvance
+              else
+                 print '(A,L)',trim(subname)//trim(fname)//' exists '//trim(importexport)//' still 0 ',olog(n)%chkfile_nextAdvance
+              end if
+           end if
+        end if
+     end if
+
+  end if ! chour = output_fh
+end do
 
   end subroutine outputlog_run
   !> Check all restart files to determine if output has been completed
@@ -406,14 +410,13 @@ contains
       endif
 
       ! check if file is written
-      inquire(file=fname, exist=existflag)
+      inquire(file=trim(fname), exist=existflag)
       if (existflag) then
-        call nf90_err(nf90_open(fname, nf90_nowrite, ncid), 'nf90_open: '//fname)
+        call nf90_err(nf90_open(trim(fname), nf90_nowrite, ncid), 'nf90_open: '//fname)
         call nf90_err(nf90_inquire(ncid, unlimiteddimid=dimid), 'inquire unlimiteddimid')
         call nf90_err(nf90_inquire_dimension(ncid, dimid, len=nlen), 'inquire unlimited dimension')
         call nf90_err(nf90_close(ncid), 'close: '//fname)
         if (nlen > 0) allDone(n) = .true.
-        if (is_root_pe())print *,'allDone= ',allDone
 
         if (debug .and. is_root_pe()) then
           if (nlen > 0) then
@@ -425,9 +428,10 @@ contains
       end if
     end do ! num_rest_files
 
+    ! UWM uses layout(1,1), so check only rootPE
     if (is_root_pe()) then
-      if (any(allDone) == .false.) then
-        !call MOM_error(FATAL, 'not all Restart files are complete')
+      if (any(allDone) .eqv. .false.) then
+        !  call MOM_error(FATAL, 'not all Restart files are complete')
       else
         lastrestart = nextTime
         call log_restart_fh(nextTime, startTime, 'mom6.res', prefixtime=.true., rc=rc)
