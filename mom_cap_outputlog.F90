@@ -82,6 +82,9 @@ contains
   !      21 = 30 - (12 + 3)
   !                03 = 30 - (3)
   !
+  ! since both the final interval and the next-to-final interval are
+  ! closed at the stop time,  a different log file name is required for
+  ! the final log file, otherwise we over-write the next-to-final log
   type(ESMF_TimeInterval) :: timeoffset
   type(ESMF_Time)         :: lastrestart
 
@@ -285,9 +288,9 @@ contains
               ! needed for logging the file completion is one full averaging interval prior to the current time
               call ESMF_ClockGet(mclock, currTime=currTime, rc=rc)
               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-              logtime = currTime-60*freq(n)*timeoffset
               if (is_root_pe()) then
-                call log_restart_fh(logtime, startTime, 'mom6.'//chour, prefixtime=.true., appendtime=olog(n)%time_lastrestart, rc=rc)
+                call log_restart_fh(currTime-60*freq(n)*timeoffset, startTime, logfile='mom6.'//chour, prefixtime=.true., &
+                     appendtime=olog(n)%time_lastrestart, rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
               endif
             end if
@@ -315,9 +318,9 @@ contains
               ! the file check is taking place at the stopTime (==currTime)
               call ESMF_ClockGet(mclock, currTime=currTime, rc=rc)
               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-              logtime = currTime
               if (is_root_pe()) then
-                call log_restart_fh(logtime, startTime, 'mom6.stop.'//chour, prefixtime=.true., appendtime=olog(n)%time_lastrestart, rc=rc)
+                call log_restart_fh(currTime, startTime, logfile='mom6.stop.'//chour, prefixtime=.true., &
+                     appendtime=olog(n)%time_lastrestart, rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
               end if
             end if
