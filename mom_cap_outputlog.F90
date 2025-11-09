@@ -32,12 +32,12 @@ contains
 #else
   use MOM_error_handler     , only : is_root_pe, MOM_error, FATAL
   use NUOPC                 , only : NUOPC_CompAttributeGet
-  use ESMF                  , only : ESMF_GridComp, ESMF_VM, ESMF_VMGet
+  use ESMF                  , only : ESMF_GridComp, ESMF_GridCompGet, ESMF_VM, ESMF_VMGet
   use ESMF                  , only : ESMF_Time, ESMF_Clock, ESMF_ClockGet, ESMF_Alarm, ESMF_AlarmSet
   use ESMF                  , only : ESMF_ClockGetAlarm, ESMF_AlarmIsRinging, ESMF_AlarmRingerOff
   use ESMF                  , only : ESMF_ClockGetNextTime, ESMF_TimeGet, ESMF_TimeInterval
   use ESMF                  , only : ESMF_AlarmGet, ESMF_TimeIntervalSet, ESMF_TimeIntervalPrint
-  use ESMF                  , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
+  use ESMF                  , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_VMBroadCast
   use ESMF                  , only : ESMF_LogSetError, ESMF_LogFoundError, ESMF_LOGERR_PASSTHRU
   use ESMF                  , only : operator(*), operator(+), operator(-), operator(>), operator(==)
   use MOM_cap_methods       , only : ChkErr
@@ -230,7 +230,7 @@ contains
       if (freq(n) .eq. 6) then
         olog(n)%fh_iauoffset      = iau_offset*30*tincrement
       else
-        olog(n)%fh_iauoffset      = 0
+        olog(n)%fh_iauoffset      = 0*tincrement
       end if
 
       call AlarmInit(mclock,                           &
@@ -319,13 +319,16 @@ contains
         end if
 
         if (olog(n)%chkfile_nextAdvance) then
+          if (debug .and. is_root_pe()) then
+            print '(A)',trim(subname)//' on next Advance '//trim(olog(n)%filename)//'  '//trim(importexport)
+          end if
           fname = trim(olog(n)%filename)
           inquire(file=fname, exist=existflag)
           if (existflag) then
             if (is_root_pe()) then
               nlen(1) = get_unlimited_len(trim(fname))
             end if
-            call ESMF_VMBroadcast(vm, nlen(1), 1, 0, rc=rc)
+            call ESMF_VMBroadCast(vm, nlen, 1, 0, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
             if (nlen(1) > 0) then
               olog(n)%chkfile_nextAdvance = .false.
@@ -340,8 +343,8 @@ contains
         end if
 
         if (lstop) then
-          ! use prevRing in place of currTime to allow for stopping between averaging
-          ! intervals; prevring == currTime if stopping on intervals
+          ! use prevRing in place of currTime to allow for stopping between averaging intervals
+          ! prevring == currTime if stopping on intervals
           call ESMF_AlarmGet(olog(n)%alarm, prevRingTime=prevring, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (debug .and. is_root_pe()) then
@@ -365,7 +368,7 @@ contains
             if (is_root_pe()) then
               nlen(1) = get_unlimited_len(fname)
             end if
-            call ESMF_VMBroadcast(vm, nlen(1), 1, 0, rc=rc)
+            call ESMF_VMBroadCast(vm, nlen, 1, 0, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
             if (nlen(1) > 0) then
               olog(n)%chkfile_nextAdvance = .false.
@@ -461,7 +464,7 @@ contains
         if (is_root_pe())then
           nlen(1) = get_unlimited_len(trim(fname))
         end if
-        call ESMF_VMBroadcast(vm, nlen(1), 1, 0, rc=rc)
+        call ESMF_VMBroadCast(vm, nlen, 1, 0, rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
         if (nlen(1) > 0) allDone(n) = .true.
@@ -485,17 +488,18 @@ contains
     end if
 
   end subroutine outputlog_restart
-
-  !> Return the length of the unlimited dimension in a netCDF file
+  !> Return the length of the unlimited dimension
   !!
   !! @param[in]  fname   the file name
-  !! @return             integer length of the unlimited dimension (0 if none)
+  !! @return             unlimited dimension length
   integer function get_unlimited_len(fname) result(unlen)
 
     character(len=*), intent(in) :: fname
 
     integer :: ncid, dimid
+    !----------------------------------------------------------------------------
 
+    print *,'YYY '//trim(fname)
     unlen = 0
     call nf90_err(nf90_open(trim(fname), nf90_nowrite, ncid), 'nf90_open: '//trim(fname))
     call nf90_err(nf90_inquire(ncid, unlimiteddimid=dimid), 'inquire unlimiteddimid')
@@ -503,7 +507,6 @@ contains
     call nf90_err(nf90_close(ncid), 'close: '//trim(fname))
 
   end function get_unlimited_len
-
   !> Handle netcdf errors
   !!
   !! @param[in]  ierr        the error code
