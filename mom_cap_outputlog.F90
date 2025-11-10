@@ -44,6 +44,8 @@ contains
   use MOM_cap_time          , only : AlarmInit
   use shr_is_restart_fh_mod , only : log_restart_fh
   use netcdf
+  !debug
+  use NUOPC_Model, only : NUOPC_ModelGet
 
   implicit none; private
 
@@ -138,12 +140,30 @@ contains
     character(len=256)      :: subname='MOM_cap:(outputlog_init) '
     !debug
     character(len=16) :: timestr
-    integer :: year,month,day,hour,minute
+    type(ESMF_Clock) :: dclock
+    type(ESMF_Time)  :: dcurrtime
+    character(len=128)       :: mtimestring, dtimestring
     !----------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! debug
+    call NUOPC_ModelGet(gcomp, driverClock=dclock, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_ClockGet(dclock, currTime=dcurrtime, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_ClockGet(mclock, currTime=mcurrtime, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_TimeGet(dcurrtime, timeString=dtimestring, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (is_root_pe()) print *,'XXX outputlog_init '//trim(dtimestring)
+    call ESMF_TimeGet(mcurrtime, timeString=mtimestring, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (is_root_pe()) print *,'XXX outputlog_init '//trim(mtimestring)
+    ! debug
 
     call NUOPC_CompAttributeGet(gcomp, name="mom6_restart_dir", value=value, &
          isPresent=isPresent, isSet=isSet, rc=rc)
@@ -205,17 +225,19 @@ contains
     if (isPresent .and. isSet) debug=(trim(value)=="true")
     if (debug) call ESMF_LogWrite('MOM_cap:MOM6 output debug ON', ESMF_LOGMSG_INFO)
 
-    call ESMF_ClockGet(mclock, currTime=mcurrTime, startTime=startTime, rc=rc)
+    call ESMF_ClockGet(mclock, currTime=mcurrTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TimeIntervalSet(tincrement, m=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize
-    lastrestart = startTime
+    lastrestart = mcurrTime
 
-    call ESMF_TimeGet (mcurrTime-iau_offset*30*tincrement, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    write(timestr,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
+    !debug
+    timestr = get_timestr(mcurrTime-iau_offset*30*tincrement)
+    !call ESMF_TimeGet (mcurrTime-iau_offset*30*tincrement, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc )
+    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !write(timestr,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
     if (debug .and. is_root_pe())print *,'XXX ',trim(timestr)
 
     do n = 1,n_freq
@@ -228,7 +250,7 @@ contains
       olog(n)%filename            = ''
       olog(n)%time_lastrestart    = lastrestart
       if (freq(n) .eq. 6) then
-        olog(n)%fh_iauoffset      = iau_offset*30*tincrement
+        olog(n)%fh_iauoffset      = iau_offset*30*tincrement  ! 3hours
       else
         olog(n)%fh_iauoffset      = 0*tincrement
       end if
@@ -238,7 +260,7 @@ contains
            option    = 'nhours',                       &
            opt_n     = olog(n)%opt_n,                  &
            opt_ymd   = -999,                           &
-           RefTime   = mcurrTime-olog(n)%fh_iauoffset, &
+           RefTime   = mcurrTime-olog(n)%fh_iauoffset, &      ! to force ring on freq(n) and not 3hrs later
            alarmname = olog(n)%alarm_name, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -269,11 +291,12 @@ contains
     type(ESMF_TimeInterval) :: timeStep
     logical                 :: lstop
     integer                 :: n, ncid, dimid, nlen(1)
-    integer                 :: year, month, day, hour, minute
     character(len=512)      :: import_timestr, export_timestr, importexport !debugging only
     character(len=16)       :: timestr
     character(len=512)      :: fname
     character(len=256)      :: subname='MOM_cap:(outputlog_run) '
+    !debug
+    character(len=512) :: tmpstring
     !----------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -285,7 +308,7 @@ contains
     call ESMF_TimeGet(currTime+timestep, timestring=export_timestr, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     importexport = trim(import_timestr)//'  '//trim(export_timestr)
-
+!#ifdef test
     lstop = .false.
     if (present(atStopTime)) then
       lstop = atStopTime
@@ -308,9 +331,20 @@ contains
 
           call ESMF_ClockGetNextTime(mclock, nextTime, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call ESMF_TimeGet (nextTime-olog(n)%filename_fhoffset, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc )
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          write(timestr,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
+          if (debug .and. is_root_pe()) then
+            call ESMF_TimeGet(nextTime-olog(n)%filename_fhoffset+2*olog(n)%fh_iauoffset, timeString=tmpstring, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            print *,'XXX outputlog_init nextime '//trim(tmpstring)
+          end if
+
+          ! !?nextTime-olog(n)%filename_fhoffset+2*olog(n)%fh_iauoffset
+          ! !call ESMF_TimeGet (nextTime-olog(n)%filename_fhoffset, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc )
+          ! call ESMF_TimeGet (nextTime-olog(n)%filename_fhoffset+2*olog(n)%fh_iauoffset, &
+          !       yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc )
+          ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          ! write(timestr,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
+          !timestr = get_timestr(nextTime-olog(n)%filename_fhoffset)
+          timestr = get_timestr(nextTime-olog(n)%filename_fhoffset+2*olog(n)%fh_iauoffset)
           write(olog(n)%filename,'(A)')trim(outputdir)//'ocn_'//trim(timestr)//'.nc'
 
           if (debug .and. is_root_pe()) then
@@ -319,9 +353,16 @@ contains
         end if
 
         if (olog(n)%chkfile_nextAdvance) then
+
+          timestr = get_timestr(currTime-olog(n)%filename_fhoffset+2*olog(n)%fh_iauoffset)
           if (debug .and. is_root_pe()) then
-            print '(A)',trim(subname)//' on next Advance '//trim(olog(n)%filename)//'  '//trim(importexport)
+            print '(A)',trim(subname)//' fname in chkadv '//trim(olog(n)%filename)//'  '//trim(importexport)
           end if
+          timestr =  get_timestr(currTime-olog(n)%fhoffset)
+          if (debug .and. is_root_pe()) then
+            print '(A)',trim(subname)//' log time '//trim(timestr)
+          end if
+
           fname = trim(olog(n)%filename)
           inquire(file=fname, exist=existflag)
           if (existflag) then
@@ -348,15 +389,17 @@ contains
           call ESMF_AlarmGet(olog(n)%alarm, prevRingTime=prevring, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (debug .and. is_root_pe()) then
-            call ESMF_TimeGet(prevring, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            write(timestr,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
+            !call ESMF_TimeGet(prevring, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc)
+            !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            !write(timestr,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
+            timestr = get_timestr(prevring)
             print '(A)',trim(subname)//' prevring at lstop '//trim(timestr)
           end if
 
-          call ESMF_TimeGet(prevring-30*freq(n)*tincrement, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          write(timestr,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
+          ! call ESMF_TimeGet(prevring-30*freq(n)*tincrement, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc)
+          ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          ! write(timestr,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
+          timestr = get_timestr(prevring-30*freq(n)*tincrement)
           write(olog(n)%filename,'(A)')trim(outputdir)//'ocn_'//trim(timestr)//'.nc'
           if (debug .and. is_root_pe()) then
             print '(A)',trim(subname)//' fname at lstop '//trim(olog(n)%filename)//'  '//trim(importexport)
@@ -400,7 +443,59 @@ contains
 
       end if ! chour = output_fh
     end do
+!#endif
+#ifdef test
+    if (debug .and. is_root_pe()) then
+      fname = './MOM6_OUTPUT/ocn_2021_03_22_15_00.nc'
+      inquire(file=fname, exist=existflag)
+      if (existflag) then
+        nlen(1) = get_unlimited_len(fname)
+        write(msgString,'(A)')trim(subname)//trim(fname)//' exists '//trim(importexport)
+        if (nlen(1) > 0) then
+          print '(A)',trim(msgString)//' complete '
+        else
+          print '(A)',trim(msgString)//' still  0 '
+        end if
+      end if
 
+      fname = './MOM6_OUTPUT/ocn_2021_03_22_21_00.nc'
+      inquire(file=fname, exist=existflag)
+      if (existflag) then
+        nlen(1) = get_unlimited_len(fname)
+        write(msgString,'(A)')trim(subname)//trim(fname)//' exists '//trim(importexport)
+        if (nlen(1) > 0) then
+          print '(A)',trim(msgString)//' complete '
+        else
+          print '(A)',trim(msgString)//' still  0 '
+        end if
+      end if
+
+
+      fname = './MOM6_OUTPUT/ocn_2021_03_23_03_00.nc'
+      inquire(file=fname, exist=existflag)
+      if (existflag) then
+        nlen(1) = get_unlimited_len(fname)
+        write(msgString,'(A)')trim(subname)//trim(fname)//' exists '//trim(importexport)
+        if (nlen(1) > 0) then
+          print '(A)',trim(msgString)//' complete '
+        else
+          print '(A)',trim(msgString)//' still  0 '
+        end if
+      end if
+
+      fname = './MOM6_OUTPUT/ocn_2021_03_23_09_00.nc'
+      inquire(file=fname, exist=existflag)
+      if (existflag) then
+        nlen(1) = get_unlimited_len(fname)
+        write(msgString,'(A)')trim(subname)//trim(fname)//' exists '//trim(importexport)
+        if (nlen(1) > 0) then
+          print '(A)',trim(msgString)//' complete '
+        else
+          print '(A)',trim(msgString)//' still  0 '
+        end if
+      end if
+    end if
+#endif
   end subroutine outputlog_run
   !> Check all restart files to determine if output has been completed
   !!
@@ -488,6 +583,23 @@ contains
     end if
 
   end subroutine outputlog_restart
+  !> Get a timestring of form yyyy_mm_dd_hh_mm from ESMF_Time
+  !!
+  !! @param[in]  myTime      ESMF Time object
+  !! @return     timestring  character string
+  character(len=16) function get_timestr(myTime) result(timestring)
+
+    type(ESMF_Time), intent(in) :: myTime
+
+    integer :: year,month,day,hour,minute
+    integer :: rc
+    !----------------------------------------------------------------------------
+
+    call ESMF_TimeGet(myTime, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc )
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    write(timestring,'(I4.4,4(A,I2.2))')year,'_',month,'_',day,'_',hour,'_',minute
+
+  end function get_timestr
   !> Return the length of the unlimited dimension
   !!
   !! @param[in]  fname   the file name
@@ -499,7 +611,6 @@ contains
     integer :: ncid, dimid
     !----------------------------------------------------------------------------
 
-    print *,'YYY '//trim(fname)
     unlen = 0
     call nf90_err(nf90_open(trim(fname), nf90_nowrite, ncid), 'nf90_open: '//trim(fname))
     call nf90_err(nf90_inquire(ncid, unlimiteddimid=dimid), 'inquire unlimiteddimid')
@@ -507,6 +618,7 @@ contains
     call nf90_err(nf90_close(ncid), 'close: '//trim(fname))
 
   end function get_unlimited_len
+
   !> Handle netcdf errors
   !!
   !! @param[in]  ierr        the error code
