@@ -97,6 +97,7 @@ contains
     integer                 :: opt_n
     logical                 :: chkfile_nextAdvance
     character(len=1024)     :: filename
+    integer                 :: filesize
     type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: fhoffset
     type(ESMF_TimeInterval) :: filename_fhoffset
@@ -217,6 +218,7 @@ contains
       olog(n)%opt_n               = freq(n)
       olog(n)%chkfile_nextAdvance = .false.
       olog(n)%filename            = ''
+      olog(n)%filesize            = 0
       olog(n)%time_lastrestart    = lastrestart
       olog(n)%fhoffset            = 60*freq(n)*tincrement
       olog(n)%filename_fhoffset   = 90*freq(n)*tincrement
@@ -260,13 +262,14 @@ contains
     integer, intent(out)          :: rc         !< return code
 
     ! local variables
-    type(ESMF_Time)         :: nextTime, currTime, startTime, prevRing
-    logical                 :: lstop
-    integer                 :: n, nlen(1)
-    character(len=40)       :: importexport
-    character(len=16)       :: timestr
-    character(len=512)      :: fname
-    character(len=256)      :: subname='MOM_cap:(outputlog_run)'
+    type(ESMF_Time)    :: nextTime, currTime, startTime, prevRing
+    logical            :: lstop
+    integer            :: n, nlen(1)
+    integer            :: fsize
+    character(len=40)  :: importexport
+    character(len=16)  :: timestr
+    character(len=512) :: fname
+    character(len=256) :: subname='MOM_cap:(outputlog_run)'
     !----------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -275,8 +278,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_ClockGetNextTime(mclock, nextTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    onHour = check_hour(mcurrTime, rc=rc)
     importexport = get_importexport(currTime, nextTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -301,15 +302,31 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           write(olog(n)%filename,'(A)')trim(outputdir)//'ocn_'//trim(timestr)//'.nc'
 
+          fname = trim(olog(n)%filename)
+          inquire(file=fname, size=olog(n)%filesize)
+
           if (debug .and. is_root_pe()) then
-             print '(A,L)',trim(subname)//' fname '//trim(olog(n)%filename)//'  '//trim(importexport) &
-                  //' checkflag ',olog(n)%chkfile_nextAdvance
+             print '(A,L,i8)',trim(subname)//' fname '//trim(olog(n)%filename)//'  '//trim(importexport) &
+                  //' checkflag ',olog(n)%chkfile_nextAdvance,olog(n)%filesize
           end if
         end if
+!2526:204: XXX ./MOM6_OUTPUT/ocn_2021_03_22_09_00.nc  2021-03-22T21:00:00  2021-03-22T22:00:00            -1
+!2585:204: XXX ./MOM6_OUTPUT/ocn_2021_03_22_09_00.nc  2021-03-22T22:00:00  2021-03-22T23:00:00            -1
+!2652:204: XXX ./MOM6_OUTPUT/ocn_2021_03_22_15_00.nc  2021-03-22T23:00:00  2021-03-23T00:00:00       9355692
+!2767:204: XXX ./MOM6_OUTPUT/ocn_2021_03_22_15_00.nc  2021-03-23T00:00:00  2021-03-23T01:00:00      90532460
+!2827:204: XXX ./MOM6_OUTPUT/ocn_2021_03_22_15_00.nc  2021-03-23T01:00:00  2021-03-23T02:00:00      90532460
 
-        if (olog(n)%chkfile_nextAdvance .and. onHour) then
+        fname = trim(olog(n)%filename)
+        inquire(file=fname, exist=existflag, size=fsize)
+        if (debug .and. is_root_pe()) then
+          print '(A,3i12)','XXX '//trim(olog(n)%filename)//'  '//trim(importexport)//'  ',fsize
+        endif
+        !if (debug .and. is_root_pe()) call debug_info(trim(subname)//'X  ',trim(olog(n)%filename), &
+        !     olog(n)%chkfile_nextAdvance, importexport)
+
+        if (olog(n)%chkfile_nextAdvance) then
           fname = trim(olog(n)%filename)
-          inquire(file=fname, exist=existflag)
+          inquire(file=fname, exist=existflag, size=fsize)
           if (existflag) then
             if (is_root_pe()) then
               nlen(1) = get_unlimited_len(trim(fname))
@@ -317,39 +334,47 @@ contains
             call ESMF_VMBroadCast(vm, nlen, 1, 0, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-            if (nlen(1) > 0) then
+            !if (nlen(1) > 0) then
+            if (nlen(1) > 0 .and. fsize > olog(n)%filesize) then
               olog(n)%chkfile_nextAdvance = .false.
               olog(n)%time_lastrestart = lastrestart
+              !olog(n)%filesize = fsize
               if (is_root_pe()) then
-                if (toffset > 0) then
-                  call log_restart_fh(nextTime-olog(n)%fhoffset, startTime, 'mom6.'//chour, prefixtime=.true., &
-                       lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, rc=rc)
-                  if (ChkErr(rc,__LINE__,u_FILE_u)) return
-                else
+                !if (toffset > 0) then
+                !  call log_restart_fh(nextTime-olog(n)%fhoffset, startTime, 'mom6.'//chour, prefixtime=.true., &
+                !       lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, rc=rc)
+                !  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                !else
                   call log_restart_fh(currTime-olog(n)%fhoffset, startTime, 'mom6.'//chour, prefixtime=.true., &
                        lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, rc=rc)
                   if (ChkErr(rc,__LINE__,u_FILE_u)) return
-                end if
+                  !call log_restart_fh(nextTime-olog(n)%fhoffset, startTime, 'mom6.ntime.'//chour, prefixtime=.true., &
+                  !     lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, rc=rc)
+                  !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                !end if
               endif
             end if
           end if ! existflag
         end if
-        if (debug .and. is_root_pe()) call write_info(trim(subname)//'  ',trim(fname),importexport)
+
+        if (debug .and. is_root_pe()) call debug_info(trim(subname)//'  ',trim(olog(n)%filename), &
+             olog(n)%chkfile_nextAdvance, olog(n)%filesize, importexport)
 
         if (lstop) then
           ! use prevRing in place of currTime to allow for stopping between averaging intervals
           ! prevring == currTime if stopping on intervals
           call ESMF_AlarmGet(olog(n)%alarm, prevRingTime=prevring, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
           timestr = get_timestr(prevring-30*freq(n)*tincrement, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           write(olog(n)%filename,'(A)')trim(outputdir)//'ocn_'//trim(timestr)//'.nc'
-          if (debug .and. is_root_pe()) then
-            print '(A)',trim(subname)//' fname at lstop '//trim(olog(n)%filename)//'  '//trim(importexport)
-          end if
+          !if (debug .and. is_root_pe()) then
+          !  print '(A)',trim(subname)//' fname at lstop '//trim(olog(n)%filename)//'  '//trim(importexport)
+          !end if
 
           fname = trim(olog(n)%filename)
-          inquire(file=fname, exist=existflag)
+          inquire(file=fname, exist=existflag, size=fsize)
           if (existflag) then
             if (is_root_pe()) then
               nlen(1) = get_unlimited_len(fname)
@@ -360,16 +385,20 @@ contains
             if (nlen(1) > 0) then
               olog(n)%chkfile_nextAdvance = .false.
               olog(n)%time_lastrestart = lastrestart
+              olog(n)%filesize = fsize
               if (is_root_pe()) then
-                call log_restart_fh(prevring, startTime, 'mom6.stop.'//chour, prefixtime=.true., &
+                call log_restart_fh(prevring, startTime, 'mom6.lstop.'//chour, prefixtime=.true., &
                      lastrestart=olog(n)%time_lastrestart, lastoutput=olog(n)%filename, rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
               end if
             end if
           end if
-          if (debug .and. is_root_pe()) call write_info(trim(subname)//' lstop ',trim(fname),importexport)
+
+          if (debug .and. is_root_pe()) call debug_info(trim(subname)//' lstop ',trim(olog(n)%filename), &
+               olog(n)%chkfile_nextAdvance, olog(n)%filesize, importexport)
 
         end if ! lstop
+
       end if ! chour = output_fh
     end do
   end subroutine outputlog_run
@@ -385,15 +414,15 @@ contains
     integer, intent(out) :: rc             !< return code
 
     ! local variables
-    type(ESMF_Time)         :: startTime, currTime, nextTime
-    integer                 :: n, nlen(1)
-    integer                 :: year, month, day, hour, minute, seconds
-    character(len=512)      :: fname
-    character(len=15)       :: timestr
-    character(len=40)       :: importexport
-    logical, allocatable    :: allDone(:)
-    character(len=8)        :: suffix
-    character(len=256)      :: subname='MOM_cap:(outputlog_restart)'
+    type(ESMF_Time)      :: startTime, currTime, nextTime
+    integer              :: n, nlen(1)
+    integer              :: year, month, day, hour, minute, seconds
+    character(len=512)   :: fname
+    character(len=15)    :: timestr
+    character(len=40)    :: importexport
+    logical, allocatable :: allDone(:)
+    character(len=8)     :: suffix
+    character(len=256)   :: subname='MOM_cap:(outputlog_restart)'
     !----------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -402,11 +431,10 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_ClockGetNextTime(mclock, nextTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     importexport = get_importexport(currTime, nextTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call ESMF_TimeGet (nextTime, yy=year, mm=month, dd=day, h=hour, m=minute, s=seconds, rc=rc )
+    call ESMF_TimeGet(nextTime, yy=year, mm=month, dd=day, h=hour, m=minute, s=seconds, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     write(timestr,'(I4.4,2(I2.2),A,3(I2.2))') year, month, day,".", hour, minute, seconds
 
@@ -424,7 +452,7 @@ contains
       if (len_trim(suffix) == 0) then
         fname = trim(restartdir)//trim(timestr)//'.MOM.res.nc'
       else
-        fname = trim(restartdir)//trim(timestr)//'.MOM.res_'//trim(suffix)//'nc'
+        fname = trim(restartdir)//trim(timestr)//'.MOM.res'//trim(suffix)//'.nc'
       endif
 
       ! check if file is written
@@ -437,15 +465,13 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
         if (nlen(1) > 0) allDone(n) = .true.
-
-
-        if (debug .and. is_root_pe()) call write_info(trim(subname)//' restart ',trim(fname),importexport)
-        !   if (nlen(1) > 0) then
-        !     print '(A)',trim(subname)//' restart '//trim(fname)//'  '//trim(importexport)//' complete'
-        !   else
-        !     print '(A)',trim(subname)//' restart '//trim(fname)//'  '//trim(importexport)//' still 0'
-        !   end if
-        ! end if
+        if (debug .and. is_root_pe()) then
+          if (nlen(1) > 0) then
+            print '(A)',trim(subname)//' restart '//trim(fname)//'  '//trim(importexport)//' complete'
+          else
+            print '(A)',trim(subname)//' restart '//trim(fname)//'  '//trim(importexport)//' still 0'
+          end if
+        end if
       end if
     end do ! num_rest_files
 
@@ -457,34 +483,6 @@ contains
       endif
     end if
   end subroutine outputlog_restart
-
-  !> Write debug info to stdout
-  !!
-  !! @param[in] fname          the filename to check
-  !! @param[in] timestring     a timestring
-  !! @param [out]rc            return code
-  subroutine write_info(tag,fname,timestring)
-
-    character(len=*), intent(in) :: tag
-    character(len=*), intent(in) :: fname
-    character(len=*), intent(in) :: timestring
-
-    integer :: nlen(1), filesize
-    !----------------------------------------------------------------------------
-
-    inquire(file=fname, exist=existflag, size=filesize)
-    if (existflag) then
-      nlen(1) = get_unlimited_len(fname)
-      write(msgString,'(A)')tag//trim(fname)//' exists '//trim(importexport)
-      if (nlen(1) > 0) then
-        print '(A,L,i14)',trim(msgString)//' complete, chkflag ',olog(n)%chkfile_nextAdvance,filesize
-      else
-        print '(A,L,i14)',trim(msgString)//' still  0, chkflag ',olog(n)%chkfile_nextAdvance,filesize
-      end if
-    end if
-
-  end subroutine write_info
-
   !> Return the length of the unlimited dimension
   !!
   !! @param[in]  fname   the file name
@@ -493,7 +491,7 @@ contains
 
     character(len=*), intent(in) :: fname
 
-    integer            :: ncid, dimid
+    integer :: ncid, dimid
     !----------------------------------------------------------------------------
 
     unlen = 0
@@ -503,28 +501,7 @@ contains
     call nf90_err(nf90_close(ncid), 'close: '//trim(fname))
   end function get_unlimited_len
 
-  !!> Convenience function to return an logical flag on the hours
-  !!
-  !! @param[in]   MyTime   an ESMF_Time object
-  !! @param[out]  rc       return code
-  !! @return               logical flag on the hour
-  logical function onHour(MyTime, rc) result(onhour)
-
-    type(ESMF_Time), intent(in)  :: MyTime
-    integer,         intent(out) :: rc
-
-    integer :: year, month, day, hour, minute
-    !----------------------------------------------------------------------------
-
-    rc = ESMF_SUCCESS
-
-    call ESMF_TimeGet(MyTime, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    onHour = .false.
-    if (minute == 0) onHour = .true.
-  end function onHour
-
-  !> Convenience function to return a formatted 16-character time string
+  !> Convenience function to return a 16-character time string
   !!
   !! @param[in]  MyTime   an ESMF_Time object
   !! @param[out] rc       return code
@@ -536,7 +513,6 @@ contains
 
     integer :: year, month, day, hour, minute
     !----------------------------------------------------------------------------
-
     rc = ESMF_SUCCESS
 
     call ESMF_TimeGet(MyTime, yy=year, mm=month, dd=day, h=hour, m=minute, rc=rc)
@@ -557,7 +533,6 @@ contains
 
     character(len=19) :: import_timestr, export_timestr
     !----------------------------------------------------------------------------
-
     rc = ESMF_SUCCESS
 
     call ESMF_TimeGet(currTime, timestring=import_timestr, rc=rc)
@@ -566,6 +541,38 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     importexport = trim(import_timestr)//'  '//trim(export_timestr)
   end function get_importexport
+
+  !> Write debug info to stdout
+  !!
+  !! @param[in] tag            an information tag
+  !! @param[in] fname          the filename to check
+  !! @param[in] chkflag        logical flag for checking next Advance
+  !! @param[in] timestring     a timestring
+  !! @param [out]rc            return code
+  subroutine debug_info(tag,fname,chkflag,filesize,timestring)
+
+    character(len=*), intent(in) :: tag
+    character(len=*), intent(in) :: fname
+    integer, intent(in)          :: filesize
+    logical,          intent(in) :: chkflag
+    character(len=*), intent(in) :: timestring
+
+    integer :: nlen(1)
+    !integer :: nlen(1), filesize
+    !----------------------------------------------------------------------------
+
+    inquire(file=fname, exist=existflag)
+    !inquire(file=fname, exist=existflag, size=filesize)
+    if (existflag) then
+      nlen(1) = get_unlimited_len(fname)
+      write(msgString,'(A)')tag//'  '//fname//' exists '//timestring
+      if (nlen(1) > 0) then
+        print '(A,L,i14)',trim(msgString)//' complete, chkflag ',chkflag,filesize
+      else
+        print '(A,L,i14)',trim(msgString)//' still  0, chkflag ',chkflag,filesize
+      end if
+    end if
+  end subroutine debug_info
 
   !> Handle netcdf errors
   !!
