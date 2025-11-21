@@ -1,0 +1,1 @@
+Compile datm_cdeps_gnu elapsed time 610 seconds. -DAPP=NG-GODAS -DMPI=ON -DCMAKE_BUILD_TYPE=Release

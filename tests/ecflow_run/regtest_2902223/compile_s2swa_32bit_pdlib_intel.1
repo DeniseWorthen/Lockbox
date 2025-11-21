@@ -1,0 +1,26 @@
+++ export ECF_PORT=21599
+++ ECF_PORT=21599
+++ export ECF_HOST=uecflow01
+++ ECF_HOST=uecflow01
+++ export ECF_NAME=/regtest_2902223/compile_s2swa_32bit_pdlib_intel
+++ ECF_NAME=/regtest_2902223/compile_s2swa_32bit_pdlib_intel
+++ export ECF_PASS=s.qDui5m
+++ ECF_PASS=s.qDui5m
+++ export ECF_TRYNO=1
+++ ECF_TRYNO=1
+++ export ECF_RID=1803204
+++ ECF_RID=1803204
+++ ecflow_client --init=1803204
+++ trap handle_error 0
+++ trap '{ echo "$0 Killed by a signal"; handle_signal ; }' 1 2 3 4 5 6 7 8 10 12 13 15
+++ cd /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa
+++ ln -sf compile_s2swa_32bit_pdlib_intel.log.1 compile_s2swa_32bit_pdlib_intel.log
+++ wait 1803257
+++ /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/run_compile.sh /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223 '-DAPP=S2SWA -D32BIT=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON' s2swa_32bit_pdlib_intel
+++ ecflow_client --ping --host=uecflow01 --port=21599
+ping server(uecflow01:21599) succeeded in 00:00:00.000954  ~0 milliseconds
+++ not_running=0
+++ [[ 0 -eq 0 ]]
+++ ecflow_client --complete
+++ trap 0
+++ exit 0

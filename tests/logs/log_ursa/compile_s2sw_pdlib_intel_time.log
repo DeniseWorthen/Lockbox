@@ -1,0 +1,1 @@
+Compile s2sw_pdlib_intel elapsed time 770 seconds. -DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1,FV3_coupled_lowres -DPDLIB=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release

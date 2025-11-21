@@ -1,0 +1,60 @@
+
+baseline dir = /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_debug_gfsv17_intel
+working dir  = /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_debug_gfsv17_intel
+Checking test cpld_debug_gfsv17_intel results ....
+ Comparing sfcf003.tile1.nc .....USING NCCMP......OK
+ Comparing sfcf003.tile2.nc .....USING NCCMP......OK
+ Comparing sfcf003.tile3.nc .....USING NCCMP......OK
+ Comparing sfcf003.tile4.nc .....USING NCCMP......OK
+ Comparing sfcf003.tile5.nc .....USING NCCMP......OK
+ Comparing sfcf003.tile6.nc .....USING NCCMP......OK
+ Comparing atmf003.tile1.nc .....USING NCCMP......OK
+ Comparing atmf003.tile2.nc .....USING NCCMP......OK
+ Comparing atmf003.tile3.nc .....USING NCCMP......OK
+ Comparing atmf003.tile4.nc .....USING NCCMP......OK
+ Comparing atmf003.tile5.nc .....USING NCCMP......OK
+ Comparing atmf003.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.coupler.res .....USING CMP......OK
+ Comparing RESTART/20210322.090000.fv_core.res.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_core.res.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_core.res.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_core.res.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_core.res.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_core.res.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_core.res.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_srf_wnd.res.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_srf_wnd.res.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_srf_wnd.res.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_srf_wnd.res.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_srf_wnd.res.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_srf_wnd.res.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_tracer.res.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_tracer.res.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_tracer.res.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_tracer.res.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_tracer.res.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.fv_tracer.res.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.phy_data.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.phy_data.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.phy_data.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.phy_data.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.phy_data.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.phy_data.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.sfc_data.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.sfc_data.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.sfc_data.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.sfc_data.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.sfc_data.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.sfc_data.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/20210322.090000.MOM.res.nc .....USING NCCMP......OK
+ Comparing RESTART/iced.2021-03-22-32400.nc .....USING NCCMP......OK
+ Comparing RESTART/ufs.cpld.cpl.r.2021-03-22-32400.nc .....USING NCCMP......OK
+ Comparing ufs.cpld.ww3.r.2021-03-22-32400.nc .....USING NCCMP......OK
+ Comparing 20210322.090000.out_pnt.ww3.nc .....USING NCCMP......OK
+ Comparing 20210322.090000.out_grd.ww3 .....USING CMP......OK
+
+  0: The total amount of wall time                        = 788.934376
+  0: The maximum resident set size (KB)                   = 2079940
+
+Test cpld_debug_gfsv17_intel PASS
+

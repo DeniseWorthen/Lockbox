@@ -1,0 +1,3 @@
+# Unstructured WW3 mesh
+COMPILE | s2sw_pdlib | intel | -DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1,FV3_coupled_lowres -DPDLIB=ON | - noaacloud | fv3 |
+RUN | cpld_control_c48_5deg                             |                                      | baseline |

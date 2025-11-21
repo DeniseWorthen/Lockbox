@@ -1,0 +1,325 @@
+suite regtest_2902223
+    edit ECF_HOME '/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/ecflow_run'
+    edit ECF_INCLUDE '/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/ecflow_run'
+    edit ECF_KILL_CMD kill -15 %ECF_RID% > %ECF_JOB%.kill 2>&1
+    edit ECF_TRIES 2
+    label src_dir '/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw'
+    label run_dir '/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223'
+    limit max_builds 10
+    limit max_jobs 30
+  task compile_s2swa_32bit_intel
+      label build_options '-DAPP=S2SWA -D32BIT=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_p8_mixedmode_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_intel == complete
+    task cpld_control_gefs_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_intel == complete
+    task cpld_restart_gefs_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_intel == complete and cpld_control_gefs_intel == complete
+    task cpld_dcp_gefs_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_intel == complete
+  task compile_s2swa_32bit_pdlib_intel
+      label build_options '-DAPP=S2SWA -D32BIT=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON'
+      inlimit max_builds
+    task cpld_control_gfsv17_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_pdlib_intel == complete
+    task cpld_control_gfsv17_iau_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_pdlib_intel == complete and cpld_control_gfsv17_intel == complete
+    task cpld_restart_gfsv17_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_pdlib_intel == complete and cpld_control_gfsv17_intel == complete
+    task cpld_restart_gfsv17_iau_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_pdlib_intel == complete and cpld_control_gfsv17_iau_intel == complete
+    task cpld_mpi_gfsv17_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_pdlib_intel == complete
+  task compile_s2s_32bit_sfs_intel
+      label build_options '-DAPP=S2S -D32BIT=ON -DHYDRO=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_sfs_intel
+      inlimit max_jobs
+      trigger compile_s2s_32bit_sfs_intel == complete
+    task cpld_restart_sfs_intel
+      inlimit max_jobs
+      trigger compile_s2s_32bit_sfs_intel == complete and cpld_control_sfs_intel == complete
+  task compile_s2s_32bit_sfs_debug_intel
+      label build_options '-DAPP=S2S -D32BIT=ON -DHYDRO=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DDEBUG=ON'
+      inlimit max_builds
+    task cpld_debug_sfs_intel
+      inlimit max_jobs
+      trigger compile_s2s_32bit_sfs_debug_intel == complete
+  task compile_s2swa_32bit_pdlib_debug_intel
+      label build_options '-DAPP=S2SWA -D32BIT=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON -DDEBUG=ON'
+      inlimit max_builds
+    task cpld_debug_gfsv17_intel
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_pdlib_debug_intel == complete
+  task compile_s2swa_intel
+      label build_options '-DAPP=S2SWA -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete
+    task cpld_control_p8.v2.sfc_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete
+    task cpld_restart_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete and cpld_control_p8_intel == complete
+    task cpld_control_qr_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete
+    task cpld_restart_qr_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete and cpld_control_qr_p8_intel == complete
+    task cpld_2threads_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete
+    task cpld_decomp_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete
+    task cpld_mpi_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete
+    task cpld_control_ciceC_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete
+    task cpld_control_c192_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete
+    task cpld_restart_c192_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_intel == complete and cpld_control_c192_p8_intel == complete
+  task compile_s2swal_intel
+      label build_options '-DAPP=S2SWAL -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_p8_lnd_intel
+      inlimit max_jobs
+      trigger compile_s2swal_intel == complete
+    task cpld_restart_p8_lnd_intel
+      inlimit max_jobs
+      trigger compile_s2swal_intel == complete and cpld_control_p8_lnd_intel == complete
+    task cpld_s2sa_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swal_intel == complete
+  task compile_s2sw_intel
+      label build_options '-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_noaero_p8_intel
+      inlimit max_jobs
+      trigger compile_s2sw_intel == complete
+    task cpld_control_nowave_noaero_p8_intel
+      inlimit max_jobs
+      trigger compile_s2sw_intel == complete
+  task compile_s2swa_debug_intel
+      label build_options '-DAPP=S2SWA -DDEBUG=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_debug_p8_intel
+      inlimit max_jobs
+      trigger compile_s2swa_debug_intel == complete
+  task compile_s2sw_debug_intel
+      label build_options '-DAPP=S2SW -DDEBUG=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_debug_noaero_p8_intel
+      inlimit max_jobs
+      trigger compile_s2sw_debug_intel == complete
+  task compile_s2s_aoflux_intel
+      label build_options '-DAPP=S2S -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_sfcocn -DCMEPS_AOFLUX=ON'
+      inlimit max_builds
+    task cpld_control_noaero_p8_agrid_intel
+      inlimit max_jobs
+      trigger compile_s2s_aoflux_intel == complete
+  task compile_s2swa_faster_intel
+      label build_options '-DAPP=S2SWA -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DFASTER=ON'
+      inlimit max_builds
+    task cpld_control_p8_faster_intel
+      inlimit max_jobs
+      trigger compile_s2swa_faster_intel == complete
+  task compile_s2sw_pdlib_intel
+      label build_options '-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1,FV3_coupled_lowres -DPDLIB=ON'
+      inlimit max_builds
+    task cpld_control_pdlib_p8_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_restart_pdlib_p8_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete and cpld_control_pdlib_p8_intel == complete
+    task cpld_mpi_pdlib_p8_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_control_c48_5deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_warmstart_c48_5deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_restart_c48_5deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete and cpld_warmstart_c48_5deg_intel == complete
+    task cpld_control_c24_5deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_warmstart_c24_5deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_restart_c24_5deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete and cpld_warmstart_c24_5deg_intel == complete
+    task cpld_control_c24_9deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_warmstart_c24_9deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_restart_c24_9deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete and cpld_warmstart_c24_9deg_intel == complete
+    task cpld_control_c12_9deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_warmstart_c12_9deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete
+    task cpld_restart_c12_9deg_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_intel == complete and cpld_warmstart_c12_9deg_intel == complete
+  task compile_s2sw_pdlib_debug_intel
+      label build_options '-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON -DDEBUG=ON'
+      inlimit max_builds
+    task cpld_debug_pdlib_p8_intel
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_debug_intel == complete
+  task compile_datm_cdeps_intel
+      label build_options '-DAPP=NG-GODAS'
+      inlimit max_builds
+    task datm_cdeps_control_cfsr_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_restart_cfsr_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete and datm_cdeps_control_cfsr_intel == complete
+    task datm_cdeps_control_gefs_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_iau_gefs_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_stochy_gefs_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_ciceC_cfsr_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_bulk_cfsr_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_bulk_gefs_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_mx025_cfsr_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_mx025_gefs_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_multiple_files_cfsr_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_3072x1536_cfsr_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+    task datm_cdeps_gfs_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intel == complete
+  task compile_datm_cdeps_debug_intel
+      label build_options '-DAPP=NG-GODAS -DDEBUG=ON'
+      inlimit max_builds
+    task datm_cdeps_debug_cfsr_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_debug_intel == complete
+  task compile_datm_cdeps_faster_intel
+      label build_options '-DAPP=NG-GODAS -DFASTER=ON'
+      inlimit max_builds
+    task datm_cdeps_control_cfsr_faster_intel
+      inlimit max_jobs
+      trigger compile_datm_cdeps_faster_intel == complete
+  task compile_s2swa_32bit_pdlib_intelllvm
+      label build_options '-DAPP=S2SWA -D32BIT=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON'
+      inlimit max_builds
+    task cpld_control_gfsv17_intelllvm
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_pdlib_intelllvm == complete
+  task compile_s2swa_32bit_pdlib_debug_intelllvm
+      label build_options '-DAPP=S2SWA -D32BIT=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON -DDEBUG=ON'
+      inlimit max_builds
+    task cpld_debug_gfsv17_intelllvm
+      inlimit max_jobs
+      trigger compile_s2swa_32bit_pdlib_debug_intelllvm == complete
+  task compile_s2s_32bit_sfs_intelllvm
+      label build_options '-DAPP=S2S -D32BIT=ON -DHYDRO=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_sfs_intelllvm
+      inlimit max_jobs
+      trigger compile_s2s_32bit_sfs_intelllvm == complete
+  task compile_s2swa_intelllvm
+      label build_options '-DAPP=S2SWA -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_p8_intelllvm
+      inlimit max_jobs
+      trigger compile_s2swa_intelllvm == complete
+  task compile_datm_cdeps_intelllvm
+      label build_options '-DAPP=NG-GODAS'
+      inlimit max_builds
+    task datm_cdeps_control_cfsr_intelllvm
+      inlimit max_jobs
+      trigger compile_datm_cdeps_intelllvm == complete
+  task compile_datm_cdeps_debug_intelllvm
+      label build_options '-DAPP=NG-GODAS -DDEBUG=ON'
+      inlimit max_builds
+    task datm_cdeps_debug_cfsr_intelllvm
+      inlimit max_jobs
+      trigger compile_datm_cdeps_debug_intelllvm == complete
+  task compile_s2swa_gnu
+      label build_options '-DAPP=S2SWA -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_p8_gnu
+      inlimit max_jobs
+      trigger compile_s2swa_gnu == complete
+  task compile_s2s_gnu
+      label build_options '-DAPP=S2S -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_control_nowave_noaero_p8_gnu
+      inlimit max_jobs
+      trigger compile_s2s_gnu == complete
+  task compile_s2swa_debug_gnu
+      label build_options '-DAPP=S2SWA -DDEBUG=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1'
+      inlimit max_builds
+    task cpld_debug_p8_gnu
+      inlimit max_jobs
+      trigger compile_s2swa_debug_gnu == complete
+  task compile_s2sw_pdlib_gnu
+      label build_options '-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON'
+      inlimit max_builds
+    task cpld_control_pdlib_p8_gnu
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_gnu == complete
+  task compile_s2sw_pdlib_debug_gnu
+      label build_options '-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON -DDEBUG=ON'
+      inlimit max_builds
+    task cpld_debug_pdlib_p8_gnu
+      inlimit max_jobs
+      trigger compile_s2sw_pdlib_debug_gnu == complete
+  task compile_datm_cdeps_gnu
+      label build_options '-DAPP=NG-GODAS'
+      inlimit max_builds
+    task datm_cdeps_control_cfsr_gnu
+      inlimit max_jobs
+      trigger compile_datm_cdeps_gnu == complete
+endsuite

@@ -1,0 +1,1 @@
+Compile s2swa_faster_intel elapsed time 756 seconds. -DAPP=S2SWA -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DFASTER=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release

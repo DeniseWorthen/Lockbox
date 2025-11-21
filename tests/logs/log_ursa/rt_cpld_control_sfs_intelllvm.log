@@ -1,0 +1,60 @@
+
+baseline dir = /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_control_sfs_intelllvm
+working dir  = /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_control_sfs_intelllvm
+Checking test cpld_control_sfs_intelllvm results ....
+ Comparing sfcf024.nc .....USING NCCMP......OK
+ Comparing atmf024.nc .....USING NCCMP......OK
+ Comparing GFSFLX.GrbF24 .....USING CMP......OK
+ Comparing GFSPRS.GrbF24 .....USING CMP......OK
+ Comparing RESTART/19940502.000000.coupler.res .....USING CMP......OK
+ Comparing RESTART/19940502.000000.fv_core.res.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_core.res.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_core.res.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_core.res.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_core.res.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_core.res.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_core.res.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_srf_wnd.res.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_srf_wnd.res.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_srf_wnd.res.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_srf_wnd.res.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_srf_wnd.res.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_srf_wnd.res.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_tracer.res.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_tracer.res.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_tracer.res.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_tracer.res.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_tracer.res.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.fv_tracer.res.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.phy_data.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.phy_data.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.phy_data.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.phy_data.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.phy_data.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.phy_data.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.sfc_data.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.sfc_data.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.sfc_data.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.sfc_data.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.sfc_data.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.sfc_data.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.ca_data.tile1.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.ca_data.tile2.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.ca_data.tile3.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.ca_data.tile4.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.ca_data.tile5.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.ca_data.tile6.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.atm_stoch.res.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.ocn_stoch.res.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.MOM.res.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.MOM.res_1.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.MOM.res_2.nc .....USING NCCMP......OK
+ Comparing RESTART/19940502.000000.MOM.res_3.nc .....USING NCCMP......OK
+ Comparing RESTART/iced.1994-05-02-00000.nc .....USING NCCMP......OK
+ Comparing RESTART/ufs.cpld.cpl.r.1994-05-02-00000.nc .....USING NCCMP......OK
+
+  0: The total amount of wall time                        = 497.813218
+  0: The maximum resident set size (KB)                   = 2407956
+
+Test cpld_control_sfs_intelllvm PASS
+

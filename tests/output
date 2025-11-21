@@ -1,0 +1,224 @@
+******Regression Testing Script Started******
+ufe01
+Machine: ursa
+Account: nems
+rt.sh: Setting up ursa...
+ECF_HOST = uecflow01, ECF_PORT = 21599
+ECF_HOST = uecflow01, ECF_PORT = 21599
+Linking /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223 to /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/run_dir
+Run regression test in: /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223
+rt.sh: Checking & Updating test configuration...
+No update needed to rt.conf
+Verifying ECFLOW support...
+rt_utils.sh: s2swa_32bit_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_p8_mixedmode_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_gefs_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_gefs_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_dcp_gefs_intel: Creating ECFLOW run task
+rt_utils.sh: s2swa_32bit_pdlib_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_gfsv17_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_gfsv17_iau_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_gfsv17_intel: Creating ECFLOW run task
+RESTHOUR=24,RESTSDAY=22
+compute resthour
+compute restday
+2RESTHOUR=0,RESTSDAY=23
+RESTHOUR=0,RESTSDAY=23,RESTSEC=0
+RESTART_FILE_PREFIX=20210323.000000
+RESTART_FILE_SUFFIX_SECS=2021-03-23-00000
+rt_utils.sh: cpld_restart_gfsv17_iau_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_mpi_gfsv17_intel: Creating ECFLOW run task
+rt_utils.sh: s2s_32bit_sfs_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_sfs_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_sfs_intel: Creating ECFLOW run task
+rt_utils.sh: s2s_32bit_sfs_debug_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_debug_sfs_intel: Creating ECFLOW run task
+rt_utils.sh: s2swa_32bit_pdlib_debug_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_debug_gfsv17_intel: Creating ECFLOW run task
+rt_utils.sh: s2swa_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_p8.v2.sfc_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_qr_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_qr_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_2threads_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_decomp_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_mpi_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_ciceC_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_c192_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_c192_p8_intel: Creating ECFLOW run task
+rt_utils.sh: s2swal_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_p8_lnd_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_p8_lnd_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_s2sa_p8_intel: Creating ECFLOW run task
+rt_utils.sh: s2sw_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_noaero_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_nowave_noaero_p8_intel: Creating ECFLOW run task
+rt_utils.sh: s2swa_debug_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_debug_p8_intel: Creating ECFLOW run task
+rt_utils.sh: s2sw_debug_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_debug_noaero_p8_intel: Creating ECFLOW run task
+rt_utils.sh: s2s_aoflux_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_noaero_p8_agrid_intel: Creating ECFLOW run task
+rt_utils.sh: s2swa_faster_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_p8_faster_intel: Creating ECFLOW run task
+rt_utils.sh: s2sw_pdlib_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_pdlib_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_pdlib_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_mpi_pdlib_p8_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_c48_5deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_warmstart_c48_5deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_c48_5deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_c24_5deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_warmstart_c24_5deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_c24_5deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_c24_9deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_warmstart_c24_9deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_c24_9deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_control_c12_9deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_warmstart_c12_9deg_intel: Creating ECFLOW run task
+rt_utils.sh: cpld_restart_c12_9deg_intel: Creating ECFLOW run task
+rt_utils.sh: s2sw_pdlib_debug_intel: Creating ECFLOW compile task
+rt_utils.sh: cpld_debug_pdlib_p8_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_intel: Creating ECFLOW compile task
+rt_utils.sh: datm_cdeps_control_cfsr_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_restart_cfsr_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_control_gefs_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_iau_gefs_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_stochy_gefs_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_ciceC_cfsr_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_bulk_cfsr_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_bulk_gefs_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_mx025_cfsr_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_mx025_gefs_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_multiple_files_cfsr_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_3072x1536_cfsr_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_gfs_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_debug_intel: Creating ECFLOW compile task
+rt_utils.sh: datm_cdeps_debug_cfsr_intel: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_faster_intel: Creating ECFLOW compile task
+rt_utils.sh: datm_cdeps_control_cfsr_faster_intel: Creating ECFLOW run task
+rt_utils.sh: s2swa_32bit_pdlib_intelllvm: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_gfsv17_intelllvm: Creating ECFLOW run task
+rt_utils.sh: s2swa_32bit_pdlib_debug_intelllvm: Creating ECFLOW compile task
+rt_utils.sh: cpld_debug_gfsv17_intelllvm: Creating ECFLOW run task
+rt_utils.sh: s2s_32bit_sfs_intelllvm: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_sfs_intelllvm: Creating ECFLOW run task
+rt_utils.sh: s2swa_intelllvm: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_p8_intelllvm: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_intelllvm: Creating ECFLOW compile task
+rt_utils.sh: datm_cdeps_control_cfsr_intelllvm: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_debug_intelllvm: Creating ECFLOW compile task
+rt_utils.sh: datm_cdeps_debug_cfsr_intelllvm: Creating ECFLOW run task
+rt_utils.sh: s2swa_gnu: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_p8_gnu: Creating ECFLOW run task
+rt_utils.sh: s2s_gnu: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_nowave_noaero_p8_gnu: Creating ECFLOW run task
+rt_utils.sh: s2swa_debug_gnu: Creating ECFLOW compile task
+rt_utils.sh: cpld_debug_p8_gnu: Creating ECFLOW run task
+rt_utils.sh: s2sw_pdlib_gnu: Creating ECFLOW compile task
+rt_utils.sh: cpld_control_pdlib_p8_gnu: Creating ECFLOW run task
+rt_utils.sh: s2sw_pdlib_debug_gnu: Creating ECFLOW compile task
+rt_utils.sh: cpld_debug_pdlib_p8_gnu: Creating ECFLOW run task
+rt_utils.sh: datm_cdeps_gnu: Creating ECFLOW compile task
+rt_utils.sh: datm_cdeps_control_cfsr_gnu: Creating ECFLOW run task
+rt_utils.sh: Starting ECFLOW run
+ECF_HOST = uecflow01, ECF_PORT = 21599
+ECF_HOST = uecflow01, ECF_PORT = 21599
+ECF_HOST = uecflow01, ECF_PORT = 21599
+ECF_HOST: uecflow01, ECF_PORT: 21599
+rt_utils.sh: Checking status of the ecflow_server...
+ping server(uecflow01:21599) succeeded in 00:00:00.001091  ~1 milliseconds
+rt_utils.sh: Confirmed: ecflow_server is running on uecflow01:21599
+rt_utils.sh: Starting ECFLOW tasks...
+rt_utils.sh: Total number of tasks processed -- 105
+
+ECFLOW Tasks Remaining: 105/105 ............................
+ECFLOW Tasks Remaining: 101/105 ..............................
+ECFLOW Tasks Remaining: 100/105 ......................
+ECFLOW Tasks Remaining: 99/105 ...
+ECFLOW Tasks Remaining: 98/105 .......
+ECFLOW Tasks Remaining: 94/105 .....
+ECFLOW Tasks Remaining: 93/105 ......
+ECFLOW Tasks Remaining: 91/105 .....
+ECFLOW Tasks Remaining: 89/105 ...
+ECFLOW Tasks Remaining: 88/105 .
+ECFLOW Tasks Remaining: 87/105 .....
+ECFLOW Tasks Remaining: 86/105 ......
+ECFLOW Tasks Remaining: 83/105 .
+ECFLOW Tasks Remaining: 81/105 .....
+ECFLOW Tasks Remaining: 79/105 ...
+ECFLOW Tasks Remaining: 78/105 .
+ECFLOW Tasks Remaining: 76/105 
+ECFLOW Tasks Remaining: 75/105 
+ECFLOW Tasks Remaining: 74/105 
+ECFLOW Tasks Remaining: 73/105 ..
+ECFLOW Tasks Remaining: 72/105 .
+ECFLOW Tasks Remaining: 71/105 
+ECFLOW Tasks Remaining: 70/105 .
+ECFLOW Tasks Remaining: 69/105 .
+ECFLOW Tasks Remaining: 68/105 ......
+ECFLOW Tasks Remaining: 65/105 
+ECFLOW Tasks Remaining: 63/105 .
+ECFLOW Tasks Remaining: 62/105 
+ECFLOW Tasks Remaining: 61/105 
+ECFLOW Tasks Remaining: 60/105 
+ECFLOW Tasks Remaining: 59/105 .
+ECFLOW Tasks Remaining: 58/105 ..
+ECFLOW Tasks Remaining: 56/105 
+ECFLOW Tasks Remaining: 52/105 
+ECFLOW Tasks Remaining: 51/105 ...
+ECFLOW Tasks Remaining: 50/105 .
+ECFLOW Tasks Remaining: 48/105 ...
+ECFLOW Tasks Remaining: 45/105 .
+ECFLOW Tasks Remaining: 44/105 ..
+ECFLOW Tasks Remaining: 43/105 
+ECFLOW Tasks Remaining: 42/105 ..
+ECFLOW Tasks Remaining: 41/105 .
+ECFLOW Tasks Remaining: 40/105 .........
+ECFLOW Tasks Remaining: 39/105 ....
+ECFLOW Tasks Remaining: 38/105 
+ECFLOW Tasks Remaining: 37/105 ..
+ECFLOW Tasks Remaining: 36/105 ...
+ECFLOW Tasks Remaining: 34/105 .
+ECFLOW Tasks Remaining: 33/105 ..
+ECFLOW Tasks Remaining: 32/105 ..
+ECFLOW Tasks Remaining: 30/105 .....
+ECFLOW Tasks Remaining: 29/105 ....
+ECFLOW Tasks Remaining: 28/105 
+ECFLOW Tasks Remaining: 27/105 .
+ECFLOW Tasks Remaining: 26/105 ...
+ECFLOW Tasks Remaining: 22/105 .....
+ECFLOW Tasks Remaining: 21/105 ....
+ECFLOW Tasks Remaining: 20/105 
+ECFLOW Tasks Remaining: 19/105 
+ECFLOW Tasks Remaining: 18/105 
+ECFLOW Tasks Remaining: 17/105 .
+ECFLOW Tasks Remaining: 16/105 
+ECFLOW Tasks Remaining: 15/105 .
+ECFLOW Tasks Remaining: 14/105 
+ECFLOW Tasks Remaining: 12/105 ..
+ECFLOW Tasks Remaining: 11/105 ...
+ECFLOW Tasks Remaining: 10/105 ...
+ECFLOW Tasks Remaining: 9/105 ...
+ECFLOW Tasks Remaining: 8/105 .........
+ECFLOW Tasks Remaining: 7/105 
+ECFLOW Tasks Remaining: 6/105 ................
+ECFLOW Tasks Remaining: 5/105 ...................................
+ECFLOW Tasks Remaining: 4/105 
+ECFLOW Tasks Remaining: 3/105 ..................................
+ECFLOW Tasks Remaining: 2/105 .............................................
+ECFLOW Tasks Remaining: 1/105 ..........................................................................................
+ECFLOW Tasks Remaining: 0/105 
+rt_utils.sh: ECFLOW tasks completed, cleaning up suite
+rt.sh: Generating Regression Testing Log...
+
+grep: /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa/rt_cpld_control_pdlib_p8_gnu.log: No such file or directory
+rt.sh finished
+rt.sh: Cleaning up...
+rt_utils.sh: Checking whether to stop ecflow_server...
+rt_utils.sh: Active suites running, NOT stopping ecflow_server...
+SUITES are: suite regtest_4043043
+suite regtest_266113
+suite regtest_2844195
+rt.sh: Exiting.

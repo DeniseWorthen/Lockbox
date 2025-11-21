@@ -1,0 +1,3872 @@
++ set -o pipefail
++ echo PID=1837614
+PID=1837614
++ SECONDS=0
++ trap '[ "$?" -eq 0 ] || write_fail_test' EXIT
++ trap 'echo "run_test.sh interrupted PID=$$"; cleanup' INT
++ trap 'echo "run_test.sh terminated PID=$$";  cleanup' TERM
++ [[ 5 != 5 ]]
++ export PATHRT=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests
++ PATHRT=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests
++ export RUNDIR_ROOT=/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223
++ RUNDIR_ROOT=/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223
++ export TEST_NAME=cpld_warmstart_c48_5deg
++ TEST_NAME=cpld_warmstart_c48_5deg
++ export TEST_ID=cpld_warmstart_c48_5deg_intel
++ TEST_ID=cpld_warmstart_c48_5deg_intel
++ export COMPILE_ID=s2sw_pdlib_intel
++ COMPILE_ID=s2sw_pdlib_intel
++ echo 'PATHRT: /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests'
+PATHRT: /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests
++ echo 'RUNDIR_ROOT: /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223'
+RUNDIR_ROOT: /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223
++ echo 'TEST_NAME: cpld_warmstart_c48_5deg'
+TEST_NAME: cpld_warmstart_c48_5deg
++ echo 'TEST_ID: cpld_warmstart_c48_5deg_intel'
+TEST_ID: cpld_warmstart_c48_5deg_intel
++ echo 'COMPILE_ID: s2sw_pdlib_intel'
+COMPILE_ID: s2sw_pdlib_intel
++ cd /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests
++ unset MODEL_CONFIGURE
++ unset UFS_CONFIGURE
++ [[ -e /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/run_test_cpld_warmstart_c48_5deg_intel.env ]]
++ source /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/run_test_cpld_warmstart_c48_5deg_intel.env
+++ export TEST_ID=cpld_warmstart_c48_5deg_intel
+++ TEST_ID=cpld_warmstart_c48_5deg_intel
+++ export MACHINE_ID=ursa
+++ MACHINE_ID=ursa
+++ export RT_COMPILER=intel
+++ RT_COMPILER=intel
+++ export RTPWD=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117
+++ RTPWD=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117
+++ export INPUTDATA_ROOT=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015
+++ INPUTDATA_ROOT=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015
+++ export INPUTDATA_ROOT_WW3=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/WW3_input_data_20250807
+++ INPUTDATA_ROOT_WW3=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/WW3_input_data_20250807
+++ export INPUTDATA_LM4=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/LM4_input_data
+++ INPUTDATA_LM4=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/LM4_input_data
+++ export PATHRT=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests
+++ PATHRT=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests
+++ export PATHTR=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw
+++ PATHTR=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw
+++ export NEW_BASELINE=/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_BASELINE/Denise.Worthen/FV3_RT/REGRESSION_TEST
+++ NEW_BASELINE=/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_BASELINE/Denise.Worthen/FV3_RT/REGRESSION_TEST
+++ export CREATE_BASELINE=false
+++ CREATE_BASELINE=false
+++ export RT_SUFFIX=
+++ RT_SUFFIX=
+++ export BL_SUFFIX=
+++ BL_SUFFIX=
+++ export SCHEDULER=slurm
+++ SCHEDULER=slurm
+++ export ACCNR=nems
+++ ACCNR=nems
+++ export QUEUE=batch
+++ QUEUE=batch
+++ export PARTITION=u1-compute
+++ PARTITION=u1-compute
+++ export ROCOTO=false
+++ ROCOTO=false
+++ export ECFLOW=true
+++ ECFLOW=true
+++ export REGRESSIONTEST_LOG=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/RegressionTests_ursa.log
+++ REGRESSIONTEST_LOG=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/RegressionTests_ursa.log
+++ export LOG_DIR=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa
+++ LOG_DIR=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa
+++ export DEP_RUN=
+++ DEP_RUN=
+++ export skip_check_results=false
+++ skip_check_results=false
+++ export RTVERBOSE=false
+++ RTVERBOSE=false
+++ export delete_rundir=false
+++ delete_rundir=false
+++ export WLCLK=30
+++ WLCLK=30
++ source default_vars.sh
+++ THRD=1
+++ export INPES_atmaero=4
+++ INPES_atmaero=4
+++ export JNPES_atmaero=8
+++ JNPES_atmaero=8
+++ export WPG_atmaero=6
+++ WPG_atmaero=6
+++ export THRD_cpl_atmw=1
+++ THRD_cpl_atmw=1
+++ export INPES_cpl_atmw=3
+++ INPES_cpl_atmw=3
+++ export JNPES_cpl_atmw=8
+++ JNPES_cpl_atmw=8
+++ export WPG_cpl_atmw=6
+++ WPG_cpl_atmw=6
+++ export WAV_tasks_cpl_atmw=30
+++ WAV_tasks_cpl_atmw=30
+++ export WAV_thrds_cpl_atmw=1
+++ WAV_thrds_cpl_atmw=1
+++ export THRD_cpl_c48=1
+++ THRD_cpl_c48=1
+++ export INPES_cpl_c48=1
+++ INPES_cpl_c48=1
+++ export JNPES_cpl_c48=1
+++ JNPES_cpl_c48=1
+++ export WPG_cpl_c48=6
+++ WPG_cpl_c48=6
+++ export OCN_tasks_cpl_c48=4
+++ OCN_tasks_cpl_c48=4
+++ export ICE_tasks_cpl_c48=4
+++ ICE_tasks_cpl_c48=4
+++ export WAV_tasks_cpl_c48=4
+++ WAV_tasks_cpl_c48=4
+++ export THRD_cpl_dflt=1
+++ THRD_cpl_dflt=1
+++ export INPES_cpl_dflt=3
+++ INPES_cpl_dflt=3
+++ export JNPES_cpl_dflt=8
+++ JNPES_cpl_dflt=8
+++ export WPG_cpl_dflt=6
+++ WPG_cpl_dflt=6
+++ export OCN_tasks_cpl_dflt=20
+++ OCN_tasks_cpl_dflt=20
+++ export ICE_tasks_cpl_dflt=10
+++ ICE_tasks_cpl_dflt=10
+++ export WAV_tasks_cpl_dflt=20
+++ WAV_tasks_cpl_dflt=20
+++ export THRD_cpl_thrd=2
+++ THRD_cpl_thrd=2
+++ export INPES_cpl_thrd=3
+++ INPES_cpl_thrd=3
+++ export JNPES_cpl_thrd=4
+++ JNPES_cpl_thrd=4
+++ export WPG_cpl_thrd=6
+++ WPG_cpl_thrd=6
+++ export OCN_tasks_cpl_thrd=20
+++ OCN_tasks_cpl_thrd=20
+++ export OCN_thrds_cpl_thrd=1
+++ OCN_thrds_cpl_thrd=1
+++ export ICE_tasks_cpl_thrd=10
+++ ICE_tasks_cpl_thrd=10
+++ export ICE_thrds_cpl_thrd=1
+++ ICE_thrds_cpl_thrd=1
+++ export WAV_tasks_cpl_thrd=12
+++ WAV_tasks_cpl_thrd=12
+++ export WAV_thrds_cpl_thrd=2
+++ WAV_thrds_cpl_thrd=2
+++ export THRD_cpl_dcmp=1
+++ THRD_cpl_dcmp=1
+++ export INPES_cpl_dcmp=4
+++ INPES_cpl_dcmp=4
+++ export JNPES_cpl_dcmp=6
+++ JNPES_cpl_dcmp=6
+++ export WPG_cpl_dcmp=6
+++ WPG_cpl_dcmp=6
+++ export OCN_tasks_cpl_dcmp=20
+++ OCN_tasks_cpl_dcmp=20
+++ export ICE_tasks_cpl_dcmp=10
+++ ICE_tasks_cpl_dcmp=10
+++ export WAV_tasks_cpl_dcmp=20
+++ WAV_tasks_cpl_dcmp=20
+++ export THRD_cpl_mpi=1
+++ THRD_cpl_mpi=1
+++ export INPES_cpl_mpi=4
+++ INPES_cpl_mpi=4
+++ export JNPES_cpl_mpi=8
+++ JNPES_cpl_mpi=8
+++ export WPG_cpl_mpi=6
+++ WPG_cpl_mpi=6
+++ export OCN_tasks_cpl_mpi=34
+++ OCN_tasks_cpl_mpi=34
+++ export ICE_tasks_cpl_mpi=20
+++ ICE_tasks_cpl_mpi=20
+++ export WAV_tasks_cpl_mpi=28
+++ WAV_tasks_cpl_mpi=28
+++ export THRD_cpl_bmrk=2
+++ THRD_cpl_bmrk=2
+++ export INPES_cpl_bmrk=8
+++ INPES_cpl_bmrk=8
+++ export JNPES_cpl_bmrk=8
+++ JNPES_cpl_bmrk=8
+++ export WPG_cpl_bmrk=48
+++ WPG_cpl_bmrk=48
+++ export OCN_tasks_cpl_bmrk=120
+++ OCN_tasks_cpl_bmrk=120
+++ export OCN_thrds_cpl_bmrk=1
+++ OCN_thrds_cpl_bmrk=1
+++ export ICE_tasks_cpl_bmrk=48
+++ ICE_tasks_cpl_bmrk=48
+++ export ICE_thrds_cpl_bmrk=1
+++ ICE_thrds_cpl_bmrk=1
+++ export WAV_tasks_cpl_bmrk=120
+++ WAV_tasks_cpl_bmrk=120
+++ export WAV_thrds_cpl_bmrk=2
+++ WAV_thrds_cpl_bmrk=2
+++ export THRD_cpl_c192=2
+++ THRD_cpl_c192=2
+++ export INPES_cpl_c192=6
+++ INPES_cpl_c192=6
+++ export JNPES_cpl_c192=8
+++ JNPES_cpl_c192=8
+++ export WPG_cpl_c192=12
+++ WPG_cpl_c192=12
+++ export OCN_tasks_cpl_c192=60
+++ OCN_tasks_cpl_c192=60
+++ export ICE_tasks_cpl_c192=24
+++ ICE_tasks_cpl_c192=24
+++ export WAV_tasks_cpl_c192=80
+++ WAV_tasks_cpl_c192=80
+++ export ATM_compute_tasks_cdeps_100=12
+++ ATM_compute_tasks_cdeps_100=12
+++ export OCN_tasks_cdeps_100=16
+++ OCN_tasks_cdeps_100=16
+++ export ICE_tasks_cdeps_100=12
+++ ICE_tasks_cdeps_100=12
+++ export ATM_compute_tasks_cdeps_025=40
+++ ATM_compute_tasks_cdeps_025=40
+++ export OCN_tasks_cdeps_025=120
+++ OCN_tasks_cdeps_025=120
+++ export ICE_tasks_cdeps_025=48
+++ ICE_tasks_cdeps_025=48
+++ export INPES_aqm=33
+++ INPES_aqm=33
+++ export JNPES_aqm=8
+++ JNPES_aqm=8
+++ export INPES_sfs=4
+++ INPES_sfs=4
+++ export JNPES_sfs=6
+++ JNPES_sfs=6
+++ export THRD_sfs=1
+++ THRD_sfs=1
+++ export WPG_sfs=24
+++ WPG_sfs=24
+++ export OCN_tasks_sfs=168
+++ OCN_tasks_sfs=168
+++ export ICE_tasks_sfs=48
+++ ICE_tasks_sfs=48
+++ export THRD_cpl_unstr=1
+++ THRD_cpl_unstr=1
+++ export INPES_cpl_unstr=3
+++ INPES_cpl_unstr=3
+++ export JNPES_cpl_unstr=8
+++ JNPES_cpl_unstr=8
+++ export WPG_cpl_unstr=6
+++ WPG_cpl_unstr=6
+++ export OCN_tasks_cpl_unstr=20
+++ OCN_tasks_cpl_unstr=20
+++ export ICE_tasks_cpl_unstr=10
+++ ICE_tasks_cpl_unstr=10
+++ export WAV_tasks_cpl_unstr=60
+++ WAV_tasks_cpl_unstr=60
+++ export THRD_cpl_unstr_mpi=1
+++ THRD_cpl_unstr_mpi=1
+++ export INPES_cpl_unstr_mpi=4
+++ INPES_cpl_unstr_mpi=4
+++ export JNPES_cpl_unstr_mpi=8
+++ JNPES_cpl_unstr_mpi=8
+++ export WPG_cpl_unstr_mpi=6
+++ WPG_cpl_unstr_mpi=6
+++ export OCN_tasks_cpl_unstr_mpi=34
+++ OCN_tasks_cpl_unstr_mpi=34
+++ export ICE_tasks_cpl_unstr_mpi=20
+++ ICE_tasks_cpl_unstr_mpi=20
+++ export WAV_tasks_cpl_unstr_mpi=50
+++ WAV_tasks_cpl_unstr_mpi=50
+++ export aqm_omp_num_threads=1
+++ aqm_omp_num_threads=1
+++ export atm_omp_num_threads=1
+++ atm_omp_num_threads=1
+++ export chm_omp_num_threads=1
+++ chm_omp_num_threads=1
+++ export ice_omp_num_threads=1
+++ ice_omp_num_threads=1
+++ export lnd_omp_num_threads=1
+++ lnd_omp_num_threads=1
+++ export med_omp_num_threads=1
+++ med_omp_num_threads=1
+++ export ocn_omp_num_threads=1
+++ ocn_omp_num_threads=1
+++ export wav_omp_num_threads=1
+++ wav_omp_num_threads=1
+++ export fbh_omp_num_threads=1
+++ fbh_omp_num_threads=1
+++ export histaux_enabled=.false.
+++ histaux_enabled=.false.
+++ export BMIC=.false.
+++ BMIC=.false.
+++ export SFS=.false.
+++ SFS=.false.
+++ [[ ursa = wcoss2 ]]
+++ [[ ursa = acorn ]]
+++ [[ ursa = orion ]]
+++ [[ ursa = hercules ]]
+++ [[ ursa = hera ]]
+++ [[ ursa = ursa ]]
+++ export TPN=192
+++ TPN=192
+++ export INPES_dflt=3
+++ INPES_dflt=3
+++ export JNPES_dflt=8
+++ JNPES_dflt=8
+++ export INPES_thrd=3
+++ INPES_thrd=3
+++ export JNPES_thrd=4
+++ JNPES_thrd=4
+++ export INPES_c384=6
+++ INPES_c384=6
+++ export JNPES_c384=8
+++ JNPES_c384=8
+++ export THRD_c384=2
+++ THRD_c384=2
+++ export INPES_c768=8
+++ INPES_c768=8
+++ export JNPES_c768=16
+++ JNPES_c768=16
+++ export THRD_c768=4
+++ THRD_c768=4
+++ export THRD_cpl_atmw_gdas=2
+++ THRD_cpl_atmw_gdas=2
+++ export INPES_cpl_atmw_gdas=6
+++ INPES_cpl_atmw_gdas=6
+++ export JNPES_cpl_atmw_gdas=8
+++ JNPES_cpl_atmw_gdas=8
+++ export WPG_cpl_atmw_gdas=24
+++ WPG_cpl_atmw_gdas=24
+++ export WAV_tasks_atmw_gdas=248
+++ WAV_tasks_atmw_gdas=248
+++ export WLCLK_dflt=30
+++ WLCLK_dflt=30
+++ export WLCLK=30
+++ WLCLK=30
+++ export CMP_DATAONLY=false
+++ CMP_DATAONLY=false
+++ export nccmp_exclude=
+++ nccmp_exclude=
+++ export nccmp_exclude_attr=
+++ nccmp_exclude_attr=
+++ export esmf_logkind=ESMF_LOGKIND_MULTI
+++ esmf_logkind=ESMF_LOGKIND_MULTI
+++ export ESMF_THREADING=true
+++ ESMF_THREADING=true
+++ export DumpFields=false
+++ DumpFields=false
+++ export MED_history_n=1000000
+++ MED_history_n=1000000
+++ export 'RESTART_FH= '
+++ RESTART_FH=' '
++ [[ -e /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/run_test_cpld_warmstart_c48_5deg_intel.env ]]
++ source /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/run_test_cpld_warmstart_c48_5deg_intel.env
+++ export TEST_ID=cpld_warmstart_c48_5deg_intel
+++ TEST_ID=cpld_warmstart_c48_5deg_intel
+++ export MACHINE_ID=ursa
+++ MACHINE_ID=ursa
+++ export RT_COMPILER=intel
+++ RT_COMPILER=intel
+++ export RTPWD=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117
+++ RTPWD=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117
+++ export INPUTDATA_ROOT=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015
+++ INPUTDATA_ROOT=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015
+++ export INPUTDATA_ROOT_WW3=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/WW3_input_data_20250807
+++ INPUTDATA_ROOT_WW3=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/WW3_input_data_20250807
+++ export INPUTDATA_LM4=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/LM4_input_data
+++ INPUTDATA_LM4=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/LM4_input_data
+++ export PATHRT=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests
+++ PATHRT=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests
+++ export PATHTR=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw
+++ PATHTR=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw
+++ export NEW_BASELINE=/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_BASELINE/Denise.Worthen/FV3_RT/REGRESSION_TEST
+++ NEW_BASELINE=/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_BASELINE/Denise.Worthen/FV3_RT/REGRESSION_TEST
+++ export CREATE_BASELINE=false
+++ CREATE_BASELINE=false
+++ export RT_SUFFIX=
+++ RT_SUFFIX=
+++ export BL_SUFFIX=
+++ BL_SUFFIX=
+++ export SCHEDULER=slurm
+++ SCHEDULER=slurm
+++ export ACCNR=nems
+++ ACCNR=nems
+++ export QUEUE=batch
+++ QUEUE=batch
+++ export PARTITION=u1-compute
+++ PARTITION=u1-compute
+++ export ROCOTO=false
+++ ROCOTO=false
+++ export ECFLOW=true
+++ ECFLOW=true
+++ export REGRESSIONTEST_LOG=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/RegressionTests_ursa.log
+++ REGRESSIONTEST_LOG=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/RegressionTests_ursa.log
+++ export LOG_DIR=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa
+++ LOG_DIR=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa
+++ export DEP_RUN=
+++ DEP_RUN=
+++ export skip_check_results=false
+++ skip_check_results=false
+++ export RTVERBOSE=false
+++ RTVERBOSE=false
+++ export delete_rundir=false
+++ delete_rundir=false
+++ export WLCLK=30
+++ WLCLK=30
++ source tests/cpld_warmstart_c48_5deg
+++ export 'TEST_DESCR=Fully coupled FV3-CCPP-MOM6-CICE-WW3-CMEPS system - C48MX500 with 900km unstructured WW3 start from model initialization'
+++ TEST_DESCR='Fully coupled FV3-CCPP-MOM6-CICE-WW3-CMEPS system - C48MX500 with 900km unstructured WW3 start from model initialization'
+++ export CNTL_DIR=cpld_warmstart_c48_5deg
+++ CNTL_DIR=cpld_warmstart_c48_5deg
+++ export 'LIST_FILES=sfcf006.tile1.nc                    sfcf006.tile2.nc                    sfcf006.tile3.nc                    sfcf006.tile4.nc                    sfcf006.tile5.nc                    sfcf006.tile6.nc                    atmf006.tile1.nc                    atmf006.tile2.nc                    atmf006.tile3.nc                    atmf006.tile4.nc                    atmf006.tile5.nc                    atmf006.tile6.nc                    RESTART/20210323.120000.coupler.res                    RESTART/20210323.120000.fv_core.res.nc                    RESTART/20210323.120000.fv_core.res.tile1.nc                    RESTART/20210323.120000.fv_core.res.tile2.nc                    RESTART/20210323.120000.fv_core.res.tile3.nc                    RESTART/20210323.120000.fv_core.res.tile4.nc                    RESTART/20210323.120000.fv_core.res.tile5.nc                    RESTART/20210323.120000.fv_core.res.tile6.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc                    RESTART/20210323.120000.fv_tracer.res.tile1.nc                    RESTART/20210323.120000.fv_tracer.res.tile2.nc                    RESTART/20210323.120000.fv_tracer.res.tile3.nc                    RESTART/20210323.120000.fv_tracer.res.tile4.nc                    RESTART/20210323.120000.fv_tracer.res.tile5.nc                    RESTART/20210323.120000.fv_tracer.res.tile6.nc                    RESTART/20210323.120000.phy_data.tile1.nc                    RESTART/20210323.120000.phy_data.tile2.nc                    RESTART/20210323.120000.phy_data.tile3.nc                    RESTART/20210323.120000.phy_data.tile4.nc                    RESTART/20210323.120000.phy_data.tile5.nc                    RESTART/20210323.120000.phy_data.tile6.nc                    RESTART/20210323.120000.sfc_data.tile1.nc                    RESTART/20210323.120000.sfc_data.tile2.nc                    RESTART/20210323.120000.sfc_data.tile3.nc                    RESTART/20210323.120000.sfc_data.tile4.nc                    RESTART/20210323.120000.sfc_data.tile5.nc                    RESTART/20210323.120000.sfc_data.tile6.nc                    RESTART/20210323.120000.MOM.res.nc                    RESTART/iced.2021-03-23-43200.nc                    RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc                    ufs.cpld.ww3.r.2021-03-23-43200.nc                    20210323.120000.out_grd.ww3                    20210323.120000.out_pnt.ww3.nc'
+++ LIST_FILES='sfcf006.tile1.nc                    sfcf006.tile2.nc                    sfcf006.tile3.nc                    sfcf006.tile4.nc                    sfcf006.tile5.nc                    sfcf006.tile6.nc                    atmf006.tile1.nc                    atmf006.tile2.nc                    atmf006.tile3.nc                    atmf006.tile4.nc                    atmf006.tile5.nc                    atmf006.tile6.nc                    RESTART/20210323.120000.coupler.res                    RESTART/20210323.120000.fv_core.res.nc                    RESTART/20210323.120000.fv_core.res.tile1.nc                    RESTART/20210323.120000.fv_core.res.tile2.nc                    RESTART/20210323.120000.fv_core.res.tile3.nc                    RESTART/20210323.120000.fv_core.res.tile4.nc                    RESTART/20210323.120000.fv_core.res.tile5.nc                    RESTART/20210323.120000.fv_core.res.tile6.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc                    RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc                    RESTART/20210323.120000.fv_tracer.res.tile1.nc                    RESTART/20210323.120000.fv_tracer.res.tile2.nc                    RESTART/20210323.120000.fv_tracer.res.tile3.nc                    RESTART/20210323.120000.fv_tracer.res.tile4.nc                    RESTART/20210323.120000.fv_tracer.res.tile5.nc                    RESTART/20210323.120000.fv_tracer.res.tile6.nc                    RESTART/20210323.120000.phy_data.tile1.nc                    RESTART/20210323.120000.phy_data.tile2.nc                    RESTART/20210323.120000.phy_data.tile3.nc                    RESTART/20210323.120000.phy_data.tile4.nc                    RESTART/20210323.120000.phy_data.tile5.nc                    RESTART/20210323.120000.phy_data.tile6.nc                    RESTART/20210323.120000.sfc_data.tile1.nc                    RESTART/20210323.120000.sfc_data.tile2.nc                    RESTART/20210323.120000.sfc_data.tile3.nc                    RESTART/20210323.120000.sfc_data.tile4.nc                    RESTART/20210323.120000.sfc_data.tile5.nc                    RESTART/20210323.120000.sfc_data.tile6.nc                    RESTART/20210323.120000.MOM.res.nc                    RESTART/iced.2021-03-23-43200.nc                    RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc                    ufs.cpld.ww3.r.2021-03-23-43200.nc                    20210323.120000.out_grd.ww3                    20210323.120000.out_pnt.ww3.nc'
+++ export_fv3
+++ export ATMRES=C96
+++ ATMRES=C96
+++ export DT_ATMOS=1800
+++ DT_ATMOS=1800
+++ export DT_INNER_c96=360
+++ DT_INNER_c96=360
+++ export DT_INNER_c192=300
+++ DT_INNER_c192=300
+++ export DT_INNER_c384=150
+++ DT_INNER_c384=150
+++ export DT_INNER_c768=75
+++ DT_INNER_c768=75
+++ [[ 1800 = 1800 ]]
+++ export default_dt_atmos=1
+++ default_dt_atmos=1
+++ export DT_INNER=360
+++ DT_INNER=360
+++ export UFS_CONFIGURE=ufs.configure.atm.IN
+++ UFS_CONFIGURE=ufs.configure.atm.IN
+++ export MODEL_CONFIGURE=model_configure.IN
+++ MODEL_CONFIGURE=model_configure.IN
+++ export atm_model=fv3
+++ atm_model=fv3
+++ export POST_ITAG=post_itag_gfs
+++ POST_ITAG=post_itag_gfs
+++ export POSTXCONFIG=postxconfig-NT-gfs.txt
+++ POSTXCONFIG=postxconfig-NT-gfs.txt
+++ export POSTXCONFIG_FH00=postxconfig-NT-gfs_FH00.txt
+++ POSTXCONFIG_FH00=postxconfig-NT-gfs_FH00.txt
+++ export FV3=true
+++ FV3=true
+++ export S2S=false
+++ S2S=false
+++ export HAFS=false
+++ HAFS=false
+++ export AQM=false
+++ AQM=false
+++ export DO_AQM_CANOPY=.false.
+++ DO_AQM_CANOPY=.false.
+++ export aqm_rc_file=aqm.rc
+++ aqm_rc_file=aqm.rc
+++ export FIRE_BEHAVIOR=false
+++ FIRE_BEHAVIOR=false
+++ export DATM_CDEPS=false
+++ DATM_CDEPS=false
+++ export DOCN_CDEPS=false
+++ DOCN_CDEPS=false
+++ export DICE_CDEPS=false
+++ DICE_CDEPS=false
+++ export CICE_PRESCRIBED=false
+++ CICE_PRESCRIBED=false
+++ export CDEPS_INLINE=false
+++ CDEPS_INLINE=false
+++ export POSTAPP=global
+++ POSTAPP=global
+++ export USE_MERRA2=.true.
+++ USE_MERRA2=.true.
+++ export NESTED=.false.
+++ NESTED=.false.
+++ export BLOCKSIZE=32
+++ BLOCKSIZE=32
+++ export CHKSUM_DEBUG=.false.
+++ CHKSUM_DEBUG=.false.
+++ export DYCORE_ONLY=.false.
+++ DYCORE_ONLY=.false.
+++ export IO_LAYOUT=1,1
+++ IO_LAYOUT=1,1
+++ export NTILES=6
+++ NTILES=6
+++ export INPES=3
+++ INPES=3
+++ export JNPES=8
+++ JNPES=8
+++ export RESTART_INTERVAL=0
+++ RESTART_INTERVAL=0
+++ export USE_FV3_ROUTEHANDLES=.false.
+++ USE_FV3_ROUTEHANDLES=.false.
+++ export QUILTING=.true.
+++ QUILTING=.true.
+++ export QUILTING_RESTART=.true.
+++ QUILTING_RESTART=.true.
+++ export WRITE_GROUP=1
+++ WRITE_GROUP=1
+++ export WRTTASK_PER_GROUP=6
+++ WRTTASK_PER_GROUP=6
+++ export ITASKS=1
+++ ITASKS=1
+++ export OUTPUT_HISTORY=.true.
+++ OUTPUT_HISTORY=.true.
+++ export HISTORY_FILE_ON_NATIVE_GRID=.false.
+++ HISTORY_FILE_ON_NATIVE_GRID=.false.
+++ export WRITE_DOPOST=.false.
+++ WRITE_DOPOST=.false.
+++ export NUM_FILES=2
+++ NUM_FILES=2
+++ export FV3ATM_OUTPUT_DIR=./
+++ FV3ATM_OUTPUT_DIR=./
+++ export 'FILENAME_BASE='\''atm'\'' '\''sfc'\'''
+++ FILENAME_BASE=''\''atm'\'' '\''sfc'\'''
+++ export 'OUTPUT_GRID='\''cubed_sphere_grid'\'''
+++ OUTPUT_GRID=''\''cubed_sphere_grid'\'''
+++ export 'OUTPUT_FILE='\''netcdf'\'''
+++ OUTPUT_FILE=''\''netcdf'\'''
+++ export ZSTANDARD_LEVEL=0
+++ ZSTANDARD_LEVEL=0
+++ export IDEFLATE=0
+++ IDEFLATE=0
+++ export QUANTIZE_NSD=0
+++ QUANTIZE_NSD=0
+++ export ICHUNK2D=0
+++ ICHUNK2D=0
+++ export JCHUNK2D=0
+++ JCHUNK2D=0
+++ export ICHUNK3D=0
+++ ICHUNK3D=0
+++ export JCHUNK3D=0
+++ JCHUNK3D=0
+++ export KCHUNK3D=0
+++ KCHUNK3D=0
+++ export IMO=384
+++ IMO=384
+++ export JMO=190
+++ JMO=190
+++ export WRITE_NSFLIP=.true.
+++ WRITE_NSFLIP=.true.
+++ export N_SPLIT=5
+++ N_SPLIT=5
+++ export K_SPLIT=2
+++ K_SPLIT=2
+++ export TAU=0.0
+++ TAU=0.0
+++ export RF_CUTOFF=10.
+++ RF_CUTOFF=10.
+++ export FV_SG_ADJ=450
+++ FV_SG_ADJ=450
+++ export DZ_MIN=6
+++ DZ_MIN=6
+++ export MIN_SEAICE=0.15
+++ MIN_SEAICE=0.15
+++ export FRAC_GRID=.true.
+++ FRAC_GRID=.true.
+++ export MIN_LAKEICE=0.15
+++ MIN_LAKEICE=0.15
+++ export FV3_RUN=control_run.IN
+++ FV3_RUN=control_run.IN
+++ export CCPP_SUITE=FV3_GFS_v17_p8
+++ CCPP_SUITE=FV3_GFS_v17_p8
+++ export FIELD_TABLE=field_table_thompson_noaero_tke
+++ FIELD_TABLE=field_table_thompson_noaero_tke
+++ export DIAG_TABLE=diag_table_cpld.IN
+++ DIAG_TABLE=diag_table_cpld.IN
+++ export INPUT_NML=global_control.nml.IN
+++ INPUT_NML=global_control.nml.IN
+++ export DOMAINS_STACK_SIZE=3000000
+++ DOMAINS_STACK_SIZE=3000000
+++ export MODEL_INITIALIZATION=false
+++ MODEL_INITIALIZATION=false
+++ export WARM_START=.false.
+++ WARM_START=.false.
+++ export READ_INCREMENT=.false.
+++ READ_INCREMENT=.false.
+++ export 'RES_LATLON_DYNAMICS='\'''\'''
+++ RES_LATLON_DYNAMICS=''\'''\'''
+++ export ATM_IGNORE_RST_CKSUM=.false.
+++ ATM_IGNORE_RST_CKSUM=.false.
+++ export INCREMENT_FILE_ON_NATIVE_GRID=.false.
+++ INCREMENT_FILE_ON_NATIVE_GRID=.false.
+++ export NGGPS_IC=.true.
+++ NGGPS_IC=.true.
+++ export EXTERNAL_IC=.true.
+++ EXTERNAL_IC=.true.
+++ export MAKE_NH=.true.
+++ MAKE_NH=.true.
+++ export MOUNTAIN=.false.
+++ MOUNTAIN=.false.
+++ export NA_INIT=1
+++ NA_INIT=1
+++ export DO_VORT_DAMP=.true.
+++ DO_VORT_DAMP=.true.
+++ export N_SPONGE=42
+++ N_SPONGE=42
+++ export NUDGE_QV=.true.
+++ NUDGE_QV=.true.
+++ export NUDGE_DZ=.false.
+++ NUDGE_DZ=.false.
+++ export HYDROSTATIC=.false.
+++ HYDROSTATIC=.false.
+++ export KORD_MT=9
+++ KORD_MT=9
+++ export KORD_WZ=9
+++ KORD_WZ=9
+++ export KORD_TR=9
+++ KORD_TR=9
+++ export KORD_TM=-9
+++ KORD_TM=-9
+++ export PHYS_HYDROSTATIC=.false.
+++ PHYS_HYDROSTATIC=.false.
+++ export USE_HYDRO_PRESSURE=.false.
+++ USE_HYDRO_PRESSURE=.false.
+++ export NWAT=6
+++ NWAT=6
+++ export NORD=2
+++ NORD=2
+++ export D4_BG=0.12
+++ D4_BG=0.12
+++ export VTDM4=0.02
+++ VTDM4=0.02
+++ export DELT_MAX=0.002
+++ DELT_MAX=0.002
+++ export EXTERNAL_ETA=.true.
+++ EXTERNAL_ETA=.true.
+++ export GFS_PHIL=.false.
+++ GFS_PHIL=.false.
+++ export NCEP_IC=.false.
+++ NCEP_IC=.false.
+++ export D_CON=1.
+++ D_CON=1.
+++ export HORD_MT=5
+++ HORD_MT=5
+++ export HORD_VT=5
+++ HORD_VT=5
+++ export HORD_TM=5
+++ HORD_TM=5
+++ export HORD_DP=-5
+++ HORD_DP=-5
+++ export HORD_TR=8
+++ HORD_TR=8
+++ export ADJUST_DRY_MASS=.false.
+++ ADJUST_DRY_MASS=.false.
+++ export DRY_MASS=98320.0
+++ DRY_MASS=98320.0
+++ export CONSV_TE=1.
+++ CONSV_TE=1.
+++ export PRINT_FREQ=6
+++ PRINT_FREQ=6
+++ export NO_DYCORE=.false.
+++ NO_DYCORE=.false.
+++ export FILTERED_TERRAIN=.true.
+++ FILTERED_TERRAIN=.true.
+++ export GFS_DWINDS=.true.
+++ GFS_DWINDS=.true.
+++ export USE_UFO=.true.
+++ USE_UFO=.true.
+++ export PRE_RAD=.false.
+++ PRE_RAD=.false.
+++ export TTENDLIM=-999
+++ TTENDLIM=-999
+++ export DO_RRTMGP=.false.
+++ DO_RRTMGP=.false.
+++ export DOGP_LWSCAT=.true.
+++ DOGP_LWSCAT=.true.
+++ export DOGP_SGS_CNV=.false.
+++ DOGP_SGS_CNV=.false.
+++ export USE_LW_JACOBIAN=.false.
+++ USE_LW_JACOBIAN=.false.
+++ export DAMP_LW_FLUXADJ=.false.
+++ DAMP_LW_FLUXADJ=.false.
+++ export RRTMGP_LW_PHYS_BLKSZ=2
+++ RRTMGP_LW_PHYS_BLKSZ=2
+++ export ICLOUD=0
+++ ICLOUD=0
+++ export ICLOUD_BL=1
+++ ICLOUD_BL=1
+++ export IAER=1011
+++ IAER=1011
+++ export ICLIQ_SW=2
+++ ICLIQ_SW=2
+++ export IOVR=3
+++ IOVR=3
+++ export LFNC_K=-999
+++ LFNC_K=-999
+++ export LFNC_P0=-999
+++ LFNC_P0=-999
+++ export PDFCLD=.false.
+++ PDFCLD=.false.
+++ export FHSWR=3600.
+++ FHSWR=3600.
+++ export FHLWR=3600.
+++ FHLWR=3600.
+++ export ICO2=2
+++ ICO2=2
+++ export ISUBC_SW=2
+++ ISUBC_SW=2
+++ export ISUBC_LW=2
+++ ISUBC_LW=2
+++ export ISOL=2
+++ ISOL=2
+++ export LWHTR=.true.
+++ LWHTR=.true.
+++ export SWHTR=.true.
+++ SWHTR=.true.
+++ export CNVGWD=.true.
+++ CNVGWD=.true.
+++ export CAL_PRE=.false.
+++ CAL_PRE=.false.
+++ export REDRAG=.true.
+++ REDRAG=.true.
+++ export DSPHEAT=.true.
+++ DSPHEAT=.true.
+++ export HYBEDMF=.false.
+++ HYBEDMF=.false.
+++ export IMP_PHYSICS=8
+++ IMP_PHYSICS=8
+++ export NWAT=6
+++ NWAT=6
+++ export DNATS=0
+++ DNATS=0
+++ export DO_SAT_ADJ=.false.
+++ DO_SAT_ADJ=.false.
+++ export LHEATSTRG=.false.
+++ LHEATSTRG=.false.
+++ export LSEASPRAY=.true.
+++ LSEASPRAY=.true.
+++ export LGFDLMPRAD=.false.
+++ LGFDLMPRAD=.false.
+++ export EFFR_IN=.false.
+++ EFFR_IN=.false.
+++ export LRADAR=.false.
+++ LRADAR=.false.
+++ export LTAEROSOL=.false.
+++ LTAEROSOL=.false.
+++ export MRAEROSOL=.false.
+++ MRAEROSOL=.false.
+++ export LTHAILAWARE=.false.
+++ LTHAILAWARE=.false.
+++ export EXT_DIAG_THOMPSON=.false.
+++ EXT_DIAG_THOMPSON=.false.
+++ export SEDI_SEMI=.true.
+++ SEDI_SEMI=.true.
+++ export DECFL=10
+++ DECFL=10
+++ export NSSL_CCCN=0.6e9
+++ NSSL_CCCN=0.6e9
+++ export NSSL_ALPHAH=0.0
+++ NSSL_ALPHAH=0.0
+++ export NSSL_ALPHAHL=1.0
+++ NSSL_ALPHAHL=1.0
+++ export NSSL_HAIL_ON=.false.
+++ NSSL_HAIL_ON=.false.
+++ export NSSL_CCN_ON=.true.
+++ NSSL_CCN_ON=.true.
+++ export NSSL_INVERTCCN=.true.
+++ NSSL_INVERTCCN=.true.
+++ export RRFS_SMOKE=.false.
+++ RRFS_SMOKE=.false.
+++ export SMOKE_FORECAST=0
+++ SMOKE_FORECAST=0
+++ export RRFS_RESTART=NO
+++ RRFS_RESTART=NO
+++ export SEAS_OPT=2
+++ SEAS_OPT=2
+++ export DO_NGW_EC=.false.
+++ DO_NGW_EC=.false.
+++ export LDIAG_UGWP=.false.
+++ LDIAG_UGWP=.false.
+++ export DO_UGWP=.false.
+++ DO_UGWP=.false.
+++ export DO_TOFD=.false.
+++ DO_TOFD=.false.
+++ export GWD_OPT=2
+++ GWD_OPT=2
+++ export DO_UGWP_V0=.true.
+++ DO_UGWP_V0=.true.
+++ export DO_UGWP_V1_W_GSLDRAG=.false.
+++ DO_UGWP_V1_W_GSLDRAG=.false.
+++ export DO_UGWP_V0_OROG_ONLY=.false.
+++ DO_UGWP_V0_OROG_ONLY=.false.
+++ export DO_GSL_DRAG_LS_BL=.false.
+++ DO_GSL_DRAG_LS_BL=.false.
+++ export DO_GSL_DRAG_SS=.true.
+++ DO_GSL_DRAG_SS=.true.
+++ export DO_GWD_OPT_PSL=.false.
+++ DO_GWD_OPT_PSL=.false.
+++ export PSL_GWD_DX_FACTOR=6.0
+++ PSL_GWD_DX_FACTOR=6.0
+++ export DO_GSL_DRAG_TOFD=.false.
+++ DO_GSL_DRAG_TOFD=.false.
+++ export DO_UGWP_V1=.false.
+++ DO_UGWP_V1=.false.
+++ export DO_UGWP_V1_OROG_ONLY=.false.
+++ DO_UGWP_V1_OROG_ONLY=.false.
+++ export KNOB_UGWP_SOLVER=2
+++ KNOB_UGWP_SOLVER=2
+++ export KNOB_UGWP_SOURCE=1,1,0,0
+++ KNOB_UGWP_SOURCE=1,1,0,0
+++ export KNOB_UGWP_WVSPEC=1,25,25,25
+++ KNOB_UGWP_WVSPEC=1,25,25,25
+++ export KNOB_UGWP_AZDIR=2,4,4,4
+++ KNOB_UGWP_AZDIR=2,4,4,4
+++ export KNOB_UGWP_STOCH=0,0,0,0
+++ KNOB_UGWP_STOCH=0,0,0,0
+++ export KNOB_UGWP_EFFAC=1,1,1,1
+++ KNOB_UGWP_EFFAC=1,1,1,1
+++ export KNOB_UGWP_DOAXYZ=1
+++ KNOB_UGWP_DOAXYZ=1
+++ export KNOB_UGWP_DOHEAT=1
+++ KNOB_UGWP_DOHEAT=1
+++ export LAUNCH_LEVEL=54
+++ LAUNCH_LEVEL=54
+++ export KNOB_UGWP_DOKDIS=1
+++ KNOB_UGWP_DOKDIS=1
+++ export KNOB_UGWP_NDX4LH=1
+++ KNOB_UGWP_NDX4LH=1
+++ export KNOB_UGWP_VERSION=0
+++ KNOB_UGWP_VERSION=0
+++ export KNOB_UGWP_PALAUNCH=275.0e2
+++ KNOB_UGWP_PALAUNCH=275.0e2
+++ export KNOB_UGWP_NSLOPE=1
+++ KNOB_UGWP_NSLOPE=1
+++ export KNOB_UGWP_LZMAX=15.750e3
+++ KNOB_UGWP_LZMAX=15.750e3
+++ export KNOB_UGWP_LZMIN=0.75e3
+++ KNOB_UGWP_LZMIN=0.75e3
+++ export KNOB_UGWP_LZSTAR=2.0e3
+++ KNOB_UGWP_LZSTAR=2.0e3
+++ export KNOB_UGWP_TAUMIN=0.25e-3
+++ KNOB_UGWP_TAUMIN=0.25e-3
+++ export KNOB_UGWP_TAUAMP=3.0e-3
+++ KNOB_UGWP_TAUAMP=3.0e-3
+++ export KNOB_UGWP_LHMET=200.0e3
+++ KNOB_UGWP_LHMET=200.0e3
+++ export 'KNOB_UGWP_OROSOLV='\''pss-1986'\'''
+++ KNOB_UGWP_OROSOLV=''\''pss-1986'\'''
+++ export KNOB_UGWP_TAUAMP=3.0e-3
+++ KNOB_UGWP_TAUAMP=3.0e-3
+++ export DO_UGWP_V0_NST_ONLY=.false.
+++ DO_UGWP_V0_NST_ONLY=.false.
+++ export CDMBGWD_c48=0.071,2.1,1.0,1.0
+++ CDMBGWD_c48=0.071,2.1,1.0,1.0
+++ export CDMBGWD_c96=0.14,1.8,1.0,1.0
+++ CDMBGWD_c96=0.14,1.8,1.0,1.0
+++ export CDMBGWD_c192=0.23,1.5,1.0,1.0
+++ CDMBGWD_c192=0.23,1.5,1.0,1.0
+++ export CDMBGWD_c384=1.1,0.72,1.0,1.0
+++ CDMBGWD_c384=1.1,0.72,1.0,1.0
+++ export CDMBGWD_c768=4.0,0.15,1.0,1.0
+++ CDMBGWD_c768=4.0,0.15,1.0,1.0
+++ export CDMBGWD=0.14,1.8,1.0,1.0
+++ CDMBGWD=0.14,1.8,1.0,1.0
+++ [[ 1 = 1 ]]
+++ export DT_INNER=360
+++ DT_INNER=360
+++ export ISATMEDMF=1
+++ ISATMEDMF=1
+++ export TRANS_TRAC=.true.
+++ TRANS_TRAC=.true.
+++ export SATMEDMF=.true.
+++ SATMEDMF=.true.
+++ export HYBEDMF=.false.
+++ HYBEDMF=.false.
+++ export SHINHONG=.false.
+++ SHINHONG=.false.
+++ export DO_YSU=.false.
+++ DO_YSU=.false.
+++ export DO_MYNNEDMF=.false.
+++ DO_MYNNEDMF=.false.
+++ export HURR_PBL=.false.
+++ HURR_PBL=.false.
+++ export MONINQ_FAC=1.0
+++ MONINQ_FAC=1.0
+++ export SFCLAY_COMPUTE_FLUX=.false.
+++ SFCLAY_COMPUTE_FLUX=.false.
+++ export TTE_EDMF=.false.
+++ TTE_EDMF=.false.
+++ export CSCALE=1.0
+++ CSCALE=1.0
+++ export DO_DEEP=.true.
+++ DO_DEEP=.true.
+++ export SHAL_CNV=.true.
+++ SHAL_CNV=.true.
+++ export IMFSHALCNV=2
+++ IMFSHALCNV=2
+++ export HWRF_SAMFSHAL=.false.
+++ HWRF_SAMFSHAL=.false.
+++ export IMFDEEPCNV=2
+++ IMFDEEPCNV=2
+++ export HWRF_SAMFDEEP=.false.
+++ HWRF_SAMFDEEP=.false.
+++ export RAS=.false.
+++ RAS=.false.
+++ export RANDOM_CLDS=.false.
+++ RANDOM_CLDS=.false.
+++ export CNVCLD=.true.
+++ CNVCLD=.true.
+++ export XR_CNVCLD=.false.
+++ XR_CNVCLD=.false.
+++ export PROGSIGMA=.false.
+++ PROGSIGMA=.false.
+++ export BETASCU=8.0
+++ BETASCU=8.0
+++ export BETAMCU=1.0
+++ BETAMCU=1.0
+++ export BETADCU=2.0
+++ BETADCU=2.0
+++ export 'FSCAV_AERO="*:0.3","so2:0.0","msa:0.0","dms:0.0","nh3:0.4","nh4:0.6","bc1:0.6","bc2:0.6","oc1:0.4","oc2:0.4","dust1:0.6","dust2:0.6","dust3:0.6","dust4:0.6","dust5:0.6","seas1:0.5","seas2:0.5","seas3:0.5","seas4:0.5","seas5:0.5"'
+++ FSCAV_AERO='"*:0.3","so2:0.0","msa:0.0","dms:0.0","nh3:0.4","nh4:0.6","bc1:0.6","bc2:0.6","oc1:0.4","oc2:0.4","dust1:0.6","dust2:0.6","dust3:0.6","dust4:0.6","dust5:0.6","seas1:0.5","seas2:0.5","seas3:0.5","seas4:0.5","seas5:0.5"'
+++ export DO_MYJSFC=.false.
+++ DO_MYJSFC=.false.
+++ export DO_MYNNSFCLAY=.false.
+++ DO_MYNNSFCLAY=.false.
+++ export BL_MYNN_EDMF=1
+++ BL_MYNN_EDMF=1
+++ export BL_MYNN_TKEADVECT=.true.
+++ BL_MYNN_TKEADVECT=.true.
+++ export BL_MYNN_EDMF_MOM=1
+++ BL_MYNN_EDMF_MOM=1
+++ export PRSLRD0=0.
+++ PRSLRD0=0.
+++ export IVEGSRC=1
+++ IVEGSRC=1
+++ export ISOT=1
+++ ISOT=1
+++ export LSOIL=4
+++ LSOIL=4
+++ export LSM=2
+++ LSM=2
+++ export LSOIL_LSM=4
+++ LSOIL_LSM=4
+++ export LANDICE=.false.
+++ LANDICE=.false.
+++ export KICE=2
+++ KICE=2
+++ export IALB=2
+++ IALB=2
+++ export IEMS=2
+++ IEMS=2
+++ export IOPT_DVEG=4
+++ IOPT_DVEG=4
+++ export IOPT_CRS=2
+++ IOPT_CRS=2
+++ export IOPT_BTR=1
+++ IOPT_BTR=1
+++ export IOPT_RUN=1
+++ IOPT_RUN=1
+++ export IOPT_RAD=3
+++ IOPT_RAD=3
+++ export IOPT_ALB=1
+++ IOPT_ALB=1
+++ export IOPT_STC=3
+++ IOPT_STC=3
+++ export IOPT_FRZ=1
+++ IOPT_FRZ=1
+++ export IOPT_INF=1
+++ IOPT_INF=1
+++ export IOPT_SFC=3
+++ IOPT_SFC=3
+++ export IOPT_TRS=2
+++ IOPT_TRS=2
+++ export IOPT_DIAG=2
+++ IOPT_DIAG=2
+++ export IOPT_SNF=4
+++ IOPT_SNF=4
+++ export IOPT_TBOT=2
+++ IOPT_TBOT=2
+++ export DEBUG=.false.
+++ DEBUG=.false.
+++ export NST_ANL=.true.
+++ NST_ANL=.true.
+++ export PSAUTCO=0.0008,0.0005
+++ PSAUTCO=0.0008,0.0005
+++ export PRAUTCO=0.00015,0.00015
+++ PRAUTCO=0.00015,0.00015
+++ export EFFR_IN=.true.
+++ EFFR_IN=.true.
+++ export 'ACTIVE_GASES='\''h2o_co2_o3_n2o_ch4_o2'\'''
+++ ACTIVE_GASES=''\''h2o_co2_o3_n2o_ch4_o2'\'''
+++ export NGASES=6
+++ NGASES=6
+++ export 'LW_FILE_GAS='\''rrtmgp-data-lw-g128-210809.nc'\'''
+++ LW_FILE_GAS=''\''rrtmgp-data-lw-g128-210809.nc'\'''
+++ export 'LW_FILE_CLOUDS='\''rrtmgp-cloud-optics-coeffs-lw.nc'\'''
+++ LW_FILE_CLOUDS=''\''rrtmgp-cloud-optics-coeffs-lw.nc'\'''
+++ export 'SW_FILE_GAS='\''rrtmgp-data-sw-g112-210809.nc'\'''
+++ SW_FILE_GAS=''\''rrtmgp-data-sw-g112-210809.nc'\'''
+++ export 'SW_FILE_CLOUDS='\''rrtmgp-cloud-optics-coeffs-sw.nc'\'''
+++ SW_FILE_CLOUDS=''\''rrtmgp-cloud-optics-coeffs-sw.nc'\'''
+++ export RRTMGP_NGPTSSW=112
+++ RRTMGP_NGPTSSW=112
+++ export RRTMGP_NGPTSLW=128
+++ RRTMGP_NGPTSLW=128
+++ export RRTMGP_NBANDSLW=16
+++ RRTMGP_NBANDSLW=16
+++ export RRTMGP_NBANDSSW=14
+++ RRTMGP_NBANDSSW=14
+++ export D2_BG_K1=0.20
+++ D2_BG_K1=0.20
+++ export D2_BG_K2=0.04
+++ D2_BG_K2=0.04
+++ export PSM_BC=1
+++ PSM_BC=1
+++ export DDDMP=0.1
+++ DDDMP=0.1
+++ export OZ_PHYS_OLD=.true.
+++ OZ_PHYS_OLD=.true.
+++ export OZ_PHYS_NEW=.false.
+++ OZ_PHYS_NEW=.false.
+++ export H2O_PHYS=.false.
+++ H2O_PHYS=.false.
+++ export LKM=0
+++ LKM=0
+++ export IOPT_LAKE=2
+++ IOPT_LAKE=2
+++ export LAKEFRAC_THRESHOLD=0.0
+++ LAKEFRAC_THRESHOLD=0.0
+++ export LAKEDEPTH_THRESHOLD=1.0
+++ LAKEDEPTH_THRESHOLD=1.0
+++ export FRAC_ICE=.true.
+++ FRAC_ICE=.true.
+++ export TILEDFIX=.true.
+++ TILEDFIX=.true.
+++ export CPL=.false.
+++ CPL=.false.
+++ export CPLCHM=.false.
+++ CPLCHM=.false.
+++ export CPLFLX=.false.
+++ CPLFLX=.false.
+++ export CPLICE=.false.
+++ CPLICE=.false.
+++ export CPLWAV=.false.
+++ CPLWAV=.false.
+++ export CPLWAV2ATM=.false.
+++ CPLWAV2ATM=.false.
+++ export CPLLND=.false.
+++ CPLLND=.false.
+++ export CPLLND2ATM=.false.
+++ CPLLND2ATM=.false.
+++ export USE_MED_FLUX=.false.
+++ USE_MED_FLUX=.false.
+++ export USE_OCEANUV=.false.
+++ USE_OCEANUV=.false.
+++ export DAYS=1
+++ DAYS=1
+++ export NPX=97
+++ NPX=97
+++ export NPY=97
+++ NPY=97
+++ export NPZ=64
+++ NPZ=64
+++ export NPZP=65
+++ NPZP=65
+++ export NSTF_NAME=2,1,0,0,0
+++ NSTF_NAME=2,1,0,0,0
+++ export 'OUTPUT_FH=12 -1'
+++ OUTPUT_FH='12 -1'
+++ export FHZERO=6
+++ FHZERO=6
+++ export FSICL=0
+++ FSICL=0
+++ export FSICS=0
+++ FSICS=0
+++ export FV_CORE_TAU=0.
+++ FV_CORE_TAU=0.
+++ export FAST_TAU_W_SEC=0.2
+++ FAST_TAU_W_SEC=0.2
+++ export DRY_MASS=98320.0
+++ DRY_MASS=98320.0
+++ export ENS_NUM=1
+++ ENS_NUM=1
+++ export SYEAR=2016
+++ SYEAR=2016
+++ export SMONTH=10
+++ SMONTH=10
+++ export SDAY=03
+++ SDAY=03
+++ export SHOUR=00
+++ SHOUR=00
+++ export SECS=0
+++ SECS=0
+++ export FHMAX=24
+++ FHMAX=24
+++ export FHCYC=24
+++ FHCYC=24
+++ export FHROT=0
+++ FHROT=0
+++ export LDIAG3D=.false.
+++ LDIAG3D=.false.
+++ export QDIAG3D=.false.
+++ QDIAG3D=.false.
+++ export PRINT_DIFF_PGR=.false.
+++ PRINT_DIFF_PGR=.false.
+++ export MAX_OUTPUT_FIELDS=310
+++ MAX_OUTPUT_FIELDS=310
+++ export UPDATE_FULL_OMEGA=.false.
+++ UPDATE_FULL_OMEGA=.false.
+++ export LCNORM=.false.
+++ LCNORM=.false.
+++ export PERT_MP=.false.
+++ PERT_MP=.false.
+++ export PERT_RADTEND=.false.
+++ PERT_RADTEND=.false.
+++ export PERT_CLDS=.false.
+++ PERT_CLDS=.false.
+++ export NEW_LSCALE=.false.
+++ NEW_LSCALE=.false.
+++ export STOCHINI=.false.
+++ STOCHINI=.false.
+++ export DO_SPPT=.false.
+++ DO_SPPT=.false.
+++ export DO_SHUM=.false.
+++ DO_SHUM=.false.
+++ export DO_SKEB=.false.
+++ DO_SKEB=.false.
+++ export LNDP_TYPE=0
+++ LNDP_TYPE=0
+++ export N_VAR_LNDP=0
+++ N_VAR_LNDP=0
+++ export SKEB=-999.
+++ SKEB=-999.
+++ export SPPT=-999.
+++ SPPT=-999.
+++ export SHUM=-999.
+++ SHUM=-999.
+++ export 'LNDP_VAR_LIST='\''XXX'\'''
+++ LNDP_VAR_LIST=''\''XXX'\'''
+++ export LNDP_PRT_LIST=-999
+++ LNDP_PRT_LIST=-999
+++ export LNDP_MODEL_TYPE=0
+++ LNDP_MODEL_TYPE=0
+++ export LNDP_TAU=21600,
+++ LNDP_TAU=21600,
+++ export LNDP_LSCALE=500000,
+++ LNDP_LSCALE=500000,
+++ export ISEED_LNDP=2010,
+++ ISEED_LNDP=2010,
+++ export ISEED_SKEB=0
+++ ISEED_SKEB=0
+++ export SKEB_TAU=21600,
+++ SKEB_TAU=21600,
+++ export SKEB_LSCALE=250000,
+++ SKEB_LSCALE=250000,
+++ export SKEBNORM=0,
+++ SKEBNORM=0,
+++ export SKEB_NPASS=30,
+++ SKEB_NPASS=30,
+++ export SKEB_VDOF=5,
+++ SKEB_VDOF=5,
+++ export ISEED_SHUM=1,
+++ ISEED_SHUM=1,
+++ export SHUM_TAU=21600,
+++ SHUM_TAU=21600,
+++ export SHUM_LSCALE=500000,
+++ SHUM_LSCALE=500000,
+++ export ISEED_SPPT=20210325000103
+++ ISEED_SPPT=20210325000103
+++ export SPPT_TAU=2.16E4
+++ SPPT_TAU=2.16E4
+++ export SPPT_LSCALE=500.E3
+++ SPPT_LSCALE=500.E3
+++ export SPPT_LOGIT=.true.,
+++ SPPT_LOGIT=.true.,
+++ export SPPT_SFCLIMIT=.true.,
+++ SPPT_SFCLIMIT=.true.,
+++ export USE_ZMTNBLCK=.true.
+++ USE_ZMTNBLCK=.true.
+++ export PBL_TAPER=0,0,0,0.125,0.25,0.5,0.75
+++ PBL_TAPER=0,0,0,0.125,0.25,0.5,0.75
+++ export OCNSPPT=-999.
+++ OCNSPPT=-999.
+++ export OCNSPPT_LSCALE=500.E3
+++ OCNSPPT_LSCALE=500.E3
+++ export OCNSPPT_TAU=2.16E4
+++ OCNSPPT_TAU=2.16E4
+++ export ISEED_OCNSPPT=20210325000108
+++ ISEED_OCNSPPT=20210325000108
+++ export EPBL=-999.
+++ EPBL=-999.
+++ export EPBL_LSCALE=500.E3
+++ EPBL_LSCALE=500.E3
+++ export EPBL_TAU=2.16E4
+++ EPBL_TAU=2.16E4
+++ export ISEED_EPBL=20210325000113
+++ ISEED_EPBL=20210325000113
+++ export SKEBINT=0
+++ SKEBINT=0
+++ export SHUMINT=0
+++ SHUMINT=0
+++ export SPPTINT=0
+++ SPPTINT=0
+++ export 'IAU_INC_FILES='\'''\'''
+++ IAU_INC_FILES=''\'''\'''
+++ export IAU_DELTHRS=0
+++ IAU_DELTHRS=0
+++ export IAUFHRS=-1
+++ IAUFHRS=-1
+++ export IAU_OFFSET=0
+++ IAU_OFFSET=0
+++ export IAU_FILTER_INCREMENTS=.false.
+++ IAU_FILTER_INCREMENTS=.false.
+++ export FH_DFI_RADAR=-2e10
+++ FH_DFI_RADAR=-2e10
+++ export DO_CA=.true.
+++ DO_CA=.true.
+++ export CA_SGS=.true.
+++ CA_SGS=.true.
+++ export CA_GLOBAL=.false.
+++ CA_GLOBAL=.false.
+++ export NCA=1
+++ NCA=1
+++ export NCELLS=5
+++ NCELLS=5
+++ export NLIVES=12
+++ NLIVES=12
+++ export NTHRESH=18
+++ NTHRESH=18
+++ export NSEED=1
+++ NSEED=1
+++ export NFRACSEED=0.5
+++ NFRACSEED=0.5
+++ export CA_TRIGGER=.true.
+++ CA_TRIGGER=.true.
+++ export NSPINUP=1
+++ NSPINUP=1
+++ export ISEED_CA=12345
+++ ISEED_CA=12345
+++ export WW3_RSTDTHR=12
+++ WW3_RSTDTHR=12
++++ printf %02d 43200
+++ WW3_DT_2_RST=43200
+++ export WW3_DT_2_RST
+++ export WW3_OUTDTHR=1
+++ WW3_OUTDTHR=1
++++ printf %02d 3600
+++ WW3_DTFLD=3600
+++ export WW3_DTFLD
++++ printf %02d 3600
+++ WW3_DTPNT=3600
+++ export WW3_GRD_OUTDIR=./
+++ WW3_GRD_OUTDIR=./
+++ export WW3_PNT_OUTDIR=./
+++ WW3_PNT_OUTDIR=./
+++ export WW3_RST_OUTDIR=./
+++ WW3_RST_OUTDIR=./
+++ export WW3_DTPNT
+++ export DTRST=0
+++ DTRST=0
+++ export RSTTYPE=T
+++ RSTTYPE=T
+++ export GOFILETYPE=1
+++ GOFILETYPE=1
+++ export POFILETYPE=1
+++ POFILETYPE=1
+++ export 'WW3_OUTPARS=WND HS FP DP PHS PTP PDIR'
+++ WW3_OUTPARS='WND HS FP DP PHS PTP PDIR'
+++ export 'CPLILINE=$'
+++ CPLILINE='$'
+++ export 'ICELINE=$'
+++ ICELINE='$'
+++ export 'WINDLINE=$'
+++ WINDLINE='$'
+++ export 'CURRLINE=$'
+++ CURRLINE='$'
+++ export NFGRIDS=0
+++ NFGRIDS=0
+++ export NMGRIDS=1
+++ NMGRIDS=1
+++ export 'WW3GRIDLINE='\''glo_1deg'\''  '\''no'\'' '\''no'\'' '\''CPL:native'\'' '\''no'\'' '\''no'\'' '\''no'\'' '\''no'\'' '\''no'\'' '\''no'\''   1  1  0.00 1.00  F'
+++ WW3GRIDLINE=''\''glo_1deg'\''  '\''no'\'' '\''no'\'' '\''CPL:native'\'' '\''no'\'' '\''no'\'' '\''no'\'' '\''no'\'' '\''no'\'' '\''no'\''   1  1  0.00 1.00  F'
+++ export FUNIPNT=T
+++ FUNIPNT=T
+++ export IOSRV=1
+++ IOSRV=1
+++ export FPNTPROC=T
+++ FPNTPROC=T
+++ export FGRDPROC=T
+++ FGRDPROC=T
+++ export UNIPOINTS=points
+++ UNIPOINTS=points
+++ export 'FLAGMASKCOMP= F'
+++ FLAGMASKCOMP=' F'
+++ export 'FLAGMASKOUT= F'
+++ FLAGMASKOUT=' F'
++++ printf %02d 0
+++ RUN_BEG='20161003 000000'
+++ export RUN_BEG
++++ printf %02d 0
+++ RUN_END='21001003 000000'
+++ export RUN_END
+++ export 'OUT_BEG=20161003 000000'
+++ OUT_BEG='20161003 000000'
+++ export 'OUT_END=21001003 000000'
+++ OUT_END='21001003 000000'
+++ export 'RST_BEG=20161003 000000'
+++ RST_BEG='20161003 000000'
+++ export 'RST_2_BEG=20161003 000000'
+++ RST_2_BEG='20161003 000000'
+++ export 'RST_END=21001003 000000'
+++ RST_END='21001003 000000'
+++ export 'RST_2_END=21001003 000000'
+++ RST_2_END='21001003 000000'
+++ export WW3_WLEV=F
+++ WW3_WLEV=F
+++ export WW3_CUR=F
+++ WW3_CUR=F
+++ export WW3_ICE=F
+++ WW3_ICE=F
+++ export WW3_IC1=F
+++ WW3_IC1=F
+++ export WW3_IC5=F
+++ WW3_IC5=F
+++ export WW3_MODDEF=mod_def.glo_1deg
+++ WW3_MODDEF=mod_def.glo_1deg
+++ export MESH_WAV=mesh.glo_1deg.nc
+++ MESH_WAV=mesh.glo_1deg.nc
+++ export 'WW3_RSTFLDS= '
+++ WW3_RSTFLDS=' '
+++ export AOD_FRQ=060000
+++ AOD_FRQ=060000
+++ export WRITE_RESTART_WITH_BCS=.false.
+++ WRITE_RESTART_WITH_BCS=.false.
+++ export PRINT_DIFF_PGR=.false.
+++ PRINT_DIFF_PGR=.false.
+++ export coupling_interval_fast_sec=0
+++ coupling_interval_fast_sec=0
+++ export CHOUR=06
+++ CHOUR=06
+++ export MOM6_OUTPUT_DIR=./MOM6_OUTPUT
+++ MOM6_OUTPUT_DIR=./MOM6_OUTPUT
+++ export MOM6_RESTART_DIR=./RESTART/
+++ MOM6_RESTART_DIR=./RESTART/
+++ export MOM6_RESTART_SETTING=n
+++ MOM6_RESTART_SETTING=n
+++ export USE_CICE_ALB=.false.
+++ USE_CICE_ALB=.false.
+++ export FTSFS=90
+++ FTSFS=90
+++ export REIFLAG=2
+++ REIFLAG=2
+++ export 'FNGLAC='\''global_glacier.2x2.grb'\'''
+++ FNGLAC=''\''global_glacier.2x2.grb'\'''
+++ export 'FNMXIC='\''global_maxice.2x2.grb'\'''
+++ FNMXIC=''\''global_maxice.2x2.grb'\'''
+++ export 'FNTSFC='\''RTGSST.1982.2012.monthly.clim.grb'\'''
+++ FNTSFC=''\''RTGSST.1982.2012.monthly.clim.grb'\'''
+++ export 'FNSNOC='\''global_snoclim.1.875.grb'\'''
+++ FNSNOC=''\''global_snoclim.1.875.grb'\'''
+++ export 'FNZORC='\''igbp'\'''
+++ FNZORC=''\''igbp'\'''
+++ export 'FNAISC='\''IMS-NIC.blended.ice.monthly.clim.grb'\'''
+++ FNAISC=''\''IMS-NIC.blended.ice.monthly.clim.grb'\'''
+++ export LDEBUG=.false.
+++ LDEBUG=.false.
+++ export DO_LAND_IAU=.false.
+++ DO_LAND_IAU=.false.
+++ export LAND_IAU_FHRS=3,6,9
+++ LAND_IAU_FHRS=3,6,9
+++ export LAND_IAU_DELHRS=6
+++ LAND_IAU_DELHRS=6
+++ export 'LAND_IAU_INC_FILES='\''sfc_inc'\'','\'''\'''
+++ LAND_IAU_INC_FILES=''\''sfc_inc'\'','\'''\'''
+++ export LSOIL_INCR=3
+++ LSOIL_INCR=3
+++ export LAND_IAU_FILTER_INC=.false.
+++ LAND_IAU_FILTER_INC=.false.
+++ export LAND_IAU_UPD_STC=.true.
+++ LAND_IAU_UPD_STC=.true.
+++ export LAND_IAU_UPD_SLC=.true.
+++ LAND_IAU_UPD_SLC=.true.
+++ export LAND_IAU_DO_STCSMC_ADJ=.true.
+++ LAND_IAU_DO_STCSMC_ADJ=.true.
+++ export LAND_IAU_MIN_T_INC=0.0001
+++ LAND_IAU_MIN_T_INC=0.0001
+++ export LAND_IAU_MIN_SLC_INC=0.000001
+++ LAND_IAU_MIN_SLC_INC=0.000001
+++ export_ugwpv1
+++ export DO_UGWP_V1=.true.
+++ DO_UGWP_V1=.true.
+++ export DO_UGWP_V0=.false.
+++ DO_UGWP_V0=.false.
+++ export GWD_OPT=2
+++ GWD_OPT=2
+++ export KNOB_UGWP_VERSION=1
+++ KNOB_UGWP_VERSION=1
+++ export KNOB_UGWP_NSLOPE=1
+++ KNOB_UGWP_NSLOPE=1
+++ export DO_GSL_DRAG_LS_BL=.true.
+++ DO_GSL_DRAG_LS_BL=.true.
+++ export DO_GSL_DRAG_SS=.true.
+++ DO_GSL_DRAG_SS=.true.
+++ export DO_GSL_DRAG_TOFD=.true.
+++ DO_GSL_DRAG_TOFD=.true.
+++ export DO_UGWP_V1_OROG_ONLY=.false.
+++ DO_UGWP_V1_OROG_ONLY=.false.
+++ export DO_UGWP_V0_NST_ONLY=.false.
+++ DO_UGWP_V0_NST_ONLY=.false.
+++ export LDIAG_UGWP=.false.
+++ LDIAG_UGWP=.false.
+++ export KNOB_UGWP_DOKDIS=2
+++ KNOB_UGWP_DOKDIS=2
+++ export KNOB_UGWP_NDX4LH=4
+++ KNOB_UGWP_NDX4LH=4
+++ case "${ATMRES}" in
+++ [[ 1 = 1 ]]
+++ export DT_ATMOS=720
+++ DT_ATMOS=720
+++ export XR_CNVCLD=.false.
+++ XR_CNVCLD=.false.
+++ export CDMBGWD=0.14,1.8,1.0,1.0
+++ CDMBGWD=0.14,1.8,1.0,1.0
+++ export CDMBGWD_GSL=20.0,2.5,1.0,1.0
+++ CDMBGWD_GSL=20.0,2.5,1.0,1.0
+++ export KNOB_UGWP_TAUAMP=3.0e-3
+++ KNOB_UGWP_TAUAMP=3.0e-3
+++ export K_SPLIT=1
+++ K_SPLIT=1
+++ export N_SPLIT=4
+++ N_SPLIT=4
+++ export TAU=8.0
+++ TAU=8.0
+++ export RF_CUTOFF=100.0
+++ RF_CUTOFF=100.0
+++ export FV_SG_ADJ=1800
+++ FV_SG_ADJ=1800
+++ [[ .true. = .true. ]]
+++ export CDMBGWD=20.0,2.5,1.0,1.0
+++ CDMBGWD=20.0,2.5,1.0,1.0
+++ [[ .true. = .false. ]]
+++ export DT_INNER=720
+++ DT_INNER=720
+++ export default_dt_atmos=0
+++ default_dt_atmos=0
+++ export_cpl
+++ export FV3=true
+++ FV3=true
+++ export S2S=true
+++ S2S=true
+++ export HAFS=false
+++ HAFS=false
+++ export AQM=false
+++ AQM=false
+++ export FIRE_BEHAVIOR=false
+++ FIRE_BEHAVIOR=false
+++ export DATM_CDEPS=false
+++ DATM_CDEPS=false
+++ export DOCN_CDEPS=false
+++ DOCN_CDEPS=false
+++ export DICE_CDEPS=false
+++ DICE_CDEPS=false
+++ export CICE_PRESCRIBED=false
+++ CICE_PRESCRIBED=false
+++ export CDEPS_INLINE=false
+++ CDEPS_INLINE=false
+++ export ULTRALOW=.false.
+++ ULTRALOW=.false.
+++ export DAYS=1
+++ DAYS=1
+++ export MODEL_CONFIGURE=model_configure.IN
+++ MODEL_CONFIGURE=model_configure.IN
+++ export SYEAR=2021
+++ SYEAR=2021
+++ export SMONTH=03
+++ SMONTH=03
+++ export SDAY=22
+++ SDAY=22
+++ export SHOUR=06
+++ SHOUR=06
+++ export CHOUR=06
+++ CHOUR=06
+++ export FHMAX=24
+++ FHMAX=24
+++ export FHROT=0
+++ FHROT=0
+++ export QUILTING_RESTART=.false.
+++ QUILTING_RESTART=.false.
+++ export WRTTASK_PER_GROUP=6
+++ WRTTASK_PER_GROUP=6
+++ export WRITE_NSFLIP=.true.
+++ WRITE_NSFLIP=.true.
+++ export 'OUTPUT_FH=6 -1'
+++ OUTPUT_FH='6 -1'
+++ [[ 0 = 1 ]]
+++ [[ -z '' ]]
+++ export OCNRES=100
+++ OCNRES=100
+++ [[ -z '' ]]
+++ export ICERES=1.00
+++ ICERES=1.00
+++ export NX_GLB=360
+++ NX_GLB=360
+++ export NY_GLB=320
+++ NY_GLB=320
+++ export NPZ=127
+++ NPZ=127
+++ export NPZP=128
+++ NPZP=128
+++ [[ .false. == .false. ]]
+++ export UPDATE_FULL_OMEGA=.true.
+++ UPDATE_FULL_OMEGA=.true.
+++ export DOMAINS_STACK_SIZE=8000000
+++ DOMAINS_STACK_SIZE=8000000
+++ export INPES=3
+++ INPES=3
+++ export JNPES=8
+++ JNPES=8
+++ export THRD=1
+++ THRD=1
+++ export OCN_tasks=20
+++ OCN_tasks=20
+++ export ICE_tasks=10
+++ ICE_tasks=10
+++ export WAV_tasks=20
+++ WAV_tasks=20
+++ export_tiled
+++ export 'FNSMCC_control='\''global_soilmgldas.statsgo.t1534.3072.1536.grb'\'''
+++ FNSMCC_control=''\''global_soilmgldas.statsgo.t1534.3072.1536.grb'\'''
+++ export 'FNMSKH_control='\''global_slmask.t1534.3072.1536.grb'\'''
+++ FNMSKH_control=''\''global_slmask.t1534.3072.1536.grb'\'''
+++ export 'FNALBC='\''C96.snowfree_albedo.tileX.nc'\'''
+++ FNALBC=''\''C96.snowfree_albedo.tileX.nc'\'''
+++ export 'FNALBC2='\''C96.facsf.tileX.nc'\'''
+++ FNALBC2=''\''C96.facsf.tileX.nc'\'''
+++ export 'FNTG3C='\''C96.substrate_temperature.tileX.nc'\'''
+++ FNTG3C=''\''C96.substrate_temperature.tileX.nc'\'''
+++ export 'FNVEGC='\''C96.vegetation_greenness.tileX.nc'\'''
+++ FNVEGC=''\''C96.vegetation_greenness.tileX.nc'\'''
+++ export 'FNVETC='\''C96.vegetation_type.tileX.nc'\'''
+++ FNVETC=''\''C96.vegetation_type.tileX.nc'\'''
+++ export 'FNSOTC='\''C96.soil_type.tileX.nc'\'''
+++ FNSOTC=''\''C96.soil_type.tileX.nc'\'''
+++ export 'FNSOCC='\''C96.soil_color.tileX.nc'\'''
+++ FNSOCC=''\''C96.soil_color.tileX.nc'\'''
+++ export 'FNSMCC='\''global_soilmgldas.statsgo.t1534.3072.1536.grb'\'''
+++ FNSMCC=''\''global_soilmgldas.statsgo.t1534.3072.1536.grb'\'''
+++ export 'FNMSKH='\''global_slmask.t1534.3072.1536.grb'\'''
+++ FNMSKH=''\''global_slmask.t1534.3072.1536.grb'\'''
+++ export 'FNVMNC='\''C96.vegetation_greenness.tileX.nc'\'''
+++ FNVMNC=''\''C96.vegetation_greenness.tileX.nc'\'''
+++ export 'FNVMXC='\''C96.vegetation_greenness.tileX.nc'\'''
+++ FNVMXC=''\''C96.vegetation_greenness.tileX.nc'\'''
+++ export 'FNSLPC='\''C96.slope_type.tileX.nc'\'''
+++ FNSLPC=''\''C96.slope_type.tileX.nc'\'''
+++ export 'FNABSC='\''C96.maximum_snow_albedo.tileX.nc'\'''
+++ FNABSC=''\''C96.maximum_snow_albedo.tileX.nc'\'''
+++ export LSM=2
+++ LSM=2
+++ export LANDICE=.false.
+++ LANDICE=.false.
+++ export_cice6
+++ SECS=21600
+++ export SECS
+++ export DT_CICE=720
+++ DT_CICE=720
+++ export CICE_NPT=999
+++ CICE_NPT=999
+++ export CICE_RUNTYPE=initial
+++ CICE_RUNTYPE=initial
+++ export CICE_ICE_IC=cice_model.res.nc
+++ CICE_ICE_IC=cice_model.res.nc
+++ export CICE_RUNID=unknown
+++ CICE_RUNID=unknown
+++ export CICE_USE_RESTART_TIME=.false.
+++ CICE_USE_RESTART_TIME=.false.
+++ export CICE_RESTART_DIR=./RESTART/
+++ CICE_RESTART_DIR=./RESTART/
+++ export CICE_RESTART_FILE=iced
+++ CICE_RESTART_FILE=iced
+++ export OCNICE_WARMSTART=.false.
+++ OCNICE_WARMSTART=.false.
+++ export CICE_RESTART_FORMAT=pnetcdf2
+++ CICE_RESTART_FORMAT=pnetcdf2
+++ export CICE_RESTART_IOTASKS=-99
+++ CICE_RESTART_IOTASKS=-99
+++ export CICE_RESTART_REARR=box
+++ CICE_RESTART_REARR=box
+++ export CICE_RESTART_ROOT=-99
+++ CICE_RESTART_ROOT=-99
+++ export CICE_RESTART_STRIDE=-99
+++ CICE_RESTART_STRIDE=-99
+++ export CICE_RESTART_CHUNK=0,0
+++ CICE_RESTART_CHUNK=0,0
+++ export CICE_RESTART_DEFLATE=0
+++ CICE_RESTART_DEFLATE=0
+++ export CICE_HISTORY_FORMAT=pnetcdf2
+++ CICE_HISTORY_FORMAT=pnetcdf2
+++ export CICE_HISTORY_IOTASKS=-99
+++ CICE_HISTORY_IOTASKS=-99
+++ export CICE_HISTORY_REARR=box
+++ CICE_HISTORY_REARR=box
+++ export CICE_HISTORY_ROOT=-99
+++ CICE_HISTORY_ROOT=-99
+++ export CICE_HISTORY_STRIDE=-99
+++ CICE_HISTORY_STRIDE=-99
+++ export CICE_HISTORY_CHUNK=0,0
+++ CICE_HISTORY_CHUNK=0,0
+++ export CICE_HISTORY_DEFLATE=0
+++ CICE_HISTORY_DEFLATE=0
+++ export CICE_HISTORY_PREC=4
+++ CICE_HISTORY_PREC=4
+++ export CICE_DUMPFREQ=d
+++ CICE_DUMPFREQ=d
+++ export CICE_DUMPFREQ_N=1000
+++ CICE_DUMPFREQ_N=1000
+++ CICE_DIAGFREQ=120
+++ export CICE_DIAGFREQ
+++ export 'CICE_HISTFREQ_N=0, 0, 6, 0, 0'
+++ CICE_HISTFREQ_N='0, 0, 6, 0, 0'
+++ export 'CICE_hist_suffix='\''x'\'','\''x'\'','\''x'\'','\''x'\'','\''x'\'''
+++ CICE_hist_suffix=''\''x'\'','\''x'\'','\''x'\'','\''x'\'','\''x'\'''
+++ export CICE_HIST_AVG=.true.
+++ CICE_HIST_AVG=.true.
+++ export CICE_HISTORY_DIR=./history/
+++ CICE_HISTORY_DIR=./history/
+++ export CICE_INCOND_DIR=./history/
+++ CICE_INCOND_DIR=./history/
+++ export CICE_GRID=grid_cice_NEMS_mx100.nc
+++ CICE_GRID=grid_cice_NEMS_mx100.nc
+++ export CICE_MASK=kmtu_cice_NEMS_mx100.nc
+++ CICE_MASK=kmtu_cice_NEMS_mx100.nc
+++ export CICE_GRIDATM=A
+++ CICE_GRIDATM=A
+++ export CICE_GRIDOCN=A
+++ CICE_GRIDOCN=A
+++ export CICE_GRIDICE=B
+++ CICE_GRIDICE=B
+++ export CICE_TR_POND_LVL=.true.
+++ CICE_TR_POND_LVL=.true.
+++ export CICE_RESTART_POND_LVL=.false.
+++ CICE_RESTART_POND_LVL=.false.
+++ export CICE_FRAZIL_FWSALT=.true.
+++ CICE_FRAZIL_FWSALT=.true.
+++ export CICE_KTHERM=2
+++ CICE_KTHERM=2
+++ export CICE_TFREEZE_OPTION=mushy
+++ CICE_TFREEZE_OPTION=mushy
+++ export CICE_NPROC=10
+++ CICE_NPROC=10
+++ np2=5
+++ CICE_BLCKX=72
+++ CICE_BLCKY=160
+++ export np2
+++ export CICE_BLCKX
+++ export CICE_BLCKY
+++ export CICE_DECOMP=slenderX2
+++ CICE_DECOMP=slenderX2
+++ export MESH_DICE=none
+++ MESH_DICE=none
+++ export stream_files_dice=none
+++ stream_files_dice=none
+++ export CICE_PRESCRIBED=false
+++ CICE_PRESCRIBED=false
+++ export DICE_CDEPS=false
+++ DICE_CDEPS=false
+++ export_mom6
+++ export DT_DYNAM_MOM6=1800
+++ DT_DYNAM_MOM6=1800
+++ export DT_THERM_MOM6=3600
+++ DT_THERM_MOM6=3600
+++ export MOM6_INPUT=MOM_input_100.IN
+++ MOM6_INPUT=MOM_input_100.IN
+++ export MOM6_OUTPUT_DIR=./MOM6_OUTPUT
+++ MOM6_OUTPUT_DIR=./MOM6_OUTPUT
+++ export MOM6_OUTPUT_FH=6
+++ MOM6_OUTPUT_FH=6
+++ export MOM6_RESTART_DIR=./RESTART/
+++ MOM6_RESTART_DIR=./RESTART/
+++ export MOM6_RESTART_SETTING=n
+++ MOM6_RESTART_SETTING=n
+++ export MOM6_RIVER_RUNOFF=False
+++ MOM6_RIVER_RUNOFF=False
+++ export MOM6_FRUNOFF=
+++ MOM6_FRUNOFF=
+++ export MOM6_CHLCLIM=seawifs_1998-2006_smoothed_2X.nc
+++ MOM6_CHLCLIM=seawifs_1998-2006_smoothed_2X.nc
+++ export MOM6_USE_LI2016=True
+++ MOM6_USE_LI2016=True
+++ export MOM6_TOPOEDITS=
+++ MOM6_TOPOEDITS=
+++ export MOM6_HFREEZE=20.0
+++ MOM6_HFREEZE=20.0
+++ export MOM6_THERMO_SPAN=False
+++ MOM6_THERMO_SPAN=False
+++ export MOM6_USE_WAVES=True
+++ MOM6_USE_WAVES=True
+++ export MOM6_ALLOW_LANDMASK_CHANGES=False
+++ MOM6_ALLOW_LANDMASK_CHANGES=False
+++ export MOM6_DIAG_COORD_DEF_Z_FILE=interpolate_zgrid_40L.nc
+++ MOM6_DIAG_COORD_DEF_Z_FILE=interpolate_zgrid_40L.nc
+++ export MOM6_DIAG_MISVAL=-1e34
+++ MOM6_DIAG_MISVAL=-1e34
+++ export ODA_INCUPD=False
+++ ODA_INCUPD=False
+++ export ODA_INCUPD_NHOURS=6
+++ ODA_INCUPD_NHOURS=6
+++ export 'ODA_TEMPINC_VAR='\''pt_inc'\'''
+++ ODA_TEMPINC_VAR=''\''pt_inc'\'''
+++ export 'ODA_SALTINC_VAR='\''s_inc'\'''
+++ ODA_SALTINC_VAR=''\''s_inc'\'''
+++ export 'ODA_THK_VAR='\''h_fg'\'''
+++ ODA_THK_VAR=''\''h_fg'\'''
+++ export ODA_INCUPD_UV=False
+++ ODA_INCUPD_UV=False
+++ export 'ODA_UINC_VAR='\''u_inc'\'''
+++ ODA_UINC_VAR=''\''u_inc'\'''
+++ export 'ODA_VINC_VAR='\''v_inc'\'''
+++ ODA_VINC_VAR=''\''v_inc'\'''
+++ export DO_OCN_SPPT=False
+++ DO_OCN_SPPT=False
+++ export PERT_EPBL=False
+++ PERT_EPBL=False
+++ export OCN_SPPT=-999.
+++ OCN_SPPT=-999.
+++ export EPBL=-999.
+++ EPBL=-999.
+++ export OCNICE_WARMSTART=.false.
+++ OCNICE_WARMSTART=.false.
+++ export MOM6_INIT_FROM_Z=True
+++ MOM6_INIT_FROM_Z=True
+++ export MOM6_INIT_UV=zero
+++ MOM6_INIT_UV=zero
+++ export MOM6_WARMSTART_FILE=none
+++ MOM6_WARMSTART_FILE=none
+++ export_ww3
+++ export WW3_DOMAIN=mx100
+++ WW3_DOMAIN=mx100
+++ export WW3_MODDEF=mod_def.mx100
+++ WW3_MODDEF=mod_def.mx100
+++ export WW3_RSTDTHR=3
+++ WW3_RSTDTHR=3
++++ printf %02d 10800
+++ WW3_DT_2_RST=10800
+++ export WW3_DT_2_RST
+++ export WW3_OUTDTHR=3
+++ WW3_OUTDTHR=3
++++ printf %02d 10800
+++ WW3_DTFLD=10800
++++ printf %02d 10800
+++ WW3_DTPNT=10800
+++ export WW3_DTFLD
+++ export WW3_DTPNT
+++ export WW3_WLEV=F
+++ WW3_WLEV=F
+++ export WW3_CUR=C
+++ WW3_CUR=C
+++ export WW3_ICE=C
+++ WW3_ICE=C
+++ export WW3_IC1=F
+++ WW3_IC1=F
+++ export WW3_IC5=F
+++ WW3_IC5=F
+++ export WW3_user_histname=false
+++ WW3_user_histname=false
+++ export WW3_historync=false
+++ WW3_historync=false
+++ export WW3_restartnc=true
+++ WW3_restartnc=true
+++ export WW3_restart_from_binary=false
+++ WW3_restart_from_binary=false
+++ export 'WW3_RSTFLDS= '
+++ WW3_RSTFLDS=' '
+++ export WW3_PIO_FORMAT=pnetcdf
+++ WW3_PIO_FORMAT=pnetcdf
+++ export WW3_PIO_STRIDE=4
+++ WW3_PIO_STRIDE=4
+++ export WW3_PIO_IOTASKS=-99
+++ WW3_PIO_IOTASKS=-99
+++ export WW3_PIO_REARR=box
+++ WW3_PIO_REARR=box
+++ export WW3_PIO_ROOT=-99
+++ WW3_PIO_ROOT=-99
+++ export_cmeps
+++ export UFS_CONFIGURE=ufs.configure.s2swa_fast.IN
+++ UFS_CONFIGURE=ufs.configure.s2swa_fast.IN
+++ export med_model=cmeps
+++ med_model=cmeps
+++ export atm_model=fv3
+++ atm_model=fv3
+++ export chm_model=gocart
+++ chm_model=gocart
+++ export ocn_model=mom6
+++ ocn_model=mom6
+++ export ice_model=cice6
+++ ice_model=cice6
+++ export wav_model=ww3
+++ wav_model=ww3
+++ export lnd_model=noahmp
+++ lnd_model=noahmp
+++ export coupling_interval_slow_sec=3600
+++ coupling_interval_slow_sec=3600
+++ export coupling_interval_fast_sec=720
+++ coupling_interval_fast_sec=720
+++ export MESH_OCN=mesh.mx100.nc
+++ MESH_OCN=mesh.mx100.nc
+++ export MESH_ICE=mesh.mx100.nc
+++ MESH_ICE=mesh.mx100.nc
+++ export MESH_WAV=mesh.mx100.nc
+++ MESH_WAV=mesh.mx100.nc
+++ export CPLMODE=ufs.frac
+++ CPLMODE=ufs.frac
+++ export CMEPS_PIO_FORMAT=pnetcdf
+++ CMEPS_PIO_FORMAT=pnetcdf
+++ export CMEPS_PIO_STRIDE=4
+++ CMEPS_PIO_STRIDE=4
+++ export CMEPS_PIO_IOTASKS=-99
+++ CMEPS_PIO_IOTASKS=-99
+++ export CMEPS_PIO_REARR=box
+++ CMEPS_PIO_REARR=box
+++ export CMEPS_PIO_ROOT=-99
+++ CMEPS_PIO_ROOT=-99
+++ export RUNTYPE=startup
+++ RUNTYPE=startup
+++ export RESTART_N=24
+++ RESTART_N=24
+++ export 'RESTART_FH= '
+++ RESTART_FH=' '
+++ export CMEPS_RESTART_DIR=./RESTART/
+++ CMEPS_RESTART_DIR=./RESTART/
+++ export cap_dbug_flag=0
+++ cap_dbug_flag=0
+++ export WRITE_ENDOFRUN_RESTART=.false.
+++ WRITE_ENDOFRUN_RESTART=.false.
+++ export use_coldstart=false
+++ use_coldstart=false
+++ export use_mommesh=true
+++ use_mommesh=true
+++ export eps_imesh=1.0e-1
+++ eps_imesh=1.0e-1
+++ export flux_convergence=0.0
+++ flux_convergence=0.0
+++ export flux_iteration=2
+++ flux_iteration=2
+++ export flux_scheme=0
+++ flux_scheme=0
+++ export ocean_albedo_limit=0.06
+++ ocean_albedo_limit=0.06
+++ export use_mean_albedos=.false.
+++ use_mean_albedos=.false.
+++ export MAPUV3D=true
+++ MAPUV3D=true
+++ export FRAC_GRID=.true.
+++ FRAC_GRID=.true.
+++ export CCPP_SUITE=FV3_GFS_v17_coupled_p8
+++ CCPP_SUITE=FV3_GFS_v17_coupled_p8
+++ export INPUT_NML=global_control.nml.IN
+++ INPUT_NML=global_control.nml.IN
+++ export FIELD_TABLE=field_table_thompson_noaero_tke_GOCART
+++ FIELD_TABLE=field_table_thompson_noaero_tke_GOCART
+++ export DIAG_TABLE=diag_table_cpld.IN
+++ DIAG_TABLE=diag_table_cpld.IN
+++ export DIAG_TABLE_ADDITIONAL=
+++ DIAG_TABLE_ADDITIONAL=
+++ export FIELD_TABLE_ADDITIONAL=
+++ FIELD_TABLE_ADDITIONAL=
+++ export FV3_RUN=cpld_control_run.IN
+++ FV3_RUN=cpld_control_run.IN
+++ export TILEDFIX=.true.
+++ TILEDFIX=.true.
+++ export FHZERO=6
+++ FHZERO=6
+++ export IALB=2
+++ IALB=2
+++ export IEMS=2
+++ IEMS=2
+++ export LSM=2
+++ LSM=2
+++ export LANDICE=.false.
+++ LANDICE=.false.
+++ export IOPT_DVEG=4
+++ IOPT_DVEG=4
+++ export IOPT_CRS=2
+++ IOPT_CRS=2
+++ export IOPT_RAD=3
+++ IOPT_RAD=3
+++ export IOPT_ALB=1
+++ IOPT_ALB=1
+++ export IOPT_STC=3
+++ IOPT_STC=3
+++ export IOPT_SFC=3
+++ IOPT_SFC=3
+++ export IOPT_TRS=2
+++ IOPT_TRS=2
+++ export IOPT_DIAG=2
+++ IOPT_DIAG=2
+++ export D2_BG_K1=0.20
+++ D2_BG_K1=0.20
+++ export D2_BG_K2=0.04
+++ D2_BG_K2=0.04
+++ export PSM_BC=1
+++ PSM_BC=1
+++ export DDDMP=0.1
+++ DDDMP=0.1
+++ export DZ_MIN=6
+++ DZ_MIN=6
+++ export USE_MERRA2=.true.
+++ USE_MERRA2=.true.
+++ export IAER=1011
+++ IAER=1011
+++ export NSTF_NAME=2,0,0,0,0
+++ NSTF_NAME=2,0,0,0,0
+++ export LHEATSTRG=.false.
+++ LHEATSTRG=.false.
+++ export LSEASPRAY=.true.
+++ LSEASPRAY=.true.
+++ export DO_RRTMGP=.false.
+++ DO_RRTMGP=.false.
+++ export DOGP_LWSCAT=.true.
+++ DOGP_LWSCAT=.true.
+++ export DOGP_SGS_CNV=.false.
+++ DOGP_SGS_CNV=.false.
+++ export DO_CA=.true.
+++ DO_CA=.true.
+++ export CA_SGS=.true.
+++ CA_SGS=.true.
+++ export CA_GLOBAL=.false.
+++ CA_GLOBAL=.false.
+++ export NCA=1
+++ NCA=1
+++ export NCELLS=5
+++ NCELLS=5
+++ export NLIVES=12
+++ NLIVES=12
+++ export NTHRESH=18
+++ NTHRESH=18
+++ export NSEED=1
+++ NSEED=1
+++ export NFRACSEED=0.5
+++ NFRACSEED=0.5
+++ export CA_TRIGGER=.true.
+++ CA_TRIGGER=.true.
+++ export NSPINUP=1
+++ NSPINUP=1
+++ export ISEED_CA=12345
+++ ISEED_CA=12345
+++ export FSICL=0
+++ FSICL=0
+++ export FSICS=0
+++ FSICS=0
+++ export USE_CICE_ALB=.true.
+++ USE_CICE_ALB=.true.
+++ export MIN_SEAICE=1.0e-6
+++ MIN_SEAICE=1.0e-6
+++ export DNATS=2
+++ DNATS=2
+++ export IMP_PHYSICS=8
+++ IMP_PHYSICS=8
+++ export LGFDLMPRAD=.false.
+++ LGFDLMPRAD=.false.
+++ export DO_SAT_ADJ=.false.
+++ DO_SAT_ADJ=.false.
+++ export SATMEDMF=.true.
+++ SATMEDMF=.true.
+++ export CPLFLX=.true.
+++ CPLFLX=.true.
+++ export CPLICE=.true.
+++ CPLICE=.true.
+++ export CPL=.true.
+++ CPL=.true.
+++ export CPLWAV=.true.
+++ CPLWAV=.true.
+++ export CPLWAV2ATM=.true.
+++ CPLWAV2ATM=.true.
+++ export USE_MED_FLUX=.false.
+++ USE_MED_FLUX=.false.
+++ export CPLCHM=.true.
+++ CPLCHM=.true.
+++ export CPLLND=.false.
+++ CPLLND=.false.
+++ export WARM_START=.false.
+++ WARM_START=.false.
+++ export MAKE_NH=.true.
+++ MAKE_NH=.true.
+++ export NA_INIT=1
+++ NA_INIT=1
+++ export EXTERNAL_IC=.true.
+++ EXTERNAL_IC=.true.
+++ export NGGPS_IC=.true.
+++ NGGPS_IC=.true.
+++ export MOUNTAIN=.false.
+++ MOUNTAIN=.false.
+++ export AOD_FRQ=060000
+++ AOD_FRQ=060000
+++ export RESTART_FILE_PREFIX=
+++ RESTART_FILE_PREFIX=
+++ export RESTART_FILE_SUFFIX_SECS=
+++ RESTART_FILE_SUFFIX_SECS=
+++ export RT35D=
+++ RT35D=
+++ export MESH_DICE=none
+++ MESH_DICE=none
+++ export stream_files_dice=none
+++ stream_files_dice=none
+++ export CCPP_SUITE=FV3_GFS_v17_coupled_p8_ugwpv1
+++ CCPP_SUITE=FV3_GFS_v17_coupled_p8_ugwpv1
+++ export ULTRALOW=.true.
+++ ULTRALOW=.true.
+++ export ATMRES=C48
+++ ATMRES=C48
+++ export SYEAR=2021
+++ SYEAR=2021
+++ export SMONTH=03
+++ SMONTH=03
+++ export SDAY=23
+++ SDAY=23
+++ export SHOUR=06
+++ SHOUR=06
++++ expr 06 '*' 3600
+++ export SECS=21600
+++ SECS=21600
+++ export DAYS=0.25
+++ DAYS=0.25
+++ export FHMAX=6
+++ FHMAX=6
+++ export FHROT=0
+++ FHROT=0
+++ export RESTART_N=1
+++ RESTART_N=1
+++ export 'RESTART_INTERVAL=1 -1'
+++ RESTART_INTERVAL='1 -1'
+++ export 'OUTPUT_FH=3 -1'
+++ OUTPUT_FH='3 -1'
+++ export FHZERO=3
+++ FHZERO=3
+++ export INPES=1
+++ INPES=1
+++ export JNPES=1
+++ JNPES=1
+++ export atm_omp_num_threads=1
+++ atm_omp_num_threads=1
+++ export WRTTASK_PER_GROUP=6
+++ WRTTASK_PER_GROUP=6
+++ export LSM=2
+++ LSM=2
+++ export LANDICE=.false.
+++ LANDICE=.false.
+++ export OUTPUT_GRID=cubed_sphere_grid
+++ OUTPUT_GRID=cubed_sphere_grid
+++ export OCN_tasks=2
+++ OCN_tasks=2
+++ export ICE_tasks=2
+++ ICE_tasks=2
+++ export WAV_tasks=2
+++ WAV_tasks=2
+++ export CHM_tasks=0
+++ CHM_tasks=0
+++ export NPX=49
+++ NPX=49
+++ export NPY=49
+++ NPY=49
+++ export IMO=192
+++ IMO=192
+++ export JMO=94
+++ JMO=94
+++ export OCNRES=500
+++ OCNRES=500
+++ export ICERES=5.00
+++ ICERES=5.00
+++ export NX_GLB=72
+++ NX_GLB=72
+++ export NY_GLB=35
+++ NY_GLB=35
+++ export CICE_NPROC=2
+++ CICE_NPROC=2
+++ export CICE_DECOMP=slenderX1
+++ CICE_DECOMP=slenderX1
++++ expr 72 / 2
+++ export CICE_BLCKX=36
+++ CICE_BLCKX=36
+++ export CICE_BLCKY=35
+++ CICE_BLCKY=35
+++ export WW3_DOMAIN=uglo_900km
+++ WW3_DOMAIN=uglo_900km
+++ export MESH_WAV=mesh.uglo_900km.nc
+++ MESH_WAV=mesh.uglo_900km.nc
+++ export WW3_MODDEF=mod_def.uglo_900km
+++ WW3_MODDEF=mod_def.uglo_900km
+++ export DT_ATMOS=1200
+++ DT_ATMOS=1200
+++ export DT_CICE=1200
+++ DT_CICE=1200
+++ export DT_DYNAM_MOM6=3600
+++ DT_DYNAM_MOM6=3600
+++ export DT_THERM_MOM6=3600
+++ DT_THERM_MOM6=3600
++++ expr 6 '*' 3600 / 1200
+++ export CICE_DIAGFREQ=18
+++ CICE_DIAGFREQ=18
+++ export coupling_interval_slow_sec=3600
+++ coupling_interval_slow_sec=3600
+++ export coupling_interval_fast_sec=1200
+++ coupling_interval_fast_sec=1200
+++ export MOM6_INPUT=MOM_input_500.IN
+++ MOM6_INPUT=MOM_input_500.IN
+++ export MESH_ICE=mesh.mx500.nc
+++ MESH_ICE=mesh.mx500.nc
+++ export MESH_OCN=mesh.mx500.nc
+++ MESH_OCN=mesh.mx500.nc
+++ export CICE_GRID=grid_cice_NEMS_mx500.nc
+++ CICE_GRID=grid_cice_NEMS_mx500.nc
+++ export CICE_MASK=kmtu_cice_NEMS_mx500.nc
+++ CICE_MASK=kmtu_cice_NEMS_mx500.nc
+++ export MOM6_CHLCLIM=
+++ MOM6_CHLCLIM=
+++ export MOM6_FRUNOFF=
+++ MOM6_FRUNOFF=
+++ export MOM6_RIVER_RUNOFF=False
+++ MOM6_RIVER_RUNOFF=False
+++ export MOM6_DIAG_COORD_DEF_Z_FILE=oceanda_zgrid_25L.nc
+++ MOM6_DIAG_COORD_DEF_Z_FILE=oceanda_zgrid_25L.nc
+++ export CICE_RESTART_IOTASKS=1
+++ CICE_RESTART_IOTASKS=1
+++ export CICE_RESTART_STRIDE=1
+++ CICE_RESTART_STRIDE=1
+++ export CICE_HISTORY_IOTASKS=1
+++ CICE_HISTORY_IOTASKS=1
+++ export CICE_HISTORY_STRIDE=1
+++ CICE_HISTORY_STRIDE=1
+++ export 'WW3_RSTFLDS=ice itstep_w'
+++ WW3_RSTFLDS='ice itstep_w'
+++ export WW3_PIO_FORMAT=pnetcdf
+++ WW3_PIO_FORMAT=pnetcdf
+++ export WW3_PIO_STRIDE=1
+++ WW3_PIO_STRIDE=1
+++ export WW3_PIO_IOTASKS=2
+++ WW3_PIO_IOTASKS=2
+++ export WW3_PIO_REARR=box
+++ WW3_PIO_REARR=box
+++ export WW3_PIO_ROOT=-99
+++ WW3_PIO_ROOT=-99
+++ export 'FNALBC='\''C48.snowfree_albedo.tileX.nc'\'''
+++ FNALBC=''\''C48.snowfree_albedo.tileX.nc'\'''
+++ export 'FNALBC2='\''C48.facsf.tileX.nc'\'''
+++ FNALBC2=''\''C48.facsf.tileX.nc'\'''
+++ export 'FNTG3C='\''C48.substrate_temperature.tileX.nc'\'''
+++ FNTG3C=''\''C48.substrate_temperature.tileX.nc'\'''
+++ export 'FNVEGC='\''C48.vegetation_greenness.tileX.nc'\'''
+++ FNVEGC=''\''C48.vegetation_greenness.tileX.nc'\'''
+++ export 'FNVETC='\''C48.vegetation_type.tileX.nc'\'''
+++ FNVETC=''\''C48.vegetation_type.tileX.nc'\'''
+++ export 'FNSOTC='\''C48.soil_type.tileX.nc'\'''
+++ FNSOTC=''\''C48.soil_type.tileX.nc'\'''
+++ export 'FNSOCC='\''C48.soil_color.tileX.nc'\'''
+++ FNSOCC=''\''C48.soil_color.tileX.nc'\'''
+++ export 'FNVMNC='\''C48.vegetation_greenness.tileX.nc'\'''
+++ FNVMNC=''\''C48.vegetation_greenness.tileX.nc'\'''
+++ export 'FNVMXC='\''C48.vegetation_greenness.tileX.nc'\'''
+++ FNVMXC=''\''C48.vegetation_greenness.tileX.nc'\'''
+++ export 'FNSLPC='\''C48.slope_type.tileX.nc'\'''
+++ FNSLPC=''\''C48.slope_type.tileX.nc'\'''
+++ export 'FNABSC='\''C48.maximum_snow_albedo.tileX.nc'\'''
+++ FNABSC=''\''C48.maximum_snow_albedo.tileX.nc'\'''
+++ export 'FNSMCC='\''global_soilmgldas.statsgo.t92.192.94.grb'\'''
+++ FNSMCC=''\''global_soilmgldas.statsgo.t92.192.94.grb'\'''
+++ export 'FNMSKH='\''global_slmask.t62.192.94.grb'\'''
+++ FNMSKH=''\''global_slmask.t62.192.94.grb'\'''
+++ export CDMBGWD=0.071,2.1,1.0,1.0
+++ CDMBGWD=0.071,2.1,1.0,1.0
+++ export DT_INNER=1200
+++ DT_INNER=1200
+++ export WARM_START=.true.
+++ WARM_START=.true.
+++ export MAKE_NH=.false.
+++ MAKE_NH=.false.
+++ export NA_INIT=0
+++ NA_INIT=0
+++ export EXTERNAL_IC=.false.
+++ EXTERNAL_IC=.false.
+++ export NGGPS_IC=.false.
+++ NGGPS_IC=.false.
+++ export MOUNTAIN=.true.
+++ MOUNTAIN=.true.
+++ export CICE_RUNTYPE=continue
+++ CICE_RUNTYPE=continue
+++ export RUNTYPE=continue
+++ RUNTYPE=continue
+++ export CICE_USE_RESTART_TIME=.true.
+++ CICE_USE_RESTART_TIME=.true.
+++ export MOM6_RESTART_SETTING=r
+++ MOM6_RESTART_SETTING=r
+++ export CPLCHM=.false.
+++ CPLCHM=.false.
+++ export eps_imesh=4.0e-1
+++ eps_imesh=4.0e-1
+++ export DIAG_TABLE=diag_table_template
+++ DIAG_TABLE=diag_table_template
+++ export FIELD_TABLE=field_table_thompson_noaero_tke
+++ FIELD_TABLE=field_table_thompson_noaero_tke
+++ export UFS_CONFIGURE=ufs.configure.s2sw.IN
+++ UFS_CONFIGURE=ufs.configure.s2sw.IN
+++ export FV3_RUN=cpld_control_run.IN
+++ FV3_RUN=cpld_control_run.IN
+++ export DO_GWD_OPT_PSL=.true.
+++ DO_GWD_OPT_PSL=.true.
+++ export DO_GSL_DRAG_SS=.false.
+++ DO_GSL_DRAG_SS=.false.
++ rm -f /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/fail_test_cpld_warmstart_c48_5deg_intel
++ export INPUT_DIR=cpld_warmstart_c48_5deg
++ INPUT_DIR=cpld_warmstart_c48_5deg
++ export RUNDIR=/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel
++ RUNDIR=/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel
++ export CNTL_DIR=cpld_warmstart_c48_5deg
++ CNTL_DIR=cpld_warmstart_c48_5deg
++ JBNME=run_cpld_warmstart_c48_5deg_intel
++ export JBNME
+++ date +%s
++ date_s=1763670306
++ echo -n 'cpld_warmstart_c48_5deg_intel, 1763670306,'
++ export RT_LOG=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa/rt_cpld_warmstart_c48_5deg_intel.log
++ RT_LOG=/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa/rt_cpld_warmstart_c48_5deg_intel.log
++ echo 'Test cpld_warmstart_c48_5deg_intel Fully coupled FV3-CCPP-MOM6-CICE-WW3-CMEPS system - C48MX500 with 900km unstructured WW3 start from model initialization'
+Test cpld_warmstart_c48_5deg_intel Fully coupled FV3-CCPP-MOM6-CICE-WW3-CMEPS system - C48MX500 with 900km unstructured WW3 start from model initialization
++ source rt_utils.sh
+++ set -eu
+++ [[ /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/run_test.sh = \r\t\_\u\t\i\l\s\.\s\h ]]
+++ ECFLOW_RUNNING=false
+++ jobid=0
++ source atparse.bash
++ rm -rf /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel
++ mkdir -p /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel
++ cd /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel
++ cp /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/fv3_s2sw_pdlib_intel.exe fv3.exe
++ mkdir -p modulefiles
++ [[ ursa == linux ]]
++ cp /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/modules.fv3_s2sw_pdlib_intel.lua ./modulefiles/modules.fv3.lua
++ cp /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/modulefiles/ufs_common.lua ./modulefiles/.
++ cp /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/module-setup.sh module-setup.sh
++ case ${MACHINE_ID} in
++ module use modulefiles
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ module load modules.fv3
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+ECF_HOST = uecflow01, ECF_PORT = 21599
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) sqlite/3.46.0
+
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ [[ -n cpld_control_run.IN ]]
++ for i in ${FV3_RUN}
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ [[ .true. == .true. ]]
++ export 'HIDE_UGWPV0=!'
++ HIDE_UGWPV0='!'
++ export 'HIDE_UGWPV1= '
++ HIDE_UGWPV1=' '
++ export 'HIDE_AIAU= '
++ HIDE_AIAU=' '
++ export 'HIDE_LIAU= '
++ HIDE_LIAU=' '
++ [[ false = \t\r\u\e ]]
++ [[ true = \t\r\u\e ]]
++ [[ false = \f\a\l\s\e ]]
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ [[ -f /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/parm/model_configure.IN ]]
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ [[ true == true ]]
++ compute_petbounds_and_tasks_esmf_threading
++ [[ false = \f\a\l\s\e ]]
++ [[ 0 -eq 0 ]]
++ ATM_compute_tasks=6
++ [[ .true. = \.\t\r\u\e\. ]]
++ ATM_io_tasks=6
++ local n=0
++ unset atm_petlist_bounds ocn_petlist_bounds ice_petlist_bounds wav_petlist_bounds chm_petlist_bounds med_petlist_bounds aqm_petlist_bounds fbh_petlist_bounds
++ ATM_io_tasks=6
++ [[ 12 -gt 0 ]]
++ atm_petlist_bounds='0 11'
++ n=12
++ [[ 2 -gt 0 ]]
++ OCN_tasks=2
++ ocn_petlist_bounds='12 13'
++ n=14
++ [[ 2 -gt 0 ]]
++ ICE_tasks=2
++ ice_petlist_bounds='14 15'
++ n=16
++ [[ 2 -gt 0 ]]
++ WAV_tasks=2
++ wav_petlist_bounds='16 17'
++ n=18
++ chm_petlist_bounds='0 5'
++ MED_compute_tasks=6
++ med_petlist_bounds='0 5'
++ aqm_petlist_bounds='0 5'
++ [[ noahmp = \l\m\4 ]]
++ [[ 0 -gt 0 ]]
++ [[ 0 -gt 0 ]]
++ UFS_tasks=18
++ [[ false == true ]]
++ export TASKS=18
++ TASKS=18
++ [[ -f /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/parm/ufs.configure.s2sw.IN ]]
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ [[ true != true ]]
++ [[ Q != Q ]]
++ sed -i -e '/<output_grid_02>/,/<\/output_grid_02>/d' model_configure
++ [[ Q != Q ]]
++ sed -i -e '/<output_grid_03>/,/<\/output_grid_03>/d' model_configure
++ [[ Q != Q ]]
++ sed -i -e '/<output_grid_04>/,/<\/output_grid_04>/d' model_configure
++ [[ Q != Q ]]
++ sed -i -e '/<output_grid_05>/,/<\/output_grid_05>/d' model_configure
++ [[ Q != Q ]]
++ sed -i -e '/<output_grid_06>/,/<\/output_grid_06>/d' model_configure
++ [[ Qdiag_table_template != Q ]]
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ [[ Qfield_table_thompson_noaero_tke != Q ]]
++ cp /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/parm/field_table/field_table_thompson_noaero_tke field_table
++ [[ true == true ]]
++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/sfc_emissivity_idx.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/solarconstant_noaa_an.txt .
++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/global_h2oprdlos.f77 /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/global_o3prdlos.f77 .
++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/aerosol.dat /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/freezeH2O.dat /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/qr_acr_qgV2.dat /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/qr_acr_qsV2.dat .
++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2009.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2011.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2012.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2013.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2014.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2015.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2016.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2017.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2018.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2019.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2020.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_2021.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2historicaldata_glob.txt /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/fix_co2_proj/co2monthlycyc.txt .
++ [[ .true. != .true. ]]
++ [[ .false. == .true. ]]
++ cp /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/parm/noahmptable.tbl .
++ [[ false == .true. ]]
++ cp /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/parm/fd_ufs.yaml fd_ufs.yaml
++ source ./fv3_run
+++ mkdir INPUT RESTART
+++ mkdir -p ./RESTART/
+++ mkdir -p ./RESTART/
+++ mkdir -p ./RESTART/
+++ mkdir -p ./history/
+++ mkdir -p ./MOM6_OUTPUT
+++ [[ C48 == C96 ]]
+++ FV3_DIR=FV3_input_data48
+++ [[ C48 == C24 ]]
+++ [[ C48 == C12 ]]
+++ LEVELS=L127
+++ ICERES=5.00
+++ V2_SFC_FILE=false
+++ [[ .false. == .true. ]]
+++ [[ .true. == .true. ]]
+++ FV3_IC=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306
+++ MOM_IC=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_IC/C48mx500/2021032306
+++ ICE_IC=/scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CICE_IC/C48mx500/2021032306
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/global_soilmgldas.statsgo.t92.192.94.grb .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/global_slmask.t62.192.94.grb .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/global_glacier.2x2.grb .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/global_maxice.2x2.grb .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/RTGSST.1982.2012.monthly.clim.grb .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/global_snoclim.1.875.grb .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/IMS-NIC.blended.ice.monthly.clim.grb .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/oro_C48.mx500.tile1.nc INPUT/oro_data.tile1.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/oro_C48.mx500.tile2.nc INPUT/oro_data.tile2.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/oro_C48.mx500.tile3.nc INPUT/oro_data.tile3.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/oro_C48.mx500.tile4.nc INPUT/oro_data.tile4.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/oro_C48.mx500.tile5.nc INPUT/oro_data.tile5.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/oro_C48.mx500.tile6.nc INPUT/oro_data.tile6.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.facsf.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.facsf.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.facsf.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.facsf.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.facsf.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.facsf.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.maximum_snow_albedo.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.maximum_snow_albedo.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.maximum_snow_albedo.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.maximum_snow_albedo.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.maximum_snow_albedo.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.maximum_snow_albedo.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.slope_type.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.slope_type.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.slope_type.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.slope_type.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.slope_type.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.slope_type.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.snowfree_albedo.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.snowfree_albedo.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.snowfree_albedo.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.snowfree_albedo.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.snowfree_albedo.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.snowfree_albedo.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_color.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_color.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_color.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_color.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_color.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_color.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_type.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_type.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_type.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_type.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_type.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.soil_type.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.substrate_temperature.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.substrate_temperature.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.substrate_temperature.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.substrate_temperature.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.substrate_temperature.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.substrate_temperature.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_greenness.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_greenness.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_greenness.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_greenness.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_greenness.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_greenness.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_type.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_type.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_type.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_type.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_type.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix_tiled/C48mx500/C48.vegetation_type.tile6.nc .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CPL_FIX/aC48o500/grid_spec.nc ./INPUT
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT/C48_grid.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT/C48_grid.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT/C48_grid.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT/C48_grid.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT/C48_grid.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT/C48_grid.tile6.nc ./INPUT
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT/grid_spec.nc ./INPUT/C48_mosaic.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_FIX/500/MOM_override /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_FIX/500/hycom1_25.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_FIX/500/layer_coord25.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_FIX/500/ocean_hgrid.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_FIX/500/ocean_mask.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_FIX/500/ocean_mosaic.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_FIX/500/ocean_topog.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_FIX/500/oceanda_zgrid_25L.nc ./INPUT
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CICE_FIX/500/grid_cice_NEMS_mx500.nc .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CICE_FIX/500/kmtu_cice_NEMS_mx500.nc .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CICE_FIX/500/mesh.mx500.nc .
+++ [[ .true. == .true. ]]
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/WW3_input_data_20250807/mod_def.uglo_900km mod_def.ww3
+++ [[ ug != mx ]]
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/WW3_input_data_20250807/mesh.uglo_900km.nc .
+++ '[' .false. = .true. ']'
+++ [[ .false. == .true. ]]
+++ OPNREQ_TEST=false
+++ SUFFIX=
+++ [[ .true. == .false. ]]
+++ [[ Q != Q ]]
+++ [[ .true. == .true. ]]
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_core.res.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_core.res.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_core.res.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_core.res.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_core.res.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_core.res.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_core.res.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_srf_wnd.res.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_srf_wnd.res.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_srf_wnd.res.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_srf_wnd.res.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_srf_wnd.res.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_srf_wnd.res.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_tracer.res.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_tracer.res.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_tracer.res.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_tracer.res.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_tracer.res.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/fv_tracer.res.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/phy_data.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/phy_data.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/phy_data.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/phy_data.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/phy_data.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/phy_data.tile6.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/sfc_data.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/sfc_data.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/sfc_data.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/sfc_data.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/sfc_data.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_mx500/2021032306/sfc_data.tile6.nc ./INPUT
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/MOM6_IC/C48mx500/2021032306/MOM.res.nc ./INPUT
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CICE_IC/C48mx500/2021032306/iced.2021-03-23-21600.nc ./INPUT
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CICE_IC/C48mx500/2021032306/ice.restart_file .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CMEPS_IC/C48mx500/2021032306/rpointer.cpl /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/CMEPS_IC/C48mx500/2021032306/ufs.cpld.cpl.r.2021-03-23-21600.nc .
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/WW3_IC/C48mx500/2021032306/ufs.cpld.ww3.r.2021-03-23-21600.nc .
+++ '[' .false. = .true. ']'
+++ '[' .false. = .true. ']'
+++ '[' 1011 = 1011 ']'
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_01.nc aeroclim.m01.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_02.nc aeroclim.m02.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_03.nc aeroclim.m03.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_04.nc aeroclim.m04.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_05.nc aeroclim.m05.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_06.nc aeroclim.m06.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_07.nc aeroclim.m07.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_08.nc aeroclim.m08.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_09.nc aeroclim.m09.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_10.nc aeroclim.m10.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_11.nc aeroclim.m11.nc
+++ for n in 01 02 03 04 05 06 07 08 09 10 11 12
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/MERRA2_y14_24/merra2_1423_12.nc aeroclim.m12.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_BC.v1_3.dat optics_BC.dat
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_OC.v1_3.dat optics_OC.dat
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_DU.v15_3.dat optics_DU.dat
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SS.v3_3.dat optics_SS.dat
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data_INCCN_aeroclim/aer_data/LUTS/optics_SU.v1_3.dat optics_SU.dat
+++ '[' 1011 = 2011 ']'
+++ '[' 2 -ne 0 ']'
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data/ugwp_c384_tau.nc ./ugwp_limb_tau.nc
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ls.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ls.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ls.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ls.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ls.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ls.tile6.nc ./INPUT
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ss.tile1.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ss.tile2.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ss.tile3.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ss.tile4.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ss.tile5.nc /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_input_data48/INPUT_L127_gfsv17/oro_data_ss.tile6.nc ./INPUT
+++ '[' 8 = 8 ']'
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/CCN_ACTIVATE.BIN CCN_ACTIVATE.BIN
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/freezeH2O.dat freezeH2O.dat
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/qr_acr_qgV2.dat qr_acr_qgV2.dat
+++ cp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/input-data-20251015/FV3_fix/qr_acr_qsV2.dat qr_acr_qsV2.dat
++ [[ .true. == .true. ]]
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ cp /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/parm/ww3_points.list .
++ [[ .false. == .true. ]]
++ [[ false = \t\r\u\e ]]
++ [[ true = \t\r\u\e ]]
++ [[ false = \f\a\l\s\e ]]
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ [[ false = \t\r\u\e ]]
++ [[ Q != Q ]]
++ [[ Q != Q ]]
++ [[ .false. == .true. ]]
++ [[ false = \t\r\u\e ]]
++ [[ false = \t\r\u\e ]]
++ [[ false = \t\r\u\e ]]
++ [[ false = \t\r\u\e ]]
++ [[ false = \t\r\u\e ]]
++ [[ false = \t\r\u\e ]]
++ [[ -n x ]]
++ [[ 1200 -ne 1200 ]]
++ [[ -n x ]]
++ [[ -n x ]]
++ [[ 0 -ne 0 ]]
++ TPN=192
++ ((  TASKS < TPN  ))
++ TPN=18
++ export TPN
++ NODES=1
++ ((  NODES * TPN < TASKS  ))
++ export NODES
++ UFS_TASKS=18
++ TASKS=18
++ export TASKS
++ PPN=18
++ ((  UFS_TASKS - ( PPN * NODES ) > 0  ))
++ export PPN
++ export UFS_TASKS
++ [[ true != true ]]
++ export NCPUS=18
++ NCPUS=18
++ [[ slurm = \p\b\s ]]
++ [[ slurm = \s\l\u\r\m ]]
++ [[ -e /scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/fv3_conf/fv3_slurm.IN_ursa ]]
++ atparse
++ local __text
++ local __before
++ local __after
++ local __during
++ local __set_x=:
++ local __set_u=:
++ local __set_e=:
++ local __abort_on_undefined=NO
++ [[ -o xtrace ]]
++ __set_x='set -x'
++ [[ -o errexit ]]
++ __set_e='set -e'
++ [[ -o nounset ]]
++ __set_u='set -u'
++ __abort_on_undefined=YES
++ set +eux
++ eval 'set -u'
+++ set -u
++ eval 'set -e'
+++ set -e
++ [[ NO == WHEN_COPYING ]]
++ export OMP_ENV=
++ OMP_ENV=
++ [[ slurm = \n\o\n\e ]]
++ [[ false = \f\a\l\s\e ]]
++ submit_and_wait job_card
++ echo 'rt_utils.sh: Submitting job on scheduler: slurm'
+rt_utils.sh: Submitting job on scheduler: slurm
++ [[ -z job_card ]]
++ local -r job_card=job_card
++ case ${SCHEDULER} in
+++ sbatch job_card
++ slurmout='Submitted batch job 5538731'
++ re='Submitted batch job ([0-9]+)'
++ [[ Submitted batch job 5538731 =~ Submitted batch job ([0-9]+) ]]
++ jobid=5538731
++ echo 'rt_utils.sh: Submitted Job. ID is 5538731.'
+rt_utils.sh: Submitted Job. ID is 5538731.
++ sleep 10
++ local count=0
++ local job_running=
++ echo 'rt_utils.sh: Job is waiting to enter the queue...'
+rt_utils.sh: Job is waiting to enter the queue...
++ [[ '' == \t\r\u\e ]]
++ case ${SCHEDULER} in
+++ squeue -u Denise.Worthen -j 5538731
++ job_info='     JOBID PARTITION  NAME                     USER             STATE        TIME TIME_LIMIT NODES NODELIST(REASON)
+   5538731 u1-compute run_cpld_warmstart_c48_5 Denise.Worthen   PENDING      0:00      30:00     1 (Priority)'
++ grep -q 5538731
++ job_running=true
++ continue
++ [[ true == \t\r\u\e ]]
++ echo 'rt_utils.sh Job (5538731) is now in the queue.'
+rt_utils.sh Job (5538731) is now in the queue.
++ local n=1
++ [[ true == \f\a\l\s\e ]]
++ case ${SCHEDULER} in
+++ squeue -u Denise.Worthen -j 5538731 -o '%i %T'
++ job_info='JOBID STATE
+5538731 PENDING'
++ grep -q 5538731
++ job_running=true
+++ grep 5538731
++ status='5538731 PENDING'
+++ awk '{print $2}'
++ status=PENDING
++ case ${status} in
++ status_label='Job waiting to start'
++ echo '1 min. Slurm Job 5538731 Status: Job waiting to start (PENDING)'
+1 min. Slurm Job 5538731 Status: Job waiting to start (PENDING)
++ ((  n=n+1  ))
++ wait 1839427
++ sleep 60
++ [[ true == \f\a\l\s\e ]]
++ case ${SCHEDULER} in
+++ squeue -u Denise.Worthen -j 5538731 -o '%i %T'
++ job_info='JOBID STATE
+5538731 RUNNING'
++ grep -q 5538731
++ job_running=true
+++ grep 5538731
++ status='5538731 RUNNING'
+++ awk '{print $2}'
++ status=RUNNING
++ case ${status} in
++ status_label='Job running'
++ echo '2 min. Slurm Job 5538731 Status: Job running (RUNNING)'
+2 min. Slurm Job 5538731 Status: Job running (RUNNING)
++ ((  n=n+1  ))
++ wait 1841171
++ sleep 60
++ [[ true == \f\a\l\s\e ]]
++ case ${SCHEDULER} in
+++ squeue -u Denise.Worthen -j 5538731 -o '%i %T'
++ job_info='JOBID STATE'
++ grep -q 5538731
++ job_running=false
+++ sacct -n -j 5538731 --format=JobID,state%20,Jobname%128
+++ grep '^5538731'
+++ grep run_cpld_warmstart_c48_5deg_intel
++ job_info='5538731                 COMPLETED                                                                                                run_cpld_warmstart_c48_5deg_intel '
+++ grep 5538731
++ status='5538731                 COMPLETED                                                                                                run_cpld_warmstart_c48_5deg_intel '
+++ awk '{print $2}'
++ status=COMPLETED
++ case ${status} in
++ status_label=Completed
++ echo '3 min. Slurm Job 5538731 Status: Completed (COMPLETED)'
+3 min. Slurm Job 5538731 Status: Completed (COMPLETED)
++ ((  n=n+1  ))
++ wait 1843296
++ sleep 60
++ [[ false == \f\a\l\s\e ]]
++ skip_check_results=false
++ [[ false == false ]]
++ test_status=PASS
++ echo
++ echo 'baseline dir = /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel'
++ echo 'working dir  = /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel'
++ echo 'Checking test cpld_warmstart_c48_5deg_intel results ....'
++ echo
+
++ echo 'baseline dir = /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel'
+baseline dir = /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel
++ echo 'working dir  = /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel'
+working dir  = /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel
++ echo 'Checking test cpld_warmstart_c48_5deg_intel results ....'
+Checking test cpld_warmstart_c48_5deg_intel results ....
++ [[ false = false ]]
++ for i in ${LIST_FILES}
++ printf %s ' Comparing sfcf006.tile1.nc .....'
++ printf %s ' Comparing sfcf006.tile1.nc .....'
+ Comparing sfcf006.tile1.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile1.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile1.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile1.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile1.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing sfcf006.tile2.nc .....'
++ printf %s ' Comparing sfcf006.tile2.nc .....'
+ Comparing sfcf006.tile2.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile2.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile2.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile2.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile2.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing sfcf006.tile3.nc .....'
++ printf %s ' Comparing sfcf006.tile3.nc .....'
+ Comparing sfcf006.tile3.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile3.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile3.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile3.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile3.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing sfcf006.tile4.nc .....'
++ printf %s ' Comparing sfcf006.tile4.nc .....'
+ Comparing sfcf006.tile4.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile4.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile4.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile4.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile4.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing sfcf006.tile5.nc .....'
++ printf %s ' Comparing sfcf006.tile5.nc .....'
+ Comparing sfcf006.tile5.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile5.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile5.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile5.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile5.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing sfcf006.tile6.nc .....'
++ printf %s ' Comparing sfcf006.tile6.nc .....'
+ Comparing sfcf006.tile6.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile6.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile6.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/sfcf006.tile6.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/sfcf006.tile6.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing atmf006.tile1.nc .....'
++ printf %s ' Comparing atmf006.tile1.nc .....'
+ Comparing atmf006.tile1.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile1.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile1.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile1.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile1.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing atmf006.tile2.nc .....'
++ printf %s ' Comparing atmf006.tile2.nc .....'
+ Comparing atmf006.tile2.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile2.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile2.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile2.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile2.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing atmf006.tile3.nc .....'
++ printf %s ' Comparing atmf006.tile3.nc .....'
+ Comparing atmf006.tile3.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile3.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile3.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile3.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile3.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing atmf006.tile4.nc .....'
++ printf %s ' Comparing atmf006.tile4.nc .....'
+ Comparing atmf006.tile4.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile4.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile4.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile4.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile4.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing atmf006.tile5.nc .....'
++ printf %s ' Comparing atmf006.tile5.nc .....'
+ Comparing atmf006.tile5.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile5.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile5.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile5.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile5.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing atmf006.tile6.nc .....'
++ printf %s ' Comparing atmf006.tile6.nc .....'
+ Comparing atmf006.tile6.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile6.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile6.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/atmf006.tile6.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/atmf006.tile6.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.coupler.res .....'
++ printf %s ' Comparing RESTART/20210323.120000.coupler.res .....'
+ Comparing RESTART/20210323.120000.coupler.res .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.coupler.res ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.coupler.res ]]
++ [[ res == nc* ]]
++ printf 'USING CMP..'
++ printf 'USING CMP..'
+USING CMP..+ cmp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.coupler.res /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.coupler.res
++ d=0
++ [[ 0 -eq 2 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.nc .....'
+ Comparing RESTART/20210323.120000.fv_core.res.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile1.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile1.nc .....'
+ Comparing RESTART/20210323.120000.fv_core.res.tile1.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile1.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile1.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile1.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile1.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile2.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile2.nc .....'
+ Comparing RESTART/20210323.120000.fv_core.res.tile2.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile2.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile2.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile2.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile2.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile3.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile3.nc .....'
+ Comparing RESTART/20210323.120000.fv_core.res.tile3.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile3.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile3.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile3.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile3.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile4.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile4.nc .....'
+ Comparing RESTART/20210323.120000.fv_core.res.tile4.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile4.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile4.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile4.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile4.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile5.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile5.nc .....'
+ Comparing RESTART/20210323.120000.fv_core.res.tile5.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile5.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile5.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile5.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile5.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile6.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_core.res.tile6.nc .....'
+ Comparing RESTART/20210323.120000.fv_core.res.tile6.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile6.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile6.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile6.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_core.res.tile6.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc .....'
+ Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile1.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc .....'
+ Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile2.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc .....'
+ Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile3.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc .....'
+ Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile4.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc .....'
+ Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile5.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc .....'
+ Comparing RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_srf_wnd.res.tile6.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile1.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile1.nc .....'
+ Comparing RESTART/20210323.120000.fv_tracer.res.tile1.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile1.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile1.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile1.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile1.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile2.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile2.nc .....'
+ Comparing RESTART/20210323.120000.fv_tracer.res.tile2.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile2.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile2.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile2.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile2.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile3.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile3.nc .....'
+ Comparing RESTART/20210323.120000.fv_tracer.res.tile3.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile3.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile3.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile3.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile3.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile4.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile4.nc .....'
+ Comparing RESTART/20210323.120000.fv_tracer.res.tile4.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile4.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile4.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile4.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile4.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile5.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile5.nc .....'
+ Comparing RESTART/20210323.120000.fv_tracer.res.tile5.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile5.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile5.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile5.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile5.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile6.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.fv_tracer.res.tile6.nc .....'
+ Comparing RESTART/20210323.120000.fv_tracer.res.tile6.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile6.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile6.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile6.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.fv_tracer.res.tile6.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile1.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile1.nc .....'
+ Comparing RESTART/20210323.120000.phy_data.tile1.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile1.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile1.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile1.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile1.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile2.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile2.nc .....'
+ Comparing RESTART/20210323.120000.phy_data.tile2.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile2.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile2.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile2.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile2.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile3.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile3.nc .....'
+ Comparing RESTART/20210323.120000.phy_data.tile3.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile3.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile3.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile3.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile3.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile4.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile4.nc .....'
+ Comparing RESTART/20210323.120000.phy_data.tile4.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile4.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile4.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile4.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile4.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile5.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile5.nc .....'
+ Comparing RESTART/20210323.120000.phy_data.tile5.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile5.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile5.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile5.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile5.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile6.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.phy_data.tile6.nc .....'
+ Comparing RESTART/20210323.120000.phy_data.tile6.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile6.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile6.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile6.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.phy_data.tile6.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile1.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile1.nc .....'
+ Comparing RESTART/20210323.120000.sfc_data.tile1.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile1.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile1.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile1.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile1.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile2.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile2.nc .....'
+ Comparing RESTART/20210323.120000.sfc_data.tile2.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile2.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile2.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile2.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile2.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile3.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile3.nc .....'
+ Comparing RESTART/20210323.120000.sfc_data.tile3.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile3.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile3.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile3.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile3.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile4.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile4.nc .....'
+ Comparing RESTART/20210323.120000.sfc_data.tile4.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile4.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile4.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile4.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile4.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile5.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile5.nc .....'
+ Comparing RESTART/20210323.120000.sfc_data.tile5.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile5.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile5.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile5.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile5.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile6.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.sfc_data.tile6.nc .....'
+ Comparing RESTART/20210323.120000.sfc_data.tile6.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile6.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile6.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile6.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.sfc_data.tile6.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/20210323.120000.MOM.res.nc .....'
++ printf %s ' Comparing RESTART/20210323.120000.MOM.res.nc .....'
+ Comparing RESTART/20210323.120000.MOM.res.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.MOM.res.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.MOM.res.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.MOM.res.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/20210323.120000.MOM.res.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/iced.2021-03-23-43200.nc .....'
++ printf %s ' Comparing RESTART/iced.2021-03-23-43200.nc .....'
+ Comparing RESTART/iced.2021-03-23-43200.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/iced.2021-03-23-43200.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/iced.2021-03-23-43200.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/iced.2021-03-23-43200.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/iced.2021-03-23-43200.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc .....'
++ printf %s ' Comparing RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc .....'
+ Comparing RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/RESTART/ufs.cpld.cpl.r.2021-03-23-43200.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing ufs.cpld.ww3.r.2021-03-23-43200.nc .....'
++ printf %s ' Comparing ufs.cpld.ww3.r.2021-03-23-43200.nc .....'
+ Comparing ufs.cpld.ww3.r.2021-03-23-43200.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/ufs.cpld.ww3.r.2021-03-23-43200.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/ufs.cpld.ww3.r.2021-03-23-43200.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/ufs.cpld.ww3.r.2021-03-23-43200.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/ufs.cpld.ww3.r.2021-03-23-43200.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing 20210323.120000.out_grd.ww3 .....'
++ printf %s ' Comparing 20210323.120000.out_grd.ww3 .....'
+ Comparing 20210323.120000.out_grd.ww3 .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/20210323.120000.out_grd.ww3 ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/20210323.120000.out_grd.ww3 ]]
++ [[ ww3 == nc* ]]
++ printf 'USING CMP..'
++ printf 'USING CMP..'
+USING CMP..+ cmp /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/20210323.120000.out_grd.ww3 /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/20210323.120000.out_grd.ww3
++ d=0
++ [[ 0 -eq 2 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ for i in ${LIST_FILES}
++ printf %s ' Comparing 20210323.120000.out_pnt.ww3.nc .....'
++ printf %s ' Comparing 20210323.120000.out_pnt.ww3.nc .....'
+ Comparing 20210323.120000.out_pnt.ww3.nc .....+ [[ ! -f /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/20210323.120000.out_pnt.ww3.nc ]]
++ [[ ! -f /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/20210323.120000.out_pnt.ww3.nc ]]
++ [[ nc == nc* ]]
++ [[  orion hercules hera ursa wcoss2 acorn derecho gaeac5 gaeac6 jet s4 noaacloud frontera  =~ ursa ]]
++ printf 'USING NCCMP..'
++ printf 'USING NCCMP..'
+USING NCCMP..+ nccmp_args=(-d -S -q -f -B --Attribute=checksum --warn=format)
++ [[ false == false ]]
++ nccmp_args+=("-g")
++ [[ -n '' ]]
++ [[ -n '' ]]
++ nccmp -d -S -q -f -B --Attribute=checksum --warn=format -g /scratch4/NAGAPE/epic/role-epic/UFS-WM_RT/NEMSfv3gfs/develop-20251117/cpld_warmstart_c48_5deg_intel/20210323.120000.out_pnt.ww3.nc /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/20210323.120000.out_pnt.ww3.nc
++ d=0
++ [[ 0 -ne 0 ]]
++ [[ 0 -ne 0 ]]
++ echo ....OK
++ echo ....OK
+....OK
++ echo
++ grep 'The total amount of wall time' /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/out
++ grep 'The maximum resident set size' /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/out
++ echo
++ echo 'Test cpld_warmstart_c48_5deg_intel PASS'
++ echo
++ echo 'Test cpld_warmstart_c48_5deg_intel PASS'
+Test cpld_warmstart_c48_5deg_intel PASS
++ echo
+
++ [[ PASS = \F\A\I\L ]]
++ [[ slurm != \n\o\n\e ]]
++ cat /scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223/cpld_warmstart_c48_5deg_intel/job_timestamp.txt
+++ date +%s
++ date_s=1763670519
++ echo ' 1763670519, 1'
++ delete_rundir=false
++ [[ false = true ]]
++ elapsed=213
++ echo 'run_test.sh: Test cpld_warmstart_c48_5deg_intel Completed.'
+run_test.sh: Test cpld_warmstart_c48_5deg_intel Completed.
++ echo 'run_test.sh: Test cpld_warmstart_c48_5deg_intel Elapsed time 213 seconds.'
+run_test.sh: Test cpld_warmstart_c48_5deg_intel Elapsed time 213 seconds.
++ '[' 0 -eq 0 ']'

@@ -1,0 +1,7 @@
+%include <head.h>
+(
+cd "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa"
+ln -sf "run_cpld_debug_p8_gnu.log.${ECF_TRYNO}" "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa/run_cpld_debug_p8_gnu.log"
+)
+/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/run_test.sh "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests" "/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223" "cpld_debug_p8" "cpld_debug_p8_gnu" "s2swa_debug_gnu" > "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa/run_cpld_debug_p8_gnu.log.${ECF_TRYNO}" 2>&1 &
+%include <tail.h>
