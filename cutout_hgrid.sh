@@ -32,14 +32,14 @@ ncks -F -d nx,${i1},${i2} -d ny,${j1},${j2} -d nxp,${i1},${i2p1} -d nyp,${j1},${
 
 echo "Successfully created ${OUTDIR}/${OUTPUT_FILE}"
 
-npx=$(((i2-i1)+1)/2)
-npy=$(((j2-j1)+1)/2)
+npx=$(( (i2-i1+1)/2 ))
+npy=$(( (j2-j1+1)/2 ))
 # redefine i1 and j1
 i1=$((i1/2))
 j1=$((j1/2))
 
-i2=(npx-i1)+1
-j2=(npy-j1)+1
+i2=$((npx-i1+1))
+j2=$((npy-j1+1))
 
 SOURCE_FILE=ocean_topog.nc
 OUTPUT_FILE="ocean_topog_regional.nc"
