@@ -40,7 +40,7 @@ module GFS_typedefs
    integer, parameter :: dfi_radar_max_intervals = 4 !< Number of radar-derived temperature tendency and/or convection suppression intervals. Do not change.
 
    real(kind=kind_phys), parameter :: limit_unspecified = 1e12 !< special constant for "namelist value was not provided" in radar-derived temperature tendency limit range
-
+   
    integer, parameter :: physics_no_tracer = -99
 
 !> \section arg_table_GFS_typedefs
@@ -785,7 +785,7 @@ module GFS_typedefs
     integer              :: dycore_active   !< Choice of dynamical core
     integer              :: dycore_fv3  = 1 !< Choice of FV3 dynamical core
     integer              :: dycore_mpas = 2 !< Choice of MPAS dynamical core
-
+    
 !--- coupling parameters
     logical              :: cplflx          !< default no cplflx collection
     logical              :: cplice          !< default no cplice collection (used together with cplflx)
@@ -1073,8 +1073,8 @@ module GFS_typedefs
     real(kind=kind_phys) :: ssati_min       !< minimum supersaturation over ice threshold for deposition nucleation
     real(kind=kind_phys) :: Nt_i_max        !< maximum threshold number concentration of cloud ice water crystals in air
     real(kind=kind_phys) :: rr_min          !< multiplicative tuning parameter for microphysical sedimentation minimum threshold
-
-
+    
+    
     !--- GFDL microphysical paramters
     logical              :: lgfdlmprad      !< flag for GFDL mp scheme and radiation consistency
     logical              :: phys_hydrostatic
@@ -3403,7 +3403,7 @@ module GFS_typedefs
                                  communicator, ntasks, nthreads,    &
                                  tile_num, isc, jsc, nx, ny,  cnx,  &
                                  cny, gnx, gny, ak, bk, hydrostatic)
-
+    
 !--- modules
     use physcons,         only: con_rerth, con_pi
     use mersenne_twister, only: random_setseed, random_number
@@ -3581,7 +3581,7 @@ module GFS_typedefs
     logical              :: lrseeds           = .false.      !< flag to use host-provided random seeds
     integer              :: nrstreams         = 2            !< number of random number streams in host-provided random seed array
     logical              :: lextop            = .false.      !< flag for using an extra top layer for radiation
-    real(kind_phys)      :: xr_con            = -999.0       !< Xu-Randall cloud fraction multiplicative constant
+    real(kind_phys)      :: xr_con            = -999.0       !< Xu-Randall cloud fraction multiplicative constant          
     real(kind_phys)      :: xr_exp            = -999.0       !< Xu-Randall cloud fraction exponent constant
     ! RRTMGP
     logical              :: do_RRTMGP           = .false.    !< Use RRTMGP?
@@ -3688,7 +3688,7 @@ module GFS_typedefs
     real(kind=kind_phys) :: ssati_min      = 0.15               !< minimum supersaturation over ice threshold for deposition nucleation
     real(kind=kind_phys) :: Nt_i_max       = 4999.e3            !< maximum threshold number concentration of cloud ice water crystals in air
     real(kind=kind_phys) :: rr_min         = 1000.0             !< multiplicative tuning parameter for microphysical sedimentation minimum threshold
-
+    
     !--- GFDL microphysical parameters
     logical              :: lgfdlmprad     = .false.            !< flag for GFDLMP radiation interaction
 
@@ -4342,7 +4342,7 @@ module GFS_typedefs
     character(len=44) :: descstr
 
 !--- NRL ozone physics
-    character(len=128) :: err_message
+    character(len=512) :: err_message
 
     !--- If initializing model with FV3 dynamical core.
     if (Model%dycore_active == Model%dycore_fv3) then
@@ -4395,55 +4395,12 @@ module GFS_typedefs
           stop
        endif
     endif
-
+    
     ! dtend selection: default is to match all variables:
     dtend_select(1)='*'
     do ipat=2,pat_count
        dtend_select(ipat)=' '
     enddo
-
-    ! Helper to find the problematic namelist line
-    contains
-      subroutine find_bad_nml_line(nml_lines, start_idx, end_idx)
-        character(len=*), intent(in) :: nml_lines(:)
-        integer, intent(out) :: start_idx, end_idx
-        integer :: i, j, test_ios
-        character(len=4096) :: test_nml(size(nml_lines))
-        logical :: found_start, found_end
-
-        found_start = .false.
-        found_end = .false.
-        start_idx = 1
-        end_idx = size(nml_lines)
-
-        ! Find the namelist start and end
-        do i=1,size(nml_lines)
-          if (index(nml_lines(i), '&gfs_physics_nml') > 0) then
-            start_idx = i
-            found_start = .true.
-          endif
-          if (found_start .and. index(nml_lines(i), '/') > 0) then
-            end_idx = i
-            found_end = .true.
-            exit
-          endif
-        enddo
-
-        ! Binary search to find the bad line
-        write(6,*) 'Testing lines', start_idx, 'to', end_idx
-        do i=start_idx,end_idx
-          test_nml(1:size(nml_lines)) = nml_lines
-          if (i < end_idx) then
-            test_nml(i+1:end_idx) = ''
-          endif
-          ! Try to read up to this line
-          read(test_nml, nml=gfs_physics_nml, iostat=test_ios)
-          if (test_ios /= 0) then
-            write(6,'(A,I4,A,A)') 'ERROR at line ', i, ': ', trim(nml_lines(i))
-            exit
-          endif
-        enddo
-      end subroutine find_bad_nml_line
 
 !--- read in the namelist
 #ifdef INTERNAL_FILE_NML
@@ -4453,12 +4410,17 @@ module GFS_typedefs
     if (ios /= 0) then
       write(6,*) 'GFS_namelist_read:: Error reading gfs_physics_nml from internal file'
       write(6,*) 'iostat=', ios
-      write(6,*) 'Error message: ', trim(err_message)
-      write(6,*) 'GFS_namelist_read:: Finding problematic line by binary search...'
-
-      ! Try to narrow down which line causes the error
+      write(6,'(A)') 'Error message: '//trim(err_message)
+      ! Check if it's an unknown variable error
+      if (index(err_message, 'Unknown variable') > 0) then
+        write(6,*) 'GFS_namelist_read:: ERROR - Illegal namelist variable detected'
+        write(6,*) 'GFS_namelist_read:: Check your namelist file for undefined variables'
+      endif
+      if (index(err_message, 'invalid reference') > 0) then
+        write(6,*) 'GFS_namelist_read:: ERROR - Invalid variable reference in namelist'
+        write(6,*) 'GFS_namelist_read:: This usually indicates a typo or undefined variable'
+      endif
       call find_bad_nml_line(Model%input_nml_file, nml_start, nml_end)
-
       stop
     endif
     ! Set length (number of lines) in namelist for internal reads
@@ -4472,10 +4434,25 @@ module GFS_typedefs
       open (unit=nlunit, file=fn_nml, action='READ', status='OLD', iostat=ios)
     endif
     rewind(nlunit)
-    read (nlunit, nml=gfs_physics_nml)
+    read (nlunit, nml=gfs_physics_nml, iostat=ios, iomsg=err_message)
+    if (ios /= 0) then
+      write(6,*) 'GFS_namelist_read:: Error reading gfs_physics_nml from file'
+      write(6,*) 'iostat=', ios
+      write(6,'(A)') 'Error message: '//trim(err_message)
+      ! Check if it's an unknown variable error
+      if (index(err_message, 'Unknown variable') > 0) then
+        write(6,*) 'GFS_namelist_read:: ERROR - Illegal namelist variable detected'
+        write(6,*) 'GFS_namelist_read:: Check your namelist file for undefined variables'
+      endif
+      if (index(err_message, 'invalid reference') > 0) then
+        write(6,*) 'GFS_namelist_read:: ERROR - Invalid variable reference in namelist'
+        write(6,*) 'GFS_namelist_read:: This usually indicates a typo or undefined variable'
+      endif
+    endif
     close (nlunit)
     ! Set length (number of lines) in namelist for internal reads
     Model%input_nml_file_length = 0
+    if (ios /= 0) stop
 #endif
 !--- write version number and namelist to log file ---
     if (me == master) then
@@ -6604,7 +6581,7 @@ module GFS_typedefs
 !--- BEGIN CODE FROM GLOOPB
 !--- set up random number seed needed for RAS and old SAS and when cal_pre=.true.
 !    Model%imfdeepcnv < 0 when Model%ras = .true.
-
+    
     if (xr_con > 0.0 .and. xr_exp > 0.0) then !values have been read in from namelist, so set them to read values
       Model%xr_con = xr_con
       Model%xr_exp = xr_exp
@@ -6629,9 +6606,9 @@ module GFS_typedefs
           Model%xr_con = 2000.0
           Model%xr_exp = 0.25
         endif
-      endif
+      endif     
     endif
-
+    
     if (Model%imfdeepcnv <= 0 .or. Model%cal_pre ) then
       if (Model%random_clds) then
         seed0 = Model%idate(1) + Model%idate(2) + Model%idate(3) + Model%idate(4)
@@ -7771,7 +7748,7 @@ module GFS_typedefs
     Cldprop%cvt = clear_val
     Cldprop%cvb = clear_val
     Cldprop%cnvw = clear_val
-
+    
   end subroutine cldprop_create
 
 
@@ -8704,22 +8681,22 @@ module GFS_typedefs
     endif
 
   end subroutine diag_phys_zero
-
+  
   function get_physics_tracer_index (name, Model)
     !This function uses the FMS version of get_tracer_index, but changes the missing tracer index to the value used throughout the physics code, rather than the one used in FMS
     use tracer_manager_mod, only: get_tracer_index, NO_TRACER
     use field_manager_mod, only: MODEL_ATMOS
-
+    
     character(len=*),  intent(in) :: name
     type(GFS_control_type), intent(in) :: Model
-
+    
     !--- local variables
     integer :: get_physics_tracer_index
-
+    
     get_physics_tracer_index = get_tracer_index(MODEL_ATMOS, name, verbose = (Model%me == Model%master) .and. Model%debug)
-
+    
     if (get_physics_tracer_index == NO_TRACER) get_physics_tracer_index = physics_no_tracer
-
+    
   end function get_physics_tracer_index
 
 end module GFS_typedefs
