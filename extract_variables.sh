@@ -1,3 +1,4 @@
+
 #!/bin/bash
 #
 # Script to extract specified variables from multiple 6-hourly forecast files
@@ -5,11 +6,7 @@
 #
 
 # Variables to extract
-VARS="var1,var2,var3"
-
-# Multiplication factors for each variable (in same order as VARS)
-# -1 to change sign, 1 to keep as is
-FACTORS="-1 1 1"
+VARS=""slmsksfc,dswrf,dlwrf,vbdsf_ave,vddsf_ave,nbdsf_ave,nddsf_ave,u10m,v10m,hgt_hyblev1,pressfc,tmp_hyblev1,spfh_hyblev1,ugrd_hyblev1,vgrd_hyblev1,q2m,t2m,pres_hyblev1,precp,fprecp"
 
 # Output file
 OUTPUT_FILE="extracted_output.nc"
@@ -48,20 +45,6 @@ echo ""
 counter=0
 for file in ${INPUT_FILES}; do
     if [ -f "${file}" ]; then
-        #Apply multiplication factors to each variable
-        IFS=',' read -ra VAR_ARRAY <<< "${VARS}"
-        FACTOR_ARRAY=(${FACTORS})
-
-        for i in "${!VAR_ARRAY[@]}"; do
-            var="${VAR_ARRAY[$i]}"
-            factor="${FACTOR_ARRAY[$i]}"
-
-            if [ "${factor}" != "1" ]; then
-                echo "  Applying factor ${factor} to ${var}..."
-                ncap2 -O -s "${var}=${var}*${factor}" "${tmp_file}" "${tmp_file}"
-            fi
-        done
-
         counter=$((counter + 1))
     fi
 done
