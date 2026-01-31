@@ -6,7 +6,8 @@
 #
 
 # Variables to extract
-VARS=""slmsksfc,dswrf,dlwrf,vbdsf_ave,vddsf_ave,nbdsf_ave,nddsf_ave,u10m,v10m,hgt_hyblev1,pressfc,tmp_hyblev1,spfh_hyblev1,ugrd_hyblev1,vgrd_hyblev1,q2m,t2m,pres_hyblev1,precp,fprecp"
+#VARS="slmsksfc,dswrf,dlwrf,vbdsf_ave,vddsf_ave,nbdsf_ave,nddsf_ave,u10m,v10m,hgt_hyblev1,pressfc,tmp_hyblev1,spfh_hyblev1,ugrd_hyblev1,vgrd_hyblev1,q2m,t2m,pres_hyblev1,precp,fprecp"
+VARS="dswrf,dlwrf,vbdsf_ave,vddsf_ave,nbdsf_ave,nddsf_ave,ugrd10m,vgrd10m,hgt_hyblev1,pressfc,tmp_hyblev1,spfh_hyblev1,ugrd_hyblev1,vgrd_hyblev1,spfh2m,tmp2m,pressfc,prate_ave"
 
 # Output file
 OUTPUT_FILE="extracted_output.nc"
@@ -46,6 +47,8 @@ counter=0
 for file in ${INPUT_FILES}; do
     if [ -f "${file}" ]; then
         counter=$((counter + 1))
+        echo "Extracting variables from: ${file}"
+        ncks -v ${VARS} "${file}" "${TMPDIR}/extracted_${counter}.nc"
     fi
 done
 
