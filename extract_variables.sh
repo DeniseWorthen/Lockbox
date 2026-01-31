@@ -49,6 +49,27 @@ for file in ${INPUT_FILES}; do
         counter=$((counter + 1))
         echo "Extracting variables from: ${file}"
         ncks -v ${VARS} "${file}" "${TMPDIR}/extracted_${counter}.nc"
+        # Convert time dimension to unlimited (record) dimension
+        echo "Converting time to unlimited dimension..."
+        ncks -O -4 --mk_rec_dmn time "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        # Rename prate_ave to precp
+        echo "Renaming prate_ave to precp..."
+        ncrename -O -v prate_ave,precp "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        # Create fprecp variable as copy of precp with all values set to 0.0
+        echo "Creating fprecp variable from precp..."
+        ncap2 -O -s 'fprecp=0.0*precp' "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        # Rename pressfc to psurf
+        echo "Renaming pressfc to psurf..."
+        ncrename -O -v pressfc,psurf "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        # Rename tmp2m to t2m
+        echo "Renaming tmp2m to t2m..."
+        ncrename -O -v tmp2m,t2m "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        # Rename spfh2m to q2m
+        echo "Renaming spfh2m to q2m..."
+        ncrename -O -v spfh2m,q2m "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        # Create pres_hyblev1 as copy of psurf
+        echo "Creating pres_hyblev1 as copy of psurf..."
+        ncap2 -O -s 'pres_hyblev1=psurf' "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
     fi
 done
 
