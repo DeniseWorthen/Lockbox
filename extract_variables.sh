@@ -7,7 +7,7 @@
 
 # Variables to extract
 #VARS="slmsksfc,dswrf,dlwrf,vbdsf_ave,vddsf_ave,nbdsf_ave,nddsf_ave,u10m,v10m,hgt_hyblev1,pressfc,tmp_hyblev1,spfh_hyblev1,ugrd_hyblev1,vgrd_hyblev1,q2m,t2m,pres_hyblev1,precp,fprecp"
-VARS="dswrf,dlwrf,vbdsf_ave,vddsf_ave,nbdsf_ave,nddsf_ave,ugrd10m,vgrd10m,hgt_hyblev1,pressfc,tmp_hyblev1,spfh_hyblev1,ugrd_hyblev1,vgrd_hyblev1,spfh2m,tmp2m,pressfc,prate_ave"
+VARS="land,dswrf,dlwrf,vbdsf_ave,vddsf_ave,nbdsf_ave,nddsf_ave,ugrd10m,vgrd10m,hgt_hyblev1,pressfc,tmp_hyblev1,spfh_hyblev1,ugrd_hyblev1,vgrd_hyblev1,spfh2m,tmp2m,pressfc,prate_ave"
 
 # Output file
 OUTPUT_FILE="extracted_output.nc"
@@ -23,7 +23,8 @@ cd "${INPUT_DIR}" || exit 1
 
 # Create list of input files (sorted by forecast hour)
 # Handles both 3-digit (sfcf???.nc) and 4-digit (sfcf????.nc) forecast hours
-INPUT_FILES=$(ls -1 sfcf[0-9][0-9][0-9].nc sfcf[0-9][0-9][0-9][0-9].nc 2>/dev/null | sort -V)
+# Excludes sfcf000.nc
+INPUT_FILES=$(ls -1 sfcf[0-9][0-9][0-9].nc sfcf[0-9][0-9][0-9][0-9].nc 2>/dev/null | grep -v "sfcf000.nc" | sort -V)
 
 # Check if files exist
 if [ -z "${INPUT_FILES}" ]; then
@@ -47,29 +48,39 @@ counter=0
 for file in ${INPUT_FILES}; do
     if [ -f "${file}" ]; then
         counter=$((counter + 1))
+        counter_padded=$(printf "%03d" ${counter})
         echo "Extracting variables from: ${file}"
-        ncks -v ${VARS} "${file}" "${TMPDIR}/extracted_${counter}.nc"
+        ncks -v ${VARS} "${file}" "${TMPDIR}/extracted_${counter_padded}.nc"
         # Convert time dimension to unlimited (record) dimension
         echo "Converting time to unlimited dimension..."
-        ncks -O -4 --mk_rec_dmn time "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        ncks -O -4 --mk_rec_dmn time "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
+        # Rename land to slmsksfc
+        echo "Renaming land to slmsksfc..."
+        ncrename -O -v land,slmsksfc "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
         # Rename prate_ave to precp
         echo "Renaming prate_ave to precp..."
-        ncrename -O -v prate_ave,precp "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        ncrename -O -v prate_ave,precp "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
         # Create fprecp variable as copy of precp with all values set to 0.0
         echo "Creating fprecp variable from precp..."
-        ncap2 -O -s 'fprecp=0.0*precp' "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        ncap2 -O -s 'fprecp=0.0*precp' "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
         # Rename pressfc to psurf
         echo "Renaming pressfc to psurf..."
-        ncrename -O -v pressfc,psurf "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        ncrename -O -v pressfc,psurf "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
         # Rename tmp2m to t2m
         echo "Renaming tmp2m to t2m..."
-        ncrename -O -v tmp2m,t2m "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        ncrename -O -v tmp2m,t2m "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
         # Rename spfh2m to q2m
         echo "Renaming spfh2m to q2m..."
-        ncrename -O -v spfh2m,q2m "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        ncrename -O -v spfh2m,q2m "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
+        # Rename ugrd10m to u10m
+        echo "Renaming ugrd10m to u10m..."
+        ncrename -O -v ugrd10m,u10m "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
+        # Rename vgrd10m to v10m
+        echo "Renaming vgrd10m to v10m..."
+        ncrename -O -v vgrd10m,v10m "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
         # Create pres_hyblev1 as copy of psurf
         echo "Creating pres_hyblev1 as copy of psurf..."
-        ncap2 -O -s 'pres_hyblev1=psurf' "${TMPDIR}/extracted_${counter}.nc" "${TMPDIR}/extracted_${counter}.nc"
+        ncap2 -O -s 'pres_hyblev1=psurf' "${TMPDIR}/extracted_${counter_padded}.nc" "${TMPDIR}/extracted_${counter_padded}.nc"
     fi
 done
 
