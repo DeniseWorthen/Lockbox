@@ -12,14 +12,13 @@ FILE3=/Users/toby/hi.CC.ice.nc
 
 # --- FILE 1: 4-Corner Stagger (uvel_h and vvel_h) ---
 # Calculations use (time, nj, ni) indices
+# u: average (i,j) and (i-1,j); v: average (i,j) and (i,j-1)
 ncap2 -O -s '
   *u_w=uvel_h; *v_w=vvel_h;
   u_w(u_w == uvel_h@_FillValue) = 0.0;
   v_w(v_w == vvel_h@_FillValue) = 0.0;
-  u_center=float(0.25 * ( u_w(:, 0:-2, 0:-2) + u_w(:, 0:-2, 1:-1) +
-                         u_w(:, 1:-1, 0:-2) + u_w(:, 1:-1, 1:-1) ));
-  v_center=float(0.25 * ( v_w(:, 0:-2, 0:-2) + v_w(:, 0:-2, 1:-1) +
-                         v_w(:, 1:-1, 0:-2) + v_w(:, 1:-1, 1:-1) ));
+  u_center=float(0.5 * ( u_w(:, :, 0:-2) + u_w(:, :, 1:-1) ));
+  v_center=float(0.5 * ( v_w(:, 0:-2, :) + v_w(:, 1:-1, :) ));
   u_center@_FillValue=1.e+30f;
   v_center@_FillValue=1.e+30f;
   u_center(tmask == 0) = u_center@_FillValue;
