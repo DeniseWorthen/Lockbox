@@ -1,58 +1,71 @@
-subroutine initialize_steam(sdatm, sdats, sid, sdatname, compname, mytask, logunit, rc)
+!> Unit test for reshape_staggers routine
+!!
+!! This test checks the reshaping of staggered grid points for both a global domain
+!! and an extracted subdomain
+!!
+!! @author Denise.Worthen@noaa.gov
+program ftst_reshape_staggers
 
-  ! intialize a single stream
-  !type...(inout) :: sdatm
-  !   type..(inout) :: sdats
+  use assertion_mod, only: assert_equal
+  use gengrid_kinds, only: dbl_kind, int_kind, CL
+  use gengrid_utils, only: reshape_staggers
+  use grdvars      , only: nv
 
+  implicit none
 
-  nfiles = sdatm%stream(sid)%nfiles
-  nvars = sdatm%stream(sid)%nvars
+  integer, parameter :: nx = 5, ny = 4
+  integer, parameter :: ngrids = 2
+  integer, parameter :: maxtests = 50, nresults = ngrids*maxtests
 
-  allocate(filelist(1:nfiles))
-  allocate(streamfilevars(1:nvars,2))
+  logical           :: ispassing(nresults)
+  character(len=8)  :: gridname(ngrids) = (/'Global  ','Regional'/)
+  character(len=CL) :: testmsg(nresults) = ' '
 
-  do nf = 1,nfiles
-     filelist(nf) = trim(sdatm%stream(sid)%file(nf)%name)
-     if (mytask == 0) print *,'XX1 ',nf,trim(filelist(nf))
+  integer           :: iind(2), jind(2)
+  ! test data
+  real(dbl_kind)    :: lon(nx, ny), lat(nx, ny)
+  integer(int_kind) :: mask(nx, ny)
+  real(dbl_kind)    :: lonvert(nx, ny, nv), latvert(nx, ny, nv)
+  ! result data
+  real(dbl_kind), allocatable    :: cnlons(:), cnlats(:)
+  integer(int_kind), allocatable :: cnmask(:)
+  real(dbl_kind), allocatable    :: crlons(:, :), crlats(:, :)
+
+  integer :: ng, nt, ntests
+  integer :: i, j, n
+  integer :: ib, ie, jb, je, idim, jdim
+  integer :: idx, jdx, idx1
+
+  character(len=CL) :: msg, msg_out
+  logical :: status
+
+  ! Initialize global test data; coordinate encoded
+  do j = 1, ny
+     do i = 1, nx
+        lon(i,j) =  10.0_dbl_kind * i + j
+        lat(i,j) = -10.0_dbl_kind * i - j
+     end do
   end do
-  do nv = 1,nvars
-     filevars(nv,1) = trim(sdatm%stream(sid)%varlist(nv)%nameinfile)
-     filevars(nv,2) = trim(sdatm%stream(sid)%varlist(nv)%nameinmodel)
-     if (mytask == 0) print *,'XX1 ',nv,trim(streamfilevars(nv,1)),' ',trim(streamfilevars(nv,2))
-  end do
 
-  ! Set PIO related variables
-  sdats%pio_subsystem => sdatm%pio_subsystem
-  sdats%io_type = sdatm%io_type
-  sdats%io_format = sdatm%io_format
+  !Bu=>staggers for value at lon,lat
+  lon = lon+0.5
+  lat = lat+0.5
 
-  call shr_strdata_init_from_inline(sdats,                        &
-       my_task             = mytask,                              &
-       logunit             = logunit,                             &
-       compname            = trim(compname)                       &
-       model_clock         = model_clock,                         &
-       model_mesh          = model_mesh,                          &
-       stream_name         = trim(sdatname)                       &
-       stream_meshfile     = trim(sdatm%stream(sid)%meshFile),    &
-       stream_filenames    = filelist,                            &
-       stream_yearFirst    = sdatm%stream(sid)%yearFirst,         &
-       stream_yearLast     = sdatm%stream(sid)%yearLast,          &
-       stream_yearAlign    = sdatm%stream(sid)%yearAlign,         &
-       stream_fldlistFile  = filevars(:,1),                       &
-       stream_fldListModel = filevars(:,2),                       &
-       stream_lev_dimname  = trim(sdatm%stream(sid)%lev_dimname), &
-       stream_mapalgo      = trim(sdatm%stream(sid)%mapAlgo),     &
-       stream_offset       = sdatm%stream(sid)%offset,            &
-       stream_taxmode      = trim(sdatm%stream(sid)%taxmode),     &
-       stream_dtlimit      = sdatm%stream(sid)%dtlimit,           &
-       stream_tintalgo     = trim(sdatm%stream(sid)%tInterpAlgo), &
-       stream_src_mask     = sdatm%stream(sid)%src_mask_val,      &
-       stream_dst_mask     = sdatm%stream(sid)%dst_mask_val,      &
-       rc                  = rc)
-  if (chkerr(rc,__LINE__,u_FILE_u)) return
-end if
-  deallocate(filelist)
-  deallocate(filevars)
+  xlon(:) =  lon(:,1)
+  xlat(:) = -lat(:,1)
+
+  ! lat and lon of Ct_verts are the But lat,lon w/ offsets
+  !call fill_vertices(iVertCt, jVertCt, latBu, lonBu, xlatBu, xlonBu, latCt_vert, lonCt_vert, 0)
 
 
-end subroutine intialize_stream
+  assert_equal latvert(3,2,:) = (/lat(3,2),lat(2,3),lat(2,2),lat(3,1)/)
+
+  assert_equal lonvert(3,2,:) = (/lon(3,2),lon(2,3),lon(2,2),lon(3,1)/)
+
+  assert_equal lonvert(1,1,:) = (/lon(1,1),lon(nx,1),xlon(nx),xlon(1)/)
+
+
+  !Ct=>staggers for lon+0.5,lat+0.5
+  ! need xlon,xlat for 'cross-pole' values, do these need to make sense? "ipole" = 3 here, make 'reverse values'?
+
+end program ftst_reshape_staggers
