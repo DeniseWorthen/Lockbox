@@ -65,7 +65,7 @@ RUN | cpld_control_ciceC_p8                             | - noaacloud           
 RUN | cpld_control_c192_p8                              | - wcoss2 acorn s4 noaacloud derecho      | baseline |
 RUN | cpld_restart_c192_p8                              | - wcoss2 acorn s4 noaacloud gaeac6 derecho |          | cpld_control_c192_p8
 
-COMPILE | s2swal | intel | -DAPP=S2SWAL -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1 | | fv3 |
+COMPILE | s2swl | intel | -DAPP=S2SWL -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1 | | fv3 |
 RUN | cpld_control_p8_lnd                               | - noaacloud wcoss2 derecho                  | baseline |
 RUN | cpld_restart_p8_lnd                               | - noaacloud wcoss2 derecho                  |          | cpld_control_p8_lnd
 
@@ -359,8 +359,11 @@ RUN | cpld_debug_gfsv17                                 | + ursa                
 COMPILE | s2s_32bit_sfs           | intelllvm | -DAPP=S2S -D32BIT=ON -DHYDRO=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 | + ursa | fv3 |
 RUN | cpld_control_sfs                                  | + ursa                              | baseline |
 
-COMPILE | s2swa                   | intelllvm | -DAPP=S2SWA -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1           | + ursa | fv3 |
-RUN | cpld_control_p8                                   | + ursa                              | baseline |
+COMPILE | s2s_32bit_sfs_debug     | intelllvm | -DAPP=S2S -D32BIT=ON -DHYDRO=ON -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DDEBUG=ON | - noaacloud | fv3 |
+RUN | cpld_debug_sfs                                    | - noaacloud                          | baseline |
+
+#COMPILE | s2swa                   | intelllvm | -DAPP=S2SWA -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1           | + ursa | fv3 |
+#RUN | cpld_control_p8                                   | + ursa                              | baseline |
 
 #!## Regional RRFS tests
 #!#COMPILE | rrfs_dyn32_phy32        | intelllvm | -DAPP=ATM -DCCPP_SUITES=FV3_RAP -D32BIT=ON -DCCPP_32BIT=ON | + hera ursa  | fv3 |
