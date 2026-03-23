@@ -135,7 +135,7 @@ public setup_inlinedata
 public set_fhzero_loop, InitTimeFromIAUOffset
 public get_atmos_tracer_types
 interface data_copy2block
-   module procedure block_copy_2d_r8_to_1d_r8
+  module procedure block_copy_2d_r8_to_1d_r8
 end interface data_copy2block
 !-----------------------------------------------------------------------
 
@@ -1978,7 +1978,8 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-               call data_copy2block(GFS_Sfcprop%tisfc, datar8, GFS_Sfcprop%oceanfrac, validmin=150.0, rc)
+              call data_copy2block(GFS_Sfcprop%tisfc, datar8, mask=GFS_Sfcprop%oceanfrac, validmin=150.0, rc=rc)
+              !call data_copy2block(GFS_Sfcprop%tisfc, max(datar8,150.0), mask=GFS_Sfcprop%oceanfrac, rc=rc)
 ! !$omp parallel do default(shared) private(i,j,nb,ix,im)
 !               do j=jsc,jec
 !                 do i=isc,iec
@@ -2146,17 +2147,18 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-!$omp parallel do default(shared) private(i,j,nb,ix,im)
-              do j=jsc,jec
-                do i=isc,iec
-                  nb = Atm_block%blkno(i,j)
-                  ix = Atm_block%ixp(i,j)
-                  im = GFS_control%chunk_begin(nb)+ix-1
-                  if (GFS_Sfcprop%oceanfrac(im) > zero) then
-                    GFS_Coupling%dqsfcin_cpl(im) = -datar8(i,j)
-                  endif
-                enddo
-              enddo
+              call data_copy2block(GFS_Coupling%dqsfcin_cpl, datar8, mask=GFS_Sfcprop%oceanfrac, factor=-one, rc=rc)
+! !$omp parallel do default(shared) private(i,j,nb,ix,im)
+!               do j=jsc,jec
+!                 do i=isc,iec
+!                   nb = Atm_block%blkno(i,j)
+!                   ix = Atm_block%ixp(i,j)
+!                   im = GFS_control%chunk_begin(nb)+ix-1
+!                   if (GFS_Sfcprop%oceanfrac(im) > zero) then
+!                     GFS_Coupling%dqsfcin_cpl(im) = -datar8(i,j)
+!                   endif
+!                 enddo
+!               enddo
               if (mpp_pe() == mpp_root_pe() .and. debug)  print *,'fv3 assign_import: get laten_heat from mediator'
             endif
           endif
@@ -3821,7 +3823,7 @@ end subroutine update_atmos_chemistry
 
  end subroutine atmos_model_get_nth_domain_info
 
- subroutine block_copy_2d_r8_to_1d_r8(destin_ptr, source_ptr, mask, validmin, validmax, rc)
+ subroutine block_copy_2d_r8_to_1d_r8_minmax(destin_ptr, source_ptr, mask, validmin, validmax, rc)
 
    use ESMF
 
@@ -3836,12 +3838,13 @@ end subroutine update_atmos_chemistry
    integer :: i,j,nb,ix,im
 
    real(kind=8) :: lvmin, lvmax
-   logical :: chkmin, chkmax
+   logical :: chkmin, chkmax, chkmsk
 
    rc = ESMF_SUCCESS
 
    chkmin = .false.
    chkmax = .false.
+   chkmsk = .false.
    if (present(validmin)) then
      lvmin = validmin
      chkmin = .true.
@@ -3850,38 +3853,52 @@ end subroutine update_atmos_chemistry
      lvmax = validmax
      chkmax = .true.
    end if
-
-   !if (chkmin) source_ptr = max(source_ptr, lvmin)
-   !if (chkmax) source_ptr = min(source_ptr, lvmax)
+   if (present(mask)) then
+     chkmsk = .true.
+   end if
 
    ! set up local dimension
    isc = GFS_control%isc
    iec = GFS_control%isc+GFS_control%nx-1
    jsc = GFS_control%jsc
    jec = GFS_control%jsc+GFS_control%ny-1
+   ! This blows up in module_nst
+   !destin_ptr = GFS_control%huge
 
    !print *,'XXX ',lbound(source_ptr,1),ubound(source_ptr,1),lbound(source_ptr,2),ubound(source_ptr,2)
    !print *,'YYY ',lbound(destin_ptr,1),ubound(destin_ptr,1)
+
    !$omp parallel do default(shared) private(i,j,nb,ix,im)
    do j=jsc,jec
      do i=isc,iec
        nb = Atm_block%blkno(i,j)
        ix = Atm_block%ixp(i,j)
        im = GFS_control%chunk_begin(nb)+ix-1
-       if (mask(im) > zero) then
-         !destin_ptr(im) = source_ptr(i,j)
+       if (chkmsk) then
+         if (mask(im) > zero) then
+           if (chkmin .and. chkmax) then
+             destin_ptr(im) = max(lvmin, min(source_ptr(i-isc+1,j-jsc+1), lvmax))
+           else if (chkmin) then
+             destin_ptr(im) = max(lvmin, source_ptr(i-isc+1,j-jsc+1))
+           else if (chkmax) then
+             destin_ptr(im) = min(lvmax, source_ptr(i-isc+1,j-jsc+1))
+           else
+             destin_ptr(im) = source_ptr(i-isc+1,j-jsc+1)
+           endif
+         endif
+       else
          if (chkmin .and. chkmax) then
-           destin_ptr(im) = max(lvmin, min(source_ptr(i-isc+1,j-jsc+1), lvmax)
-         else if (chkmin)
+           destin_ptr(im) = max(lvmin, min(source_ptr(i-isc+1,j-jsc+1), lvmax))
+         else if (chkmin) then
            destin_ptr(im) = max(lvmin, source_ptr(i-isc+1,j-jsc+1))
-         else if (chkmax)
+         else if (chkmax) then
            destin_ptr(im) = min(lvmax, source_ptr(i-isc+1,j-jsc+1))
          else
            destin_ptr(im) = source_ptr(i-isc+1,j-jsc+1)
          endif
-       end if
+       endif
      enddo
    enddo
 
- end subroutine block_copy_2d_r8_to_1d_r8
+ end subroutine block_copy_2d_r8_to_1d_r8_minmax
 end module atmos_model_mod
