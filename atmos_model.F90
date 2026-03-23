@@ -134,6 +134,9 @@ public setup_exportdata
 public setup_inlinedata
 public set_fhzero_loop, InitTimeFromIAUOffset
 public get_atmos_tracer_types
+interface data_copy2block
+   module procedure block_copy_2d_r8_to_1d_r8
+end interface data_copy2block
 !-----------------------------------------------------------------------
 
 !<PUBLICTYPE >
@@ -295,7 +298,7 @@ subroutine update_atmos_radiation_physics (Atmos)
       endif
 
 !--- if coupled, assign coupled fields
-      call assign_importdata(jdat(:),Atmos,rc)
+      call assign_importdata(jdat(:),rc)
       if (rc/=0)  call mpp_error(FATAL, 'Call to assign_importdata failed')
 
       ! Currently for FV3ATM, it is only enabled for parent domain coupling
@@ -1832,16 +1835,14 @@ end subroutine update_atmos_chemistry
 !>
 !> @param[in] jdat Date and time array
 !> @param[out] rc Return code
-  subroutine assign_importdata(jdat, Atmos, rc)
+  subroutine assign_importdata(jdat, rc)
 
     use module_cplfields,  only: importFields, nImportFields, queryImportFields, &
                                  importFieldsValid
     use ESMF
-
 !
     implicit none
     integer, intent(in)  :: jdat(8)
-    type (atmos_data_type), intent(in) :: Atmos
     integer, intent(out) :: rc
 
     !--- local variables
@@ -1868,9 +1869,6 @@ end subroutine update_atmos_chemistry
       real(kind=GFS_kind_phys), parameter :: himax = 1.0e12   !< maximum ice thickness allowed
       real(kind=GFS_kind_phys), parameter :: hsmax = 1.0e12   !< maximum snow depth (m) allowed
       real(kind=GFS_kind_phys), parameter :: con_sbc = 5.670400e-8_GFS_kind_phys !< stefan-boltzmann
-
-      character(len=100) :: tmpname
-      real(kind=ESMF_KIND_R8),  dimension(:,:), pointer:: tmpr8
 !
 !------------------------------------------------------------------------------
 !
@@ -1886,7 +1884,6 @@ end subroutine update_atmos_chemistry
 
     allocate(datar8(isc:iec,jsc:jec))
     allocate(mergeflg(isc:iec,jsc:jec))
-    allocate(tmpr8(isc:iec,jsc:jec))
 
 !   if (mpp_pe() == mpp_root_pe() .and. debug) print *,'in cplImp,dim=',isc,iec,jsc,jec
 !   if (mpp_pe() == mpp_root_pe() .and. debug) print *,'in cplImp,GFS_data, size', size(GFS_data)
@@ -1894,7 +1891,6 @@ end subroutine update_atmos_chemistry
 !   if (mpp_pe() == mpp_root_pe() .and. debug) print *,'in cplImp,tsfc, min_seaice', GFS_control%min_seaice
 
     do n=1,nImportFields ! Each import field is only available if it was connected in the import state.
-
 
       found = .false.
 
@@ -1932,15 +1928,7 @@ end subroutine update_atmos_chemistry
 !
         if (found) then
          if (datar8(isc,jsc) > -99998.0) then
-            !
-            if (trim(impfield_name) == 'ice_fraction') then
-               call ESMF_FieldGet(importFields(n), grid=grid, rc=rc)
-               if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-               call ESMF_FieldGet(importFields(n),farrayPtr=tmpr8,localDE=0, rc=rc)
-               if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-               print *,'XXX ',lbound(tmpr8,1),ubound(tmpr8,1),lbound(tmpr8,2),ubound(tmpr8,2)
-            end if
-
+!
         ! get sea land mask: in order to update the coupling fields over the ocean/ice
 !        fldname = 'land_mask'
 !        if (trim(impfield_name) == trim(fldname)) then
@@ -1990,18 +1978,19 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-!$omp parallel do default(shared) private(i,j,nb,ix,im)
-              do j=jsc,jec
-                do i=isc,iec
-                  nb = Atm_block%blkno(i,j)
-                  ix = Atm_block%ixp(i,j)
-                  im = GFS_control%chunk_begin(nb)+ix-1
-                  if (GFS_Sfcprop%oceanfrac(im) > zero .and.  datar8(i,j) > 150.0) then
-!                   GFS_Coupling%tisfcin_cpl(im) = datar8(i,j)
-                    GFS_Sfcprop%tisfc(im)       = datar8(i,j)
-                  endif
-                enddo
-              enddo
+               call data_copy2block(GFS_Sfcprop%tisfc, datar8, GFS_Sfcprop%oceanfrac, validmin=150.0, rc)
+! !$omp parallel do default(shared) private(i,j,nb,ix,im)
+!               do j=jsc,jec
+!                 do i=isc,iec
+!                   nb = Atm_block%blkno(i,j)
+!                   ix = Atm_block%ixp(i,j)
+!                   im = GFS_control%chunk_begin(nb)+ix-1
+!                   if (GFS_Sfcprop%oceanfrac(im) > zero .and.  datar8(i,j) > 150.0) then
+! !                   GFS_Coupling%tisfcin_cpl(im) = datar8(i,j)
+!                     GFS_Sfcprop%tisfc(im)       = datar8(i,j)
+!                   endif
+!                 enddo
+!               enddo
             endif
           endif
 
@@ -3190,7 +3179,7 @@ end subroutine update_atmos_chemistry
         endif
 
           ! write post merge import data to NetCDF file.
-          if (GFS_control%cpl_imp_dbg) then
+          !if (GFS_control%cpl_imp_dbg) then
             call ESMF_FieldGet(importFields(n), grid=grid, rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
 
@@ -3200,12 +3189,12 @@ end subroutine update_atmos_chemistry
             write (currtimestring, "(I4.4,'-',I2.2,'-',I2.2,'T',I2.2,':',I2.2,':',I2.2)") &
                                    jdat(1), jdat(2), jdat(3), jdat(5), jdat(6), jdat(7)
             call ESMF_FieldWrite(dbgField, fileName='fv3_merge_'//trim(impfield_name)//'_'// &
-                                 trim(currtimestring)//'.nc', rc=rc)
+                                 trim(currtimestring)//'*.nc', rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
 
             call ESMF_FieldDestroy(dbgField, rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-          endif
+          !endif
 
         endif ! if (found) then
       endif   ! if (isFieldCreated) then
@@ -3214,143 +3203,53 @@ end subroutine update_atmos_chemistry
     deallocate(mergeflg)
     deallocate(datar8)
 
-    ! update sea ice related fields:
+! update sea ice related fields:
     if( lcpl_fice ) then
-       write (currtimestring, "(I4.4,'-',I2.2,'-',I2.2,'T',I2.2,':',I2.2,':',I2.2)") &
-            jdat(1), jdat(2), jdat(3), jdat(5), jdat(6), jdat(7)
-       !print *,'XXX ij ',jsc,jec,isc,iec
-       !print *,'XXX bnds ',lbound(Atmos%lat,1),ubound(Atmos%lat,1),lbound(Atmos%lat,2),ubound(Atmos%lat,2)
-       !$omp parallel do default(shared) private(i,j,nb,ix,tem,im)
-       do j=jsc,jec
-          do i=isc,iec
-             nb = Atm_block%blkno(i,j)
-             ix = Atm_block%ixp(i,j)
-             im = GFS_control%chunk_begin(nb)+ix-1
-             !print *,'XXX ix,nb',ix,nb
-             if (GFS_Sfcprop%oceanfrac(im) > zero) then
-                if (GFS_Sfcprop%fice(im) >= GFS_control%min_seaice) then
+!$omp parallel do default(shared) private(i,j,nb,ix,tem,im)
+      do j=jsc,jec
+        do i=isc,iec
+          nb = Atm_block%blkno(i,j)
+          ix = Atm_block%ixp(i,j)
+          im = GFS_control%chunk_begin(nb)+ix-1
+          if (GFS_Sfcprop%oceanfrac(im) > zero) then
+            if (GFS_Sfcprop%fice(im) >= GFS_control%min_seaice) then
 
-                   GFS_Coupling%hsnoin_cpl(im) = min(hsmax, GFS_Coupling%hsnoin_cpl(im) &
-                        / GFS_Sfcprop%fice(im))
-                   GFS_Sfcprop%zorli(im)       = z0ice
-                   tem = GFS_Sfcprop%tisfc(im) * GFS_Sfcprop%tisfc(im)
-                   tem = con_sbc * tem * tem
-                   if (GFS_Coupling%ulwsfcin_cpl(im) > zero) then
-                      GFS_Sfcprop%emis_ice(im) = GFS_Coupling%ulwsfcin_cpl(im) / tem
-                      GFS_Sfcprop%emis_ice(im) = max(0.9, min(one, GFS_Sfcprop%emis_ice(im)))
-                   else
-                      GFS_Sfcprop%emis_ice(im) = 0.96
-                   endif
-                   GFS_Coupling%ulwsfcin_cpl(im) = tem * GFS_Sfcprop%emis_ice(im)
-                   !if (Atmos%lat(ix,nb) .ge. .8298 .and. Atmos%lat(ix,nb) .le. 1.1566) then
-                   !  if (Atmos%lon(ix,nb) .ge. 4.476 .and. Atmos%lon(ix,nb) .le. 5.4265) then
-                   !     print '(a,5g14.7)', 'XXX0 '//trim(currtimestring)//'  ',Atmos%lat(ix,nb),Atmos%lon(ix,nb), &
-                   !          GFS_Sfcprop%fice(im),GFS_Sfcprop%emis_ice(im),GFS_Coupling%ulwsfcin_cpl(im)
-                   !  end if
-                   !end if
-                else
-                   GFS_Sfcprop%tisfc(im)       = GFS_Sfcprop%tsfco(im)
-                   GFS_Sfcprop%fice(im)        = zero
-                   GFS_Sfcprop%hice(im)        = zero
-                   GFS_Coupling%hsnoin_cpl(im) = zero
-                   !
-                   GFS_Coupling%dtsfcin_cpl(im)  = -99999.0 ! over open water - should not be used in ATM
-                   GFS_Coupling%dqsfcin_cpl(im)  = -99999.0 !                 ,,
-                   GFS_Coupling%dusfcin_cpl(im)  = -99999.0 !                 ,,
-                   GFS_Coupling%dvsfcin_cpl(im)  = -99999.0 !                 ,,
-                   GFS_Coupling%dtsfcin_cpl(im)  = -99999.0 !                 ,,
-                   GFS_Coupling%ulwsfcin_cpl(im) = -99999.0 !                 ,,
-                   !             GFS_Sfcprop%albdirvis_ice(im) = -9999.0  !                 ,,
-                   !             GFS_Sfcprop%albdirnir_ice(im) = -9999.0  !                 ,,
-                   !             GFS_Sfcprop%albdifvis_ice(im) = -9999.0  !                 ,,
-                   !             GFS_Sfcprop%albdifnir_ice(im) = -9999.0  !                 ,,
-                   if (abs(one-GFS_Sfcprop%oceanfrac(im)) < epsln) then !  100% open water
-                      GFS_Coupling%slimskin_cpl(im) = zero
-                      GFS_Sfcprop%slmsk(im)         = zero
-                   endif
-                endif ! GFS_Sfcprop%fice(im) >= GFS_control%min_seaice
-             endif ! GFS_Sfcprop%oceanfrac(im) > zero
-          enddo
-       enddo
-
-       !call ESMF_FieldGet(importFields(n),farrayPtr=datar82d,localDE=0, rc=rc)
-       tmpr8 = 1.0e-20
-       tmpname = 'emis_ice'
-       print *,'XXX2 ',lbound(tmpr8,1),ubound(tmpr8,1),lbound(tmpr8,2),ubound(tmpr8,2)
-       dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=tmpr8, name=trim(tmpname), rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
-       !GFS_Sfcprop%tisfc(im)
-       !GFS_Coupling%ulwsfcin_cpl(im)
-       do j=jsc,jec
-          do i=isc,iec
-             nb = Atm_block%blkno(i,j)
-             ix = Atm_block%ixp(i,j)
-             im = GFS_control%chunk_begin(nb)+ix-1
-             if (GFS_Sfcprop%landfrac(im) > zero) then
-                tmpr8(i-isc+1,j-jsc+1) = GFS_Sfcprop%emis_ice(im)
-             endif
-          enddo
-       enddo
-       write (currtimestring, "(I4.4,'-',I2.2,'-',I2.2,'T',I2.2,':',I2.2,':',I2.2)") &
-            jdat(1), jdat(2), jdat(3), jdat(5), jdat(6), jdat(7)
-       call ESMF_FieldWrite(dbgField, fileName='fv3_merge_'//trim(tmpname)//'_'// &
-            trim(currtimestring)//'*.nc', rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
-       call ESMF_FieldDestroy(dbgField, rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
-       !--------
-       tmpr8 = 1.0e-20
-       tmpname = 'ulw_in'
-       dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=tmpr8, name=trim(tmpname), rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
-       do j=jsc,jec
-          do i=isc,iec
-             nb = Atm_block%blkno(i,j)
-             ix = Atm_block%ixp(i,j)
-             im = GFS_control%chunk_begin(nb)+ix-1
-             if (GFS_Sfcprop%landfrac(im) > zero) then
-                tmpr8(i-isc+1,j-jsc+1) = GFS_Coupling%ulwsfcin_cpl(im)
-             endif
-          enddo
-       enddo
-       write (currtimestring, "(I4.4,'-',I2.2,'-',I2.2,'T',I2.2,':',I2.2,':',I2.2)") &
-            jdat(1), jdat(2), jdat(3), jdat(5), jdat(6), jdat(7)
-       call ESMF_FieldWrite(dbgField, fileName='fv3_merge_'//trim(tmpname)//'_'// &
-            trim(currtimestring)//'*.nc', rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
-       call ESMF_FieldDestroy(dbgField, rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
-       !--------
-       tmpr8 = 1.0e-20
-       tmpname = 'tisfc_in'
-       dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=tmpr8, name=trim(tmpname), rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
-       do j=jsc,jec
-          do i=isc,iec
-             nb = Atm_block%blkno(i,j)
-             ix = Atm_block%ixp(i,j)
-             im = GFS_control%chunk_begin(nb)+ix-1
-             if (GFS_Sfcprop%landfrac(im) > zero) then
-                tmpr8(i-isc+1,j-jsc+1) = GFS_Sfcprop%tisfc(im)
-             endif
-          enddo
-       enddo
-       write (currtimestring, "(I4.4,'-',I2.2,'-',I2.2,'T',I2.2,':',I2.2,':',I2.2)") &
-            jdat(1), jdat(2), jdat(3), jdat(5), jdat(6), jdat(7)
-       call ESMF_FieldWrite(dbgField, fileName='fv3_merge_'//trim(tmpname)//'_'// &
-            trim(currtimestring)//'*.nc', rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
-       call ESMF_FieldDestroy(dbgField, rc=rc)
-       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
+              GFS_Coupling%hsnoin_cpl(im) = min(hsmax, GFS_Coupling%hsnoin_cpl(im) &
+                                                              / GFS_Sfcprop%fice(im))
+              GFS_Sfcprop%zorli(im)       = z0ice
+              tem = GFS_Sfcprop%tisfc(im) * GFS_Sfcprop%tisfc(im)
+              tem = con_sbc * tem * tem
+              if (GFS_Coupling%ulwsfcin_cpl(im) > zero) then
+                GFS_Sfcprop%emis_ice(im) = GFS_Coupling%ulwsfcin_cpl(im) / tem
+                GFS_Sfcprop%emis_ice(im) = max(0.9, min(one, GFS_Sfcprop%emis_ice(im)))
+              else
+                GFS_Sfcprop%emis_ice(im) = 0.96
+              endif
+              GFS_Coupling%ulwsfcin_cpl(im) = tem * GFS_Sfcprop%emis_ice(im)
+            else
+              GFS_Sfcprop%tisfc(im)       = GFS_Sfcprop%tsfco(im)
+              GFS_Sfcprop%fice(im)        = zero
+              GFS_Sfcprop%hice(im)        = zero
+              GFS_Coupling%hsnoin_cpl(im) = zero
+!
+              GFS_Coupling%dtsfcin_cpl(im)  = -99999.0 ! over open water - should not be used in ATM
+              GFS_Coupling%dqsfcin_cpl(im)  = -99999.0 !                 ,,
+              GFS_Coupling%dusfcin_cpl(im)  = -99999.0 !                 ,,
+              GFS_Coupling%dvsfcin_cpl(im)  = -99999.0 !                 ,,
+              GFS_Coupling%dtsfcin_cpl(im)  = -99999.0 !                 ,,
+              GFS_Coupling%ulwsfcin_cpl(im) = -99999.0 !                 ,,
+!             GFS_Sfcprop%albdirvis_ice(im) = -9999.0  !                 ,,
+!             GFS_Sfcprop%albdirnir_ice(im) = -9999.0  !                 ,,
+!             GFS_Sfcprop%albdifvis_ice(im) = -9999.0  !                 ,,
+!             GFS_Sfcprop%albdifnir_ice(im) = -9999.0  !                 ,,
+              if (abs(one-GFS_Sfcprop%oceanfrac(im)) < epsln) then !  100% open water
+                GFS_Coupling%slimskin_cpl(im) = zero
+                GFS_Sfcprop%slmsk(im)         = zero
+              endif
+            endif
+          endif
+        enddo
+      enddo
     endif
 
     rc=0
@@ -3920,6 +3819,69 @@ end subroutine update_atmos_chemistry
 
    call get_nth_domain_info(n, layout, nx, ny, pelist)
 
-  end subroutine atmos_model_get_nth_domain_info
+ end subroutine atmos_model_get_nth_domain_info
 
+ subroutine block_copy_2d_r8_to_1d_r8(destin_ptr, source_ptr, mask, validmin, validmax, rc)
+
+   use ESMF
+
+   real(kind=8),           intent(out), target  :: destin_ptr(:)
+   real(ESMF_KIND_R8),     intent(in),  target  :: source_ptr(:,:)
+   real(kind=8), optional, intent(in),  target  :: mask(:)
+   real(kind=8), optional, intent(in)           :: validmin
+   real(kind=8), optional, intent(in)           :: validmax
+   integer,      optional, intent(out)          :: rc
+
+   integer :: isc,jsc,iec,jec
+   integer :: i,j,nb,ix,im
+
+   real(kind=8) :: lvmin, lvmax
+   logical :: chkmin, chkmax
+
+   rc = ESMF_SUCCESS
+
+   chkmin = .false.
+   chkmax = .false.
+   if (present(validmin)) then
+     lvmin = validmin
+     chkmin = .true.
+   end if
+   if (present(validmax)) then
+     lvmax = validmax
+     chkmax = .true.
+   end if
+
+   !if (chkmin) source_ptr = max(source_ptr, lvmin)
+   !if (chkmax) source_ptr = min(source_ptr, lvmax)
+
+   ! set up local dimension
+   isc = GFS_control%isc
+   iec = GFS_control%isc+GFS_control%nx-1
+   jsc = GFS_control%jsc
+   jec = GFS_control%jsc+GFS_control%ny-1
+
+   !print *,'XXX ',lbound(source_ptr,1),ubound(source_ptr,1),lbound(source_ptr,2),ubound(source_ptr,2)
+   !print *,'YYY ',lbound(destin_ptr,1),ubound(destin_ptr,1)
+   !$omp parallel do default(shared) private(i,j,nb,ix,im)
+   do j=jsc,jec
+     do i=isc,iec
+       nb = Atm_block%blkno(i,j)
+       ix = Atm_block%ixp(i,j)
+       im = GFS_control%chunk_begin(nb)+ix-1
+       if (mask(im) > zero) then
+         !destin_ptr(im) = source_ptr(i,j)
+         if (chkmin .and. chkmax) then
+           destin_ptr(im) = max(lvmin, min(source_ptr(i-isc+1,j-jsc+1), lvmax)
+         else if (chkmin)
+           destin_ptr(im) = max(lvmin, source_ptr(i-isc+1,j-jsc+1))
+         else if (chkmax)
+           destin_ptr(im) = min(lvmax, source_ptr(i-isc+1,j-jsc+1))
+         else
+           destin_ptr(im) = source_ptr(i-isc+1,j-jsc+1)
+         endif
+       end if
+     enddo
+   enddo
+
+ end subroutine block_copy_2d_r8_to_1d_r8
 end module atmos_model_mod
