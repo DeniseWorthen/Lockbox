@@ -1,0 +1,147 @@
+#############################################
+####  UFS Run-Time Configuration File  ######
+#############################################
+
+# ESMF #
+logKindFlag:            ESMF_LOGKIND_MULTI_ON_ERROR
+globalResourceControl:  true
+
+# EARTH #
+EARTH_component_list: MED ATM OCN ICE
+EARTH_attributes::
+  Verbosity = 0
+::
+
+# MED #
+MED_model:                      cmeps
+MED_petlist_bounds:             0 299
+MED_omp_num_threads:            1
+::
+
+# ATM #
+ATM_model:                      fv3
+ATM_petlist_bounds:             0 443
+ATM_omp_num_threads:            1
+ATM_attributes::
+  Verbosity = 0
+  DumpFields = false
+  ProfileMemory = false
+  OverwriteSlice = true
+::
+
+# OCN #
+OCN_model:                      mom6
+OCN_petlist_bounds:             444 763
+OCN_omp_num_threads:            1
+OCN_attributes::
+  Verbosity = 0
+  DumpFields = false
+  ProfileMemory = false
+  OverwriteSlice = true
+  mesh_ocn = mesh.mx025.nc
+  use_coldstart = .false.
+  use_mommesh = true
+  mom6_output_dir = ./MOM6_OUTPUT
+  mom6_output_fh = 4800 4824 4848 4872 4896 4920 4944 4968 4992 5016 5040 5064 5088 5112 5136 5160 5184 5208 5232 5256 5280 5304 5328 5352 5376 5400 5424 5448 5472 5496 5520 5544 5568 5592 5616 5640 5664 5688 5712 5736 5760 5784 5808 5832 5856 5880 5904 5928 5952 5976 6000 6024 6048 6072 6096 6120 6144 6168 6192 6216 6240 6264 6288 6312 6336 6360 6384 6408 6432 6456 6480 6504 6528 6552 6576 6600 6624 6648 6672 6696 6720 6744 6768 6792 6816 6840 6864 6888 6912 6936 6960 6984 7008 7032 7056 7080 7104 7128 7152 7176 7200
+  mom6_restart_dir = ./MOM6_RESTART
+::
+
+# ICE #
+ICE_model:                      cice6
+ICE_petlist_bounds:             764 859
+ICE_omp_num_threads:            1
+ICE_attributes::
+  Verbosity = 0
+  DumpFields = false
+  ProfileMemory = false
+  OverwriteSlice = true
+  mesh_ice = mesh.mx025.nc
+  eps_imesh = 1.0e-1
+  stop_n = 999999
+  stop_option = nhours
+  stop_ymd = -999
+::
+
+# CMEPS warm run sequence
+runSeq::
+@1800
+   MED med_phases_prep_ocn_avg
+   MED -> OCN :remapMethod=redist
+   OCN
+   @600
+     MED med_phases_prep_atm
+     MED med_phases_prep_ice
+     MED -> ATM :remapMethod=redist
+     MED -> ICE :remapMethod=redist
+     ATM
+     ICE
+     ATM -> MED :remapMethod=redist
+     MED med_phases_post_atm
+     ICE -> MED :remapMethod=redist
+     MED med_phases_post_ice
+     MED med_phases_ocnalb_run
+     MED med_phases_prep_ocn_accum
+   @
+   OCN -> MED :remapMethod=redist
+   MED med_phases_post_ocn
+   MED med_phases_restart_write
+@
+::
+
+# CMEPS variables
+
+DRIVER_attributes::
+::
+
+MED_attributes::
+      ATM_model = fv3
+      ICE_model = cice6
+      OCN_model = mom6
+      coupling_mode = ufs.frac
+      pio_typename = pnetcdf
+      pio_numiotasks = -99
+      pio_stride = 4
+      pio_rearranger = box
+      pio_root = -99
+      ocean_albedo_limit = 0.06
+      mapuv_with_cart3d = true
+      histaux_ice2med_file1_auxname = ice.1h.aux
+      histaux_ice2med_file1_doavg = .false.
+      histaux_ice2med_file1_enabled = .false.
+      histaux_ice2med_file1_flds = all
+      histaux_ice2med_file1_history_n = 1000000
+      histaux_ice2med_file1_history_option = nhours
+      histaux_ice2med_file1_ntperfile = 9999
+      histaux_ocn2med_file1_auxname = ocn.1h.aux
+      histaux_ocn2med_file1_doavg = .false.
+      histaux_ocn2med_file1_enabled = .false.
+      histaux_ocn2med_file1_flds = all
+      histaux_ocn2med_file1_history_n = 1000000
+      histaux_ocn2med_file1_history_option = nhours
+      histaux_ocn2med_file1_ntperfile = 9999
+::
+
+ALLCOMP_attributes::
+      ScalarFieldCount = 3
+      ScalarFieldIdxGridNX = 1
+      ScalarFieldIdxGridNY = 2
+      ScalarFieldIdxGridNTile = 3
+      ScalarFieldName = cpl_scalars
+      start_type = continue
+      restart_dir = CMEPS_RESTART/
+      case_name = ufs.cpld
+      restart_n = 999999
+      restart_option = nhours
+      restart_ymd = -999
+      write_restart_at_endofrun = .false.
+      dbug_flag = 0
+      stop_n = 8784
+      stop_option = nhours
+      stop_ymd = -999
+      orb_eccen = 1.e36
+      orb_iyear = 2000
+      orb_iyear_align = 2000
+      orb_mode = fixed_year
+      orb_mvelp = 1.e36
+      orb_obliq = 1.e36
+::

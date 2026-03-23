@@ -1,0 +1,41 @@
+start_year:              1992
+start_month:             05
+start_day:               01
+start_hour:              00
+start_minute:            0
+start_second:            0
+nhours_fcst:             7200
+fhrot:                   4800
+
+dt_atmos:                600
+restart_interval:        240 480 720 960 1200 1440 1680 1920 2160 2400 2640 2880 3120 3360 3600 3840 4080 4320 4560 4800 5040 5280 5520 5760 6000 6240 6480 6720 6960 7200
+restart_fh:              240 480 720 960 1200 1440 1680 1920 2160 2400 2640 2880 3120 3360 3600 3840 4080 4320 4560 4800 5040 5280 5520 5760 6000 6240 6480 6720 6960 7200
+
+use_saved_routehandles:  .false.
+quilting:                .true.
+quilting_restart:        .true.
+write_groups:            1
+write_tasks_per_group:   60
+itasks:                  1
+output_history:          .false.
+history_file_on_native_grid: .false.
+write_dopost:            .true.
+write_nsflip:            .false.
+num_files:               2
+fv3atm_output_dir:       ./FV3ATM_OUTPUT
+filename_base:           'atm' 'sfc'
+output_grid:             global_latlon
+output_file:             'netcdf' 'netcdf'
+zstandard_level:         0
+ideflate:                0
+quantize_mode:           'quantize_bitround'
+quantize_nsd:            0
+ichunk2d:                768
+jchunk2d:                384
+ichunk3d:                768
+jchunk3d:                384
+kchunk3d:                1
+imo:                     720
+jmo:                     361
+output_fh:               6 -1
+iau_offset:              0
