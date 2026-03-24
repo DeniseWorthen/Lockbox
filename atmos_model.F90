@@ -134,9 +134,6 @@ public setup_exportdata
 public setup_inlinedata
 public set_fhzero_loop, InitTimeFromIAUOffset
 public get_atmos_tracer_types
-interface data_copy2block
-  module procedure block_copy_2d_r8_to_1d_r8
-end interface data_copy2block
 !-----------------------------------------------------------------------
 
 !<PUBLICTYPE >
@@ -1854,8 +1851,8 @@ end subroutine update_atmos_chemistry
     real(kind=ESMF_KIND_R8),  dimension(:,:,:), pointer:: datar83d
     real(kind=GFS_kind_phys), dimension(:,:), pointer  :: datar8
     logical,                  dimension(:,:), pointer  :: mergeflg
-    real(kind=GFS_kind_phys)                           :: tem, ofrac
-    logical found, isFieldCreated, lcpl_fice
+    real(kind=GFS_kind_phys)                           :: tem, ofrac, spval
+    logical :: found, isFieldCreated, lcpl_fice
     real(ESMF_KIND_R8), parameter :: missing_value = 9.99e20_ESMF_KIND_R8
     type(ESMF_Grid)  :: grid
     type(ESMF_Field) :: dbgField
@@ -1874,6 +1871,7 @@ end subroutine update_atmos_chemistry
 !
     rc  = -999
 
+    spval  = GFS_control%huge
 ! set up local dimension
     isc = GFS_control%isc
     iec = GFS_control%isc+GFS_control%nx-1
@@ -1978,7 +1976,7 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-              call data_copy2block(GFS_Sfcprop%tisfc, datar8, mask=GFS_Sfcprop%oceanfrac, validmin=150.0, rc=rc)
+              call copy2block(GFS_Sfcprop%tisfc, datar8, mask=GFS_Sfcprop%oceanfrac, validmin=150.0, rc=rc)
               !call data_copy2block(GFS_Sfcprop%tisfc, max(datar8,150.0), mask=GFS_Sfcprop%oceanfrac, rc=rc)
 ! !$omp parallel do default(shared) private(i,j,nb,ix,im)
 !               do j=jsc,jec
@@ -2147,7 +2145,7 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-              call data_copy2block(GFS_Coupling%dqsfcin_cpl, datar8, mask=GFS_Sfcprop%oceanfrac, factor=-one, rc=rc)
+              call copy2block(GFS_Coupling%dqsfcin_cpl, datar8, mask=GFS_Sfcprop%oceanfrac, factor=-one, rc=rc)
 ! !$omp parallel do default(shared) private(i,j,nb,ix,im)
 !               do j=jsc,jec
 !                 do i=isc,iec
@@ -2169,17 +2167,18 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-!$omp parallel do default(shared) private(i,j,nb,ix,im)
-              do j=jsc,jec
-                do i=isc,iec
-                  nb = Atm_block%blkno(i,j)
-                  ix = Atm_block%ixp(i,j)
-                  im = GFS_control%chunk_begin(nb)+ix-1
-                  if (GFS_Sfcprop%oceanfrac(im) > zero) then
-                    GFS_Coupling%dtsfcin_cpl(im) = -datar8(i,j)
-                  endif
-                enddo
-              enddo
+              call copy2block(GFS_Coupling%dtsfcin_cpl, datar8, mask=GFS_Sfcprop%oceanfrac, factor=-one, rc=rc)
+! !$omp parallel do default(shared) private(i,j,nb,ix,im)
+!               do j=jsc,jec
+!                 do i=isc,iec
+!                   nb = Atm_block%blkno(i,j)
+!                   ix = Atm_block%ixp(i,j)
+!                   im = GFS_control%chunk_begin(nb)+ix-1
+!                   if (GFS_Sfcprop%oceanfrac(im) > zero) then
+!                     GFS_Coupling%dtsfcin_cpl(im) = -datar8(i,j)
+!                   endif
+!                 enddo
+!               enddo
               if (mpp_pe() == mpp_root_pe() .and. debug)  print *,'fv3 assign_import: get sensi_heat from mediator'
             endif
           endif
@@ -2190,17 +2189,18 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-!$omp parallel do default(shared) private(i,j,nb,ix,im)
-              do j=jsc,jec
-                do i=isc,iec
-                  nb = Atm_block%blkno(i,j)
-                  ix = Atm_block%ixp(i,j)
-                  im = GFS_control%chunk_begin(nb)+ix-1
-                  if (GFS_Sfcprop%oceanfrac(im) > zero) then
-                    GFS_Coupling%dusfcin_cpl(im) = -datar8(i,j)
-                  endif
-                enddo
-              enddo
+              call copy2block(GFS_Coupling%dusfcin_cpl, datar8, mask=GFS_Sfcprop%oceanfrac, factor=-one, rc=rc)
+! !$omp parallel do default(shared) private(i,j,nb,ix,im)
+!               do j=jsc,jec
+!                 do i=isc,iec
+!                   nb = Atm_block%blkno(i,j)
+!                   ix = Atm_block%ixp(i,j)
+!                   im = GFS_control%chunk_begin(nb)+ix-1
+!                   if (GFS_Sfcprop%oceanfrac(im) > zero) then
+!                     GFS_Coupling%dusfcin_cpl(im) = -datar8(i,j)
+!                   endif
+!                 enddo
+!               enddo
               if (mpp_pe() == mpp_root_pe() .and. debug)  print *,'fv3 assign_import: get zonal_moment_flx from mediator'
             endif
           endif
@@ -2211,17 +2211,18 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-!$omp parallel do default(shared) private(i,j,nb,ix,im)
-              do j=jsc,jec
-                do i=isc,iec
-                  nb = Atm_block%blkno(i,j)
-                  ix = Atm_block%ixp(i,j)
-                  im = GFS_control%chunk_begin(nb)+ix-1
-                  if (GFS_Sfcprop%oceanfrac(im) > zero) then
-                    GFS_Coupling%dvsfcin_cpl(im) = -datar8(i,j)
-                  endif
-                enddo
-              enddo
+              call copy2block(GFS_Coupling%dvsfcin_cpl, datar8, mask=GFS_Sfcprop%oceanfrac, factor=-one, rc=rc)
+! !$omp parallel do default(shared) private(i,j,nb,ix,im)
+!               do j=jsc,jec
+!                 do i=isc,iec
+!                   nb = Atm_block%blkno(i,j)
+!                   ix = Atm_block%ixp(i,j)
+!                   im = GFS_control%chunk_begin(nb)+ix-1
+!                   if (GFS_Sfcprop%oceanfrac(im) > zero) then
+!                     GFS_Coupling%dvsfcin_cpl(im) = -datar8(i,j)
+!                   endif
+!                 enddo
+!               enddo
               if (mpp_pe() == mpp_root_pe() .and. debug)  print *,'fv3 assign_import: get merid_moment_flx from mediator'
             endif
           endif
@@ -2232,18 +2233,19 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-!$omp parallel do default(shared) private(i,j,nb,ix,im)
-              do j=jsc,jec
-                do i=isc,iec
-                  nb = Atm_block%blkno(i,j)
-                  ix = Atm_block%ixp(i,j)
-                  im = GFS_control%chunk_begin(nb)+ix-1
-                  if (GFS_Sfcprop%oceanfrac(im) > zero) then
-!                   GFS_Coupling%hicein_cpl(im) = datar8(i,j)
-                    GFS_Sfcprop%hice(im)        = min(datar8(i,j), himax)
-                  endif
-                enddo
-              enddo
+              call copy2block(GFS_Sfcprop%hice, datar8, mask=GFS_Sfcprop%oceanfrac, validmax=himax, rc=rc)
+! !$omp parallel do default(shared) private(i,j,nb,ix,im)
+!               do j=jsc,jec
+!                 do i=isc,iec
+!                   nb = Atm_block%blkno(i,j)
+!                   ix = Atm_block%ixp(i,j)
+!                   im = GFS_control%chunk_begin(nb)+ix-1
+!                   if (GFS_Sfcprop%oceanfrac(im) > zero) then
+! !                   GFS_Coupling%hicein_cpl(im) = datar8(i,j)
+!                     GFS_Sfcprop%hice(im)        = min(datar8(i,j), himax)
+!                   endif
+!                 enddo
+!               enddo
               if (mpp_pe() == mpp_root_pe() .and. debug) print *,'fv3 assign_import: get ice_volume from mediator'
             endif
           endif
@@ -2254,17 +2256,18 @@ end subroutine update_atmos_chemistry
           if (trim(impfield_name) == trim(fldname)) then
             findex  = queryImportFields(fldname)
             if (importFieldsValid(findex)) then
-!$omp parallel do default(shared) private(i,j,nb,ix,im)
-              do j=jsc,jec
-                do i=isc,iec
-                  nb = Atm_block%blkno(i,j)
-                  ix = Atm_block%ixp(i,j)
-                  im = GFS_control%chunk_begin(nb)+ix-1
-                  if (GFS_Sfcprop%oceanfrac(im) > zero) then
-                    GFS_Coupling%hsnoin_cpl(im) = datar8(i,j)
-                  endif
-                enddo
-              enddo
+              call copy2block(GFS_Coupling%hsnoin_cpl, datar8, mask=GFS_Sfcprop%oceanfrac, rc=rc)
+! !$omp parallel do default(shared) private(i,j,nb,ix,im)
+!               do j=jsc,jec
+!                 do i=isc,iec
+!                   nb = Atm_block%blkno(i,j)
+!                   ix = Atm_block%ixp(i,j)
+!                   im = GFS_control%chunk_begin(nb)+ix-1
+!                   if (GFS_Sfcprop%oceanfrac(im) > zero) then
+!                     GFS_Coupling%hsnoin_cpl(im) = datar8(i,j)
+!                   endif
+!                 enddo
+!               enddo
               if (mpp_pe() == mpp_root_pe() .and. debug)  print *,'fv3 assign_import: get snow_volume from mediator'
             endif
           endif
@@ -3823,82 +3826,63 @@ end subroutine update_atmos_chemistry
 
  end subroutine atmos_model_get_nth_domain_info
 
- subroutine block_copy_2d_r8_to_1d_r8_minmax(destin_ptr, source_ptr, mask, validmin, validmax, rc)
+ subroutine copy2block(destin_ptr, source_ptr, mask, validmin, validmax, factor, rc)
 
    use ESMF
 
-   real(kind=8),           intent(out), target  :: destin_ptr(:)
-   real(ESMF_KIND_R8),     intent(in),  target  :: source_ptr(:,:)
-   real(kind=8), optional, intent(in),  target  :: mask(:)
-   real(kind=8), optional, intent(in)           :: validmin
-   real(kind=8), optional, intent(in)           :: validmax
-   integer,      optional, intent(out)          :: rc
+   real(kind=GFS_kind_phys), intent(out), target  :: destin_ptr(:)
+   real(ESMF_KIND_R8),       intent(in),  target  :: source_ptr(:,:)
+   real(kind=GFS_kind_phys), intent(in),  target  :: mask(:)
+   real(kind=GFS_kind_phys), intent(in), optional :: validmin
+   real(kind=GFS_kind_phys), intent(in), optional :: validmax
+   real(kind=GFS_kind_phys), intent(in), optional :: factor
+   integer,                  intent(out)          :: rc
 
-   integer :: isc,jsc,iec,jec
-   integer :: i,j,nb,ix,im
+   integer :: isc, jsc, iec, jec
+   integer :: i, j, nb, ix, im
 
-   real(kind=8) :: lvmin, lvmax
-   logical :: chkmin, chkmax, chkmsk
+   real(kind=GFS_kind_phys) :: fval, spval
+   real(kind=GFS_kind_phys) :: lvmin, lvmax, lfactor
 
    rc = ESMF_SUCCESS
 
-   chkmin = .false.
-   chkmax = .false.
-   chkmsk = .false.
-   if (present(validmin)) then
-     lvmin = validmin
-     chkmin = .true.
-   end if
-   if (present(validmax)) then
-     lvmax = validmax
-     chkmax = .true.
-   end if
-   if (present(mask)) then
-     chkmsk = .true.
-   end if
-
-   ! set up local dimension
    isc = GFS_control%isc
-   iec = GFS_control%isc+GFS_control%nx-1
+   iec = GFS_control%isc + GFS_control%nx - 1
    jsc = GFS_control%jsc
-   jec = GFS_control%jsc+GFS_control%ny-1
-   ! This blows up in module_nst
-   !destin_ptr = GFS_control%huge
+   jec = GFS_control%jsc + GFS_control%ny - 1
 
-   !print *,'XXX ',lbound(source_ptr,1),ubound(source_ptr,1),lbound(source_ptr,2),ubound(source_ptr,2)
-   !print *,'YYY ',lbound(destin_ptr,1),ubound(destin_ptr,1)
+   spval  = GFS_control%huge
 
-   !$omp parallel do default(shared) private(i,j,nb,ix,im)
-   do j=jsc,jec
-     do i=isc,iec
+   if(present(validmin)) then
+     lvmin = validmin
+   else
+     lvmin = -spval
+   end if
+   if(present(validmax)) then
+     lvmax = validmax
+   else
+     lvmax = spval
+   end if
+   if(present(factor)) then
+     lfactor = factor
+   else
+     lfactor = one
+   end if
+
+   !$omp parallel do default(shared) private(i,j,nb,ix,im,fval)
+   do j = jsc, jec
+     do i = isc, iec
        nb = Atm_block%blkno(i,j)
        ix = Atm_block%ixp(i,j)
-       im = GFS_control%chunk_begin(nb)+ix-1
-       if (chkmsk) then
-         if (mask(im) > zero) then
-           if (chkmin .and. chkmax) then
-             destin_ptr(im) = max(lvmin, min(source_ptr(i-isc+1,j-jsc+1), lvmax))
-           else if (chkmin) then
-             destin_ptr(im) = max(lvmin, source_ptr(i-isc+1,j-jsc+1))
-           else if (chkmax) then
-             destin_ptr(im) = min(lvmax, source_ptr(i-isc+1,j-jsc+1))
-           else
-             destin_ptr(im) = source_ptr(i-isc+1,j-jsc+1)
-           endif
-         endif
-       else
-         if (chkmin .and. chkmax) then
-           destin_ptr(im) = max(lvmin, min(source_ptr(i-isc+1,j-jsc+1), lvmax))
-         else if (chkmin) then
-           destin_ptr(im) = max(lvmin, source_ptr(i-isc+1,j-jsc+1))
-         else if (chkmax) then
-           destin_ptr(im) = min(lvmax, source_ptr(i-isc+1,j-jsc+1))
-         else
-           destin_ptr(im) = source_ptr(i-isc+1,j-jsc+1)
-         endif
-       endif
-     enddo
-   enddo
+       im = GFS_control%chunk_begin(nb) + ix - 1
+       if (mask(im) > zero) then
+         fval = source_ptr(i-isc+1, j-jsc+1) * lfactor
+         if (lvmin .ne. -spval) fval = max(lvmin, fval)
+         if (lvmax .ne.  spval) fval = min(lvmax, fval)
+         destin_ptr(im) = fval
+       end if
+     end do
+   end do
 
- end subroutine block_copy_2d_r8_to_1d_r8_minmax
+ end subroutine copy2block
 end module atmos_model_mod
