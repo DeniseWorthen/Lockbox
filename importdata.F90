@@ -528,20 +528,25 @@
 
   ! add fields not present in importstate to FB
   if (GFS_control%cpl_imp_dbg) then
-     dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=dbgptr, name='slimskin_cpl', rc=rc)
-     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-     call ESMF_FieldBundleAdd(FBcpl2phys, (/dbgField/), rc=rc)
-     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+    dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=dbgptr, name='ocean_fraction', rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+    call ESMF_FieldBundleAdd(FBcpl2phys, (/dbgField/), rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
 
-     dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=dbgptr, name='slmsk', rc=rc)
-     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-     call ESMF_FieldBundleAdd(FBcpl2phys, (/dbgField/), rc=rc)
-     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+    dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=dbgptr, name='slimskin_cpl', rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+    call ESMF_FieldBundleAdd(FBcpl2phys, (/dbgField/), rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
 
-     dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=dbgptr, name='zorlw', rc=rc)
-     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-     call ESMF_FieldBundleAdd(FBcpl2phys, (/dbgField/), rc=rc)
-     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+    dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=dbgptr, name='slmsk', rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+    call ESMF_FieldBundleAdd(FBcpl2phys, (/dbgField/), rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+
+    dbgField = ESMF_FieldCreate(grid=grid, farrayPtr=dbgptr, name='zorlw', rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+    call ESMF_FieldBundleAdd(FBcpl2phys, (/dbgField/), rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
   endif
 
   !$omp parallel do default(shared) private(i,j,nb,ix,tem,im,ofrac)
@@ -693,12 +698,19 @@
      else
         call ESMF_FieldBundleWrite(FBcpl2phys, fileName='fv3_merge_'//trim(timestring)//'.tile*.nc', rc=rc)
         if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-     endif
-     call ESMF_FieldDestroy(dbgField, rc=rc)
-     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-     call ESMF_FieldBundleDestroy(FBcpl2phys, rc=rc)
-     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
-
+      endif
+      do n = 1,nfields
+        call ESMF_FieldBundleGet(FBcpl2phys, fieldName=trim(fieldlist(n)), field=dbgField, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+        call ESMF_FieldDestroy(dbgField, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+      enddo
+      call ESMF_FieldBundleDestroy(FBcpl2phys, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) return
+      if (associated(dbgptr)) then
+        deallocate(dbgptr)
+        nullify(dbgptr) ! Good practice to prevent future accidental access
+      endif
      deallocate(dbgptr)
   endif
   rc=0
