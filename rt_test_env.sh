@@ -129,6 +129,15 @@ generate_var_reports() {
   fi
 }
 
+write_render_manifest() {
+  local output_file=$1
+
+  find . -type f \
+    ! -name '.DS_Store' \
+    | sed 's#^\./##' \
+    | sort > "${output_file}"
+}
+
 resolve_machine_settings() {
   ACCNR=${ACCNR:-${ACCOUNT:-}}
   case ${MACHINE_ID} in
@@ -555,6 +564,7 @@ ENV_FILE=${OUTPUT_DIR}/${TEST_ID}.env
 BASELINE_VARS_FILE=${OUTPUT_DIR}/${TEST_ID}.baseline.tsv
 FINAL_VARS_FILE=${OUTPUT_DIR}/${TEST_ID}.final.tsv
 REPORT_PREFIX=${OUTPUT_DIR}/${TEST_ID}
+RENDER_MANIFEST=${OUTPUT_DIR}/${TEST_ID}.rendered_files.txt
 
 mkdir -p "${WORK_DIR}" "${LOG_DIR}"
 
@@ -607,6 +617,7 @@ render_fv3_run
 render_main_templates
 render_application_templates
 
+write_render_manifest "${RENDER_MANIFEST}"
 write_var_table "${FINAL_VARS_FILE}"
 write_env_snapshot "${ENV_FILE}"
 
@@ -619,6 +630,7 @@ Validated test setup for ${TEST_ID}
 Machine: ${MACHINE_ID}
 Work directory: ${WORK_DIR}
 Environment snapshot: ${ENV_FILE}
+Rendered file manifest: ${RENDER_MANIFEST}
 Generated files:
   fv3_run
   input.nml (if applicable)
