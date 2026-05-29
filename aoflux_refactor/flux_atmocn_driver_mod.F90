@@ -1,9 +1,7 @@
 module flux_atmocn_driver_mod
 
-  !use shr_kind_mod,          only : R8=>SHR_KIND_R8, IN=>SHR_KIND_IN ! shared kinds
-  !use shr_const_mod,         only : shr_const_spval
-  !use shr_sys_mod,           only : shr_sys_abort
-  !use shr_strconvert_mod,    only : toString
+  use ufs_kind_mod, only : R8=>SHR_KIND_R8, IN=>SHR_KIND_IN ! shared kinds
+
   use flux_atmocn_bulk_mod, only : flux_atmocn_bulk
   use flux_atmocn_ccpp_mod, only : flux_atmocn_ccpp
 
@@ -14,8 +12,22 @@ module flux_atmocn_driver_mod
   integer, private, parameter :: ocn_flux_scheme_ccpp = 1
 
 contains
+  ! subroutine flux_adjust_constants( flux_convergence_tolerance, &
+  !      flux_convergence_max_iteration, coldair_outbreak_mod)
 
-  subroutine flux_atmocn(ocn_surface_flux_scheme=ocn_surface_flux_scheme, &
+  !   ! Adjust local constants.  Used to support simple models.
+  !   real(r8)    , optional, intent(in) :: flux_convergence_tolerance
+  !   integer(in) , optional, intent(in) :: flux_convergence_max_iteration
+  !   logical     , optional, intent(in) :: coldair_outbreak_mod
+  !   !----------------------------------------------------------------------------
+
+  !   if (present(flux_convergence_tolerance)) flux_con_tol = flux_convergence_tolerance
+  !   if (present(flux_convergence_max_iteration)) flux_con_max_iter = flux_convergence_max_iteration
+  !   if (present(coldair_outbreak_mod)) use_coldair_outbreak_mod = coldair_outbreak_mod
+
+  ! end subroutine flux_adjust_constants
+
+  subroutine flux_atmocn_driver(ocn_surface_flux_scheme=ocn_surface_flux_scheme, &
        logunit, nMax, mask,                                  &
        zbot, ubot, vbot, qbot, rbot, tbot, ts,               &
        sen, lat, lwup, taux, tauy, evap, tref, qref, duu10n, &
@@ -88,78 +100,80 @@ contains
     ! local
     real(R8) :: spval
 
-    spval = 0.0_R8
-    if (present(missval)) spval = missval
+    !--------------------------------------------------------------------------------
 
-    if (ocn_surface_flux_scheme == ocn_flux_scheme_bulk) then
-!       call flux_atmocn_bulk(...)
-  call flux_atmocn_bulk ( logunit=logunit, &
-       nMax=aoflux_in%lsize,               &
-       mask=aoflux_in%mask,                &
-       zbot=aoflux_in%zbot,                &
-       ubot=aoflux_in%ubot,                &
-       vbot=aoflux_in%vbot,                &
-       qbot=aoflux_in%shum,                &
-       rbot=aoflux_in%dens,                &
-       tbot=aoflux_in%tbot,                &
-       ts=aoflux_in%tocn,                  &
-       us=aoflux_in%uocn,                  &
-       vs=aoflux_in%vocn,                  &
-       thbot=aoflux_in%thbot,              &
-       ! optional in
-       missval=0.0_r8,                     &
-       ! out
-       sen=aoflux_out%sen,                 &
-       lat=aoflux_out%lat,                 &
-       lwup=aoflux_out%lwup,               &
-       taux=aoflux_out%taux,               &
-       tauy=aoflux_out%tauy,               &
-       evap=aoflux_out%evap,               &
-       tref=aoflux_out%tref,               &
-       qref=aoflux_out%qref,               &
-       duu10n=aoflux_out%duu10n)
-
-    else if  (ocn_surface_flux_scheme == ocn_flux_scheme_ccpp) then
-!       call flux_atmocn_ccpp(...)
-  call flux_atmocn_ccpp( logunit=logunit, &
-       nMax=aoflux_in%lsize,              &
-       mask=aoflux_in%mask,               &
-       zbot=aoflux_in%zbot,               &
-       ubot=aoflux_in%ubot,               &
-       vbot=aoflux_in%vbot,               &
-       qbot=aoflux_in%shum,               &
-       rbot=aoflux_in%dens,               &
-       tbot=aoflux_in%tbot,               &
-       ts=aoflux_in%tocn,                 &
-       gcomp=gcomp,                       &
-       maintask=maintask,                 &
-       garea=aoflux_in%garea,             &
-       usfc=aoflux_in%usfc,               &
-       vsfc=aoflux_in%vsfc,               &
-       psfc=aoflux_in%psfc,               &
-       pbot=aoflux_in%pbot,               &
-       lwdn=aoflux_in%lwdn,               &
-       ! optional in
-       missval=0.0_r8,                    &
-       ! out
-       sen=aoflux_out%sen,                &
-       lat=aoflux_out%lat,                &
-       lwup=aoflux_out%lwup,              &
-       taux=aoflux_out%taux,              &
-       tauy=aoflux_out%tauy,              &
-       evap=aoflux_out%evap,              &
-       tref=aoflux_out%tref,              &
-       qref=aoflux_out%qref,              &
-       duu10n=aoflux_out%duu10n,          &
-       ustar_sv=aoflux_out%ustar,         &
-       re_sv=aoflux_out%re,               &
-       ssq_sv=aoflux_out%ssq)
-    end if
-
+    if (present(missval)) then
+       spval = missval
+    else
+       spval = shr_const_spval
+    endif
     ! If caller provided optional diagnostics but chosen path does not set them:
     if (present(ustar_sv)) ustar_sv = spval
     if (present(re_sv))    re_sv    = spval
     if (present(ssq_sv))   ssq_sv   = spval
 
-  end subroutine flux_atmocn
+    if (ocn_surface_flux_scheme == ocn_flux_scheme_bulk) then
+       call flux_atmocn_bulk ( logunit=logunit, &
+            nMax=aoflux_in%lsize,               &
+            mask=aoflux_in%mask,                &
+            zbot=aoflux_in%zbot,                &
+            ubot=aoflux_in%ubot,                &
+            vbot=aoflux_in%vbot,                &
+            qbot=aoflux_in%shum,                &
+            rbot=aoflux_in%dens,                &
+            tbot=aoflux_in%tbot,                &
+            ts=aoflux_in%tocn,                  &
+            us=aoflux_in%uocn,                  &
+            vs=aoflux_in%vocn,                  &
+            thbot=aoflux_in%thbot,              &
+            ! optional in
+            missval=0.0_r8,                     &
+            ! out
+            sen=aoflux_out%sen,                 &
+            lat=aoflux_out%lat,                 &
+            lwup=aoflux_out%lwup,               &
+            taux=aoflux_out%taux,               &
+            tauy=aoflux_out%tauy,               &
+            evap=aoflux_out%evap,               &
+            tref=aoflux_out%tref,               &
+            qref=aoflux_out%qref,               &
+            duu10n=aoflux_out%duu10n)
+
+    else if  (ocn_surface_flux_scheme == ocn_flux_scheme_ccpp) then
+       call flux_atmocn_ccpp( logunit=logunit, &
+            nMax=aoflux_in%lsize,              &
+            mask=aoflux_in%mask,               &
+            zbot=aoflux_in%zbot,               &
+            ubot=aoflux_in%ubot,               &
+            vbot=aoflux_in%vbot,               &
+            qbot=aoflux_in%shum,               &
+            rbot=aoflux_in%dens,               &
+            tbot=aoflux_in%tbot,               &
+            ts=aoflux_in%tocn,                 &
+            gcomp=gcomp,                       &
+            maintask=maintask,                 &
+            garea=aoflux_in%garea,             &
+            usfc=aoflux_in%usfc,               &
+            vsfc=aoflux_in%vsfc,               &
+            psfc=aoflux_in%psfc,               &
+            pbot=aoflux_in%pbot,               &
+            lwdn=aoflux_in%lwdn,               &
+            ! optional in
+            missval=0.0_r8,                    &
+            ! out
+            sen=aoflux_out%sen,                &
+            lat=aoflux_out%lat,                &
+            lwup=aoflux_out%lwup,              &
+            taux=aoflux_out%taux,              &
+            tauy=aoflux_out%tauy,              &
+            evap=aoflux_out%evap,              &
+            tref=aoflux_out%tref,              &
+            qref=aoflux_out%qref,              &
+            duu10n=aoflux_out%duu10n,          &
+            ustar_sv=aoflux_out%ustar,         &
+            re_sv=aoflux_out%re,               &
+            ssq_sv=aoflux_out%ssq)
+    end if
+
+  end subroutine flux_atmocn_driver
 end module flux_atmocn_driver_mod

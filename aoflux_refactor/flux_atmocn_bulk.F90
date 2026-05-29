@@ -1,4 +1,24 @@
-  subroutine flux_atmOcn(logunit, nMax,zbot ,ubot  ,vbot  ,thbot ,   &
+module flux_atmocn_bulk_mod
+  !-------------------------------------------------------------------------------
+  ! PURPOSE:
+  !   computes atm/ocn surface fluxes using Large and Pond
+  !
+  ! NOTES:
+  !   o all fluxes are positive downward
+  !   o net heat flux = net sw + lw up + lw down + sen + lat
+  !   o here, tstar = <WT>/U*, and qstar = <WQ>/U*.
+  !   o wind speeds should all be above a minimum speed (eg. 1.0 m/s)
+  !
+  ! ASSUMPTIONS:
+  !  Large:
+  !   o Neutral 10m drag coeff: cdn = .0027/U10 + .000142 + .0000764 U10
+  !   o Neutral 10m stanton number: ctn = .0327 sqrt(cdn), unstable
+  !                                 ctn = .0180 sqrt(cdn), stable
+  !   o Neutral 10m dalton number:  cen = .0346 sqrt(cdn)
+  !   o The saturation humidity of air at T(K): qsat(T)  (kg/m^3)
+  !-------------------------------------------------------------------------------
+contains
+  subroutine flux_atmOcn_bulk(logunit, nMax,zbot,ubot,vbot,thbot,   &
        &               qbot  , rbot  ,tbot  ,us    ,vs    ,   &
        &               ts    , mask  ,sen   ,lat   ,lwup  ,   &
        &               evap  , taux  ,tauy  ,tref  ,qref  ,   &
@@ -10,46 +30,37 @@
     integer    ,intent(in) :: logunit
     integer(IN),intent(in) ::       nMax  ! data vector length
     integer(IN),intent(in) :: mask (nMax) ! ocn domain mask       0 <=> out of domain
-    real(R8)   ,intent(in) :: zbot (nMax) ! atm level height                     (m)
-    real(R8)   ,intent(in) :: ubot (nMax) ! atm u wind (bottom or 10m)           (m/s)
-    real(R8)   ,intent(in) :: vbot (nMax) ! atm v wind (bottom or 10m)           (m/s)
-    real(R8)   ,intent(in) :: thbot(nMax) ! atm potential T                      (K)
-    real(R8)   ,intent(in) :: qbot (nMax) ! atm specific humidity (bottom or 2m) (kg/kg)
-    real(R8)   ,intent(in) :: rbot (nMax) ! atm air density                      (kg/m^3)
-    real(R8)   ,intent(in) :: tbot (nMax) ! atm T (bottom or 2m)                 (K)
-    real(R8)   ,intent(in) :: us   (nMax) ! ocn u-velocity                       (m/s)
-    real(R8)   ,intent(in) :: vs   (nMax) ! ocn v-velocity                       (m/s)
-    real(R8)   ,intent(in) :: ts   (nMax) ! ocn temperature                      (K)
-    integer(IN),intent(in), optional :: ocn_surface_flux_scheme
+    real(R8)   ,intent(in) :: zbot (nMax) ! atm level height           (m)
+    real(R8)   ,intent(in) :: ubot (nMax) ! atm u wind               (m/s)
+    real(R8)   ,intent(in) :: vbot (nMax) ! atm v wind               (m/s)
+    real(R8)   ,intent(in) :: thbot(nMax) ! atm potential T            (K)
+    real(R8)   ,intent(in) :: qbot (nMax) ! atm specific humidity  (kg/kg)
+    real(R8)   ,intent(in) :: rbot (nMax) ! atm air density       (kg/m^3)
+    real(R8)   ,intent(in) :: tbot (nMax) ! atm T                      (K)
+    real(R8)   ,intent(in) :: us   (nMax) ! ocn u-velocity           (m/s)
+    real(R8)   ,intent(in) :: vs   (nMax) ! ocn v-velocity           (m/s)
+    real(R8)   ,intent(in) :: ts   (nMax) ! ocn temperature            (K)
 
     !--- output arguments -------------------------------
-    real(R8),intent(out)  ::  sen  (nMax) ! heat flux: sensible    (W/m^2)
-    real(R8),intent(out)  ::  lat  (nMax) ! heat flux: latent      (W/m^2)
-    real(R8),intent(out)  ::  lwup (nMax) ! heat flux: lw upward   (W/m^2)
-    real(R8),intent(out)  ::  evap (nMax) ! water flux: evap  ((kg/s)/m^2)
-    real(R8),intent(out)  ::  taux (nMax) ! surface stress, zonal      (N)
-    real(R8),intent(out)  ::  tauy (nMax) ! surface stress, maridional (N)
-    real(R8),intent(out)  ::  tref (nMax) ! diag:  2m ref height T     (K)
-    real(R8),intent(out)  ::  qref (nMax) ! diag:  2m ref humidity (kg/kg)
-    real(R8),intent(out)  :: duu10n(nMax) ! diag: 10m wind speed squared (m/s)^2
-    real(R8),intent(in) ,optional :: missval        ! masked value
-
-    ! !EOP
+    real(R8),intent(out)  ::  sen  (nMax)    ! heat flux: sensible      (W/m^2)
+    real(R8),intent(out)  ::  lat  (nMax)    ! heat flux: latent        (W/m^2)
+    real(R8),intent(out)  ::  lwup (nMax)    ! heat flux: lw upward     (W/m^2)
+    real(R8),intent(out)  ::  evap (nMax)    ! water flux: evap    ((kg/s)/m^2)
+    real(R8),intent(out)  ::  taux (nMax)    ! surface stress, zonal        (N)
+    real(R8),intent(out)  ::  tauy (nMax)    ! surface stress, maridional   (N)
+    real(R8),intent(out)  ::  tref (nMax)    ! diag:  2m ref height T       (K)
+    real(R8),intent(out)  ::  qref (nMax)    ! diag:  2m ref humidity   (kg/kg)
+    real(R8),intent(out)  :: duu10n(nMax)    ! diag: 10m wind speed squared (m/s)^2
+    real(R8),intent(in) ,optional :: missval ! masked value
 
     !--- local constants --------------------------------
     real(R8),parameter :: umin  =  0.5_R8 ! minimum wind speed       (m/s)
     real(R8),parameter :: zref  = 10.0_R8 ! reference height           (m)
     real(R8),parameter :: ztref =  2.0_R8 ! reference height for air T (m)
-    !!++ Large only
-    !real(R8),parameter :: cexcd  = 0.0346_R8 ! ratio Ch(water)/CD
-    !real(R8),parameter :: chxcds = 0.018_R8  ! ratio Ch(heat)/CD for stable case
-    !real(R8),parameter :: chxcdu = 0.0327_R8 ! ratio Ch(heat)/CD for unstable case
-    !!++ COARE only
-    real(R8),parameter :: zpbl =700.0_R8 ! PBL depth [m] for gustiness parametriz.
 
     !--- local variables --------------------------------
-    integer(IN) :: n      ! vector loop index
-    integer(IN) :: iter
+    integer     :: n      ! vector loop index
+    integer     :: iter
     real(R8)    :: vmag   ! surface wind magnitude   (m/s)
     real(R8)    :: ssq    ! sea surface humidity     (kg/kg)
     real(R8)    :: delt   ! potential T difference   (K)
@@ -68,7 +79,6 @@
     real(R8)    :: hol    ! H (at zbot) over L
     real(R8)    :: xsq    ! ?
     real(R8)    :: xqq    ! ?
-    !!++ Large only
     real(R8)    :: psimh  ! stability function at zbot (momentum)
     real(R8)    :: psixh  ! stability function at zbot (heat and water)
     real(R8)    :: psix2  ! stability function at ztref reference height
@@ -95,6 +105,7 @@
     real(R8)    :: vscl
 
     qsat(Tk)   = 640380.0_R8 / exp(5107.4_R8/Tk)
+    ! Large and Pond
     cdn(Umps)  =   0.0027_R8 / Umps + 0.000142_R8 + 0.0000764_R8 * Umps
     psimhu(xd) = log((1.0_R8+xd*(2.0_R8+xd))*(1.0_R8+xd*xd)/8.0_R8) - 2.0_R8*atan(xd) + 1.571_R8
     psixhu(xd) = 2.0_R8 * log((1.0_R8 + xd*xd)/2.0_R8)
@@ -102,27 +113,7 @@
     !--- formats ----------------------------------------
     character(*),parameter :: subName = '(shr_flux_atmOcn) '
     character(*),parameter ::   F00 = "('(shr_flux_atmOcn) ',4a)"
-
-    !-------------------------------------------------------------------------------
-    ! PURPOSE:
-    !   computes atm/ocn surface fluxes
-    !
-    ! NOTES:
-    !   o all fluxes are positive downward
-    !   o net heat flux = net sw + lw up + lw down + sen + lat
-    !   o here, tstar = <WT>/U*, and qstar = <WQ>/U*.
-    !   o wind speeds should all be above a minimum speed (eg. 1.0 m/s)
-    !
-    ! ASSUMPTIONS:
-    !  Large:
-    !   o Neutral 10m drag coeff: cdn = .0027/U10 + .000142 + .0000764 U10
-    !   o Neutral 10m stanton number: ctn = .0327 sqrt(cdn), unstable
-    !                                 ctn = .0180 sqrt(cdn), stable
-    !   o Neutral 10m dalton number:  cen = .0346 sqrt(cdn)
-    !   o The saturation humidity of air at T(K): qsat(T)  (kg/m^3)
-    !  COARE:
-    !   o use COAREv3.0 function (tht 22/11/2013)
-    !-------------------------------------------------------------------------------
+    ! --------------------------------------------------------------------------
 
     if (present(missval)) then
        spval = missval
@@ -262,3 +253,5 @@
 
        endif
     end DO
+  end subroutine flux_atmOcn_bulk
+end module flux_atmocn_bulk_mod
