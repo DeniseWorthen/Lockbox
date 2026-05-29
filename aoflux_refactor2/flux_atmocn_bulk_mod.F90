@@ -31,11 +31,9 @@ module flux_atmocn_bulk_mod
   public :: flux_atmocn_bulk
 
 contains
-  subroutine flux_atmOcn_bulk(logunit, nMax, mask, zbot,ubot,vbot,thbot,   &
-       &               qbot  , rbot  ,tbot  ,us    ,vs    ,   &
-       &               ts    , mask  ,sen   ,lat   ,lwup  ,   &
-       &               evap  , taux  ,tauy  ,tref  ,qref  ,   &
-       &               duu10n,  spval    )
+  subroutine flux_atmOcn_bulk(logunit, nMax, mask,                   &
+       zbot, ubot, vbot, qbot, rbot, tbot, ts, us, vs, thbot, spval, &
+       sen, lat, lwup, taux, tauy, evap, tref, qref, duu10n)
 
     implicit none
 
@@ -46,25 +44,25 @@ contains
     real(R8)   ,intent(in) :: zbot (nMax) ! atm level height           (m)
     real(R8)   ,intent(in) :: ubot (nMax) ! atm u wind               (m/s)
     real(R8)   ,intent(in) :: vbot (nMax) ! atm v wind               (m/s)
-    real(R8)   ,intent(in) :: thbot(nMax) ! atm potential T            (K)
     real(R8)   ,intent(in) :: qbot (nMax) ! atm specific humidity  (kg/kg)
     real(R8)   ,intent(in) :: rbot (nMax) ! atm air density       (kg/m^3)
     real(R8)   ,intent(in) :: tbot (nMax) ! atm T                      (K)
+    real(R8)   ,intent(in) :: ts   (nMax) ! ocn temperature            (K)
     real(R8)   ,intent(in) :: us   (nMax) ! ocn u-velocity           (m/s)
     real(R8)   ,intent(in) :: vs   (nMax) ! ocn v-velocity           (m/s)
-    real(R8)   ,intent(in) :: ts   (nMax) ! ocn temperature            (K)
+    real(R8)   ,intent(in) :: thbot(nMax) ! atm potential T            (K)
+    real(R8),   intent(in) :: spval       ! masked value
 
     !--- output arguments -------------------------------
     real(R8),intent(out)  ::  sen  (nMax)    ! heat flux: sensible      (W/m^2)
     real(R8),intent(out)  ::  lat  (nMax)    ! heat flux: latent        (W/m^2)
     real(R8),intent(out)  ::  lwup (nMax)    ! heat flux: lw upward     (W/m^2)
-    real(R8),intent(out)  ::  evap (nMax)    ! water flux: evap    ((kg/s)/m^2)
     real(R8),intent(out)  ::  taux (nMax)    ! surface stress, zonal        (N)
     real(R8),intent(out)  ::  tauy (nMax)    ! surface stress, maridional   (N)
+    real(R8),intent(out)  ::  evap (nMax)    ! water flux: evap    ((kg/s)/m^2)
     real(R8),intent(out)  ::  tref (nMax)    ! diag:  2m ref height T       (K)
     real(R8),intent(out)  ::  qref (nMax)    ! diag:  2m ref humidity   (kg/kg)
     real(R8),intent(out)  :: duu10n(nMax)    ! diag: 10m wind speed squared (m/s)^2
-    real(R8),intent(in)   :: spval           ! masked value
 
     !--- local constants --------------------------------
     real(R8),parameter :: umin  =  0.5_R8 ! minimum wind speed       (m/s)

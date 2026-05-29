@@ -28,11 +28,11 @@ contains
 
   ! end subroutine flux_adjust_constants
 
-  subroutine flux_atmocn_driver(ocn_surface_flux_scheme, &
-       gcomp, garea, maintask, logunit, nMax, mask,           &
-       zbot, ubot, vbot, qbot, rbot, tbot, thbot, pbot,               &
-       ts, us, vs,                                         &
-       usfc, vsfc, psfc, lwdn,                         &
+  subroutine flux_atmocn_driver(ocn_surface_flux_scheme,     &
+       gcomp, garea, maintask, logunit, nMax, mask,          &
+       zbot, ubot, vbot, qbot, rbot, tbot, thbot, pbot,      &
+       ts, us, vs,                                           &
+       usfc, vsfc, psfc, lwdn,                               &
        sen, lat, lwup, taux, tauy, evap, tref, qref, duu10n, &
        missval)
 !       missval,                                              &
@@ -65,7 +65,6 @@ contains
     real(R8), intent(in) :: psfc (nMax) ! atm P (surface) (Pa)
     real(R8), intent(in) :: pbot (nMax) ! atm P (bottom) (Pa)
     real(R8), intent(in) :: lwdn (nMax) ! atm lw downward (W/m^2)
-    real(R8), intent(in), optional :: missval     ! masked value
 
     !--- output arguments -------------------------------
     real(R8), intent(out) :: sen   (nMax) ! heat flux: sensible (W/m^2)
@@ -77,6 +76,9 @@ contains
     real(R8), intent(out) :: tref  (nMax) ! diagnostic : 2m ref height T (K)
     real(R8), intent(out) :: qref  (nMax) ! diagnostic:  2m ref humidity (kg/kg)
     real(R8), intent(out) :: duu10n(nMax) ! diagnostic: 10m wind speed squared (m/s)^2
+
+    real(R8), intent(in), optional :: missval ! masked value
+
     !real(R8), intent(out) :: ustar_sv(nMax)  ! diagnostic: ustar
     !real(R8), intent(out) :: re_sv   (nMax)  ! diagnostic: sqrt of exchange coeff (water)
     !real(R8), intent(out) :: ssq_sv  (nMax)  ! diagnostic: sea surface humidity (kg/kg)
@@ -97,30 +99,9 @@ contains
     if (present(ssq_sv))   ssq_sv   = spval
 
     if (ocn_surface_flux_scheme == ocn_flux_scheme_bulk) then
-       call flux_atmocn_bulk ( logunit=logunit, &
-            nMax=nMax,               &
-            mask=mask,                &
-            zbot=zbot,                &
-            ubot=ubot,                &
-            vbot=vbot,                &
-            qbot=shum,                &
-            rbot=dens,                &
-            tbot=tbot,                &
-            ts=tocn,                  &
-            us=uocn,                  &
-            vs=vocn,                  &
-            thbot=thbot,              &
-            missval=spval,                      &
-            ! out
-            sen=sen,                 &
-            lat=lat,                 &
-            lwup=lwup,               &
-            taux=taux,               &
-            tauy=tauy,               &
-            evap=evap,               &
-            tref=tref,               &
-            qref=qref,               &
-            duu10n=duu10n)
+        call flux_atmocn_bulk(logunit, nMax, mask,                             &
+           zbot, ubot, vbot, shum, dens, tbot, tocn, uocn, vocn, thbot, spval, &
+           sen, lat, lwup, taux, tauy, evap, tref, qref, duu10n)
 
     else if  (ocn_surface_flux_scheme == ocn_flux_scheme_ccpp) then
        ! call flux_atmocn_ccpp( logunit=logunit, &
