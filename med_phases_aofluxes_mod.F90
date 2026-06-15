@@ -124,6 +124,7 @@ module med_phases_aofluxes_mod
      real(R8) , pointer :: tbot        (:) => null() ! atm bottom surface T
      real(R8) , pointer :: lwdn        (:) => null() ! atm downward longwave heat flux
      real(R8) , pointer :: rainc       (:) => null() ! convective rain flux
+     real(R8) , pointer :: swnet       (:) => null() ! swnet
      ! local size and computational mask and area: on aoflux grid
      integer            :: lsize                     ! local size
      integer  , pointer :: mask        (:) => null() ! integer ocn domain mask: 0 <=> inactive cell
@@ -552,6 +553,12 @@ contains
     call set_aoflux_in_pointers(is_local%wrap%FBImp(compatm,compocn), is_local%wrap%FBImp(compocn,compocn), &
          aoflux_in, lsize, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! retrieve export swnet for cool/warm skin parameterization
+    if (FB_fldchk(is_local%wrap%FBMed_aoflux_o, 'Foxx_swnet', rc=rc)) then
+       call fldbun_getfldptr(is_local%wrap%FBMed_aoflux_o, 'Foxx_swnet', aoflux_in%swnet, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+    end if
 
     ! ------------------------
     ! output fields from aoflux calculation
@@ -1100,8 +1107,8 @@ contains
          logunit=logunit, nMax=aoflux_in%lsize, mask=aoflux_in%mask,                           &
          zbot=aoflux_in%zbot, ubot=aoflux_in%ubot, vbot=aoflux_in%vbot, qbot=aoflux_in%shum,   &
          rbot=aoflux_in%dens, tbot=aoflux_in%tbot, thbot=aoflux_in%thbot, pbot=aoflux_in%pbot, &
-         ts=aoflux_in%tocn, us=aoflux_in%uocn, vs=aoflux_in%vocn,                              &
-         usfc=aoflux_in%usfc, vsfc=aoflux_in%vsfc, psfc=aoflux_in%psfc, lwdn=aoflux_in%lwdn,   &
+         ts=aoflux_in%tocn, us=aoflux_in%uocn, vs=aoflux_in%vocn, psfc=aoflux_in%psfc,         &
+         usfc=aoflux_in%usfc, vsfc=aoflux_in%vsfc, lwdn=aoflux_in%lwdn,                        &
          sen=aoflux_out%sen, lat=aoflux_out%lat, lwup=aoflux_out%lwup,                         &
          taux=aoflux_out%taux, tauy=aoflux_out%tauy, evap=aoflux_out%evap,                     &
          tref=aoflux_out%tref, qref=aoflux_out%qref, duu10n=aoflux_out%duu10n,                 &
@@ -1597,12 +1604,17 @@ end subroutine med_aofluxes_map_ogrid2xgrid_input
     end if
 
     ! extra fields for CCPP aoflux
-    if (trim(aoflux_code) == 'ccpp') then
-       call fldbun_getfldptr(fldbun_a, 'Sa_u10m', aoflux_in%usfc, xgrid=xgrid, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call fldbun_getfldptr(fldbun_a, 'Sa_v10m', aoflux_in%vsfc, xgrid=xgrid, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call fldbun_getfldptr(fldbun_a, 'Faxa_lwdn', Aoflux_in%lwdn, xgrid=xgrid, rc=rc)
+    if (trim(coupling_mode) /= 'cesm') then
+       if (trim(aoflux_code) == 'ccpp') then
+          call fldbun_getfldptr(fldbun_a, 'Sa_u10m', aoflux_in%usfc, xgrid=xgrid, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+          call fldbun_getfldptr(fldbun_a, 'Sa_v10m', aoflux_in%vsfc, xgrid=xgrid, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+       else
+          allocate(aoflux_in%usfc(1), source=0.0_R8)
+          allocate(aoflux_in%vsfc(1), source=0.0_R8)
+       end if
+       call fldbun_getfldptr(fldbun_a, 'Faxa_lwdn', aoflux_in%lwdn, xgrid=xgrid, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -1621,17 +1633,8 @@ end subroutine med_aofluxes_map_ogrid2xgrid_input
        call fldbun_getfldptr(fldbun_a, 'Sa_dens', aoflux_in%dens, xgrid=xgrid, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
     end if
-
-    ! The following conditional captures the cases where aoflux_in%psfc is needed in calls
-    ! to flux_atmocn / flux_atmocn_ccpp. Note that coupling_mode=='cesm' is equivalent to
-    ! the CESMCOUPLED CPP token, and coupling_mode(1:3)=='ufs' is roughly equivalent to
-    ! the UFS_AOFLUX CPP token (noting that we should only be in this subroutine if using
-    ! one of the aoflux variants of the ufs coupling_mode).
-    if ((trim(coupling_mode) == 'cesm') .or. &
-         (coupling_mode(1:3) == 'ufs' .and. trim(aoflux_code) == 'ccpp')) then
-       call fldbun_getfldptr(fldbun_a, 'Sa_pslv', aoflux_in%psfc, xgrid=xgrid, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-    end if
+    call fldbun_getfldptr(fldbun_a, 'Sa_pslv', aoflux_in%psfc, xgrid=xgrid, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! if either density or potential temperature are computed, will need bottom level pressure
     if (compute_atm_dens .or. compute_atm_thbot) then

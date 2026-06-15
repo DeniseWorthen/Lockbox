@@ -6,7 +6,10 @@ module esmFldsExchange_ufs_mod
   ! mapping and merging
   !---------------------------------------------------------------------
 
-  use med_kind_mod , only : CX=>SHR_KIND_CX, CS=>SHR_KIND_CS, CL=>SHR_KIND_CL, R8=>SHR_KIND_R8
+  use ESMF
+  use NUOPC
+  use med_utils_mod , only : chkerr => med_utils_chkerr
+  use med_kind_mod  , only : CX=>SHR_KIND_CX, CS=>SHR_KIND_CS, CL=>SHR_KIND_CL, R8=>SHR_KIND_R8
 
   implicit none
   public
@@ -17,9 +20,12 @@ module esmFldsExchange_ufs_mod
   integer :: lnd2atm_maptype
 
   ! optional mapping files
-  character(len=CL) :: atm2ice_bilnr = 'unset'
-  character(len=CL) :: atm2ice_patchuv = 'unset'
-  character(len=CL) :: atm2ocn_patchuv = 'unset'
+  character(len=CL) :: a2oi_bilnr
+  character(len=CL) :: a2oi_patch
+  character(len=CL) :: a2oi_consf
+  character(len=CL) :: a2w_bilnr
+  character(len=CL) :: w2oi_bilnr_nstod
+  character(len=CL) :: oi2w_bilnr_nstod
 
   character(*), parameter :: u_FILE_u = &
        __FILE__
@@ -30,10 +36,6 @@ contains
 
   subroutine esmFldsExchange_ufs(gcomp, phase, rc)
 
-    use ESMF
-    use NUOPC
-
-    use med_utils_mod         , only : chkerr => med_utils_chkerr
     use med_methods_mod       , only : fldchk => med_methods_FB_FldChk
     use med_internalstate_mod , only : InternalState
     use med_internalstate_mod , only : compmed, compatm, compocn, compice, complnd, compwav, ncomps
@@ -83,7 +85,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! Set maptype according to coupling_mode
-    if (trim(coupling_mode) == 'ufs.nfrac' .or. trim(coupling_mode) == 'ufs.nfrac.aoflux') then
+    if (trim(coupling_mode) == 'ufs.nfrac') then
        maptype = mapnstod_consf
     else
        maptype = mapconsf
@@ -108,28 +110,21 @@ contains
        end if
     end if
 
-    ! to ice
-    call NUOPC_CompAttributeGet(gcomp, name='map_atm2ice_bilnr', isPresent=isPresent, rc=rc)
+    ! to ocn/ice
+    a2oi_bilnr = get_mapfile(gcomp, 'map_a2oi_bilnr', rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent) then
-       call NUOPC_CompAttributeGet(gcomp, name='map_atm2ice_bilnr', value=cvalue, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       atm2ice_bilnr = trim(cvalue)
-    end if
-    call NUOPC_CompAttributeGet(gcomp, name='map_atm2ice_patchuv', isPresent=isPresent, rc=rc)
+    a2oi_patch = get_mapfile(gcomp, 'map_a2oi_patch', rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent) then
-       call NUOPC_CompAttributeGet(gcomp, name='map_atm2ice_patchuv', value=cvalue, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       atm2ice_patchuv = trim(cvalue)
-    end if
-    call NUOPC_CompAttributeGet(gcomp, name='map_atm2ocn_patchuv', isPresent=isPresent, rc=rc)
+    a2oi_consf = get_mapfile(gcomp, 'map_a2oi_consf', rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent) then
-       call NUOPC_CompAttributeGet(gcomp, name='map_atm2ocn_patchuv', value=cvalue, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       atm2ocn_patchuv = trim(cvalue)
-    end if
+    w2oi_bilnr_nstod = get_mapfile(gcomp, 'map_w2oi_bilnr_nstod', rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! to wav
+    a2w_bilnr = get_mapfile(gcomp, 'map_a2w_bilnr', rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    oi2w_bilnr_nstod = get_mapfile(gcomp, 'map_oi2w_bilnr_nstod', rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     if (trim(coupling_mode) == 'ufs.nfrac.aoflux' .or. trim(coupling_mode) == 'ufs.frac.aoflux') then
        med_aoflux_to_ocn = .true.
@@ -189,7 +184,7 @@ contains
              call addfld_from(compatm , fldname)
           else
              if ( fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
-                call addmap_from(compatm, fldname, compocn, mapbilnr, 'one', 'unset')
+                call addmap_from(compatm, fldname, compocn, mapbilnr, 'one', a2oi_bilnr)
              end if
           end if
        end do
@@ -207,6 +202,11 @@ contains
           end if
        end do
        deallocate(flds)
+
+       ! from custom ocn merge: swnet for cool/warm skin
+       if (phase == 'advertise') then
+          call addfld_aoflux('Foxx_swnet')
+       end if
     end if
 
     ! from med: ocean albedos (not sent to the ATM in UFS).
@@ -286,19 +286,25 @@ contains
     end do
     deallocate(flds)
 
-    ! to atm: unmerged surface temperatures from ocn
-    if (phase == 'advertise') then
-       if (is_local%wrap%comp_present(compocn) .and. is_local%wrap%comp_present(compatm)) then
-          call addfld_from(compocn , 'So_t')
-          call addfld_to(compatm   , 'So_t')
+    ! to atm: unmerged surface temperatures and currents from ocn
+    allocate(flds(3))
+    flds = (/'So_t', 'So_u', 'So_v'/)
+    do n = 1,size(flds)
+       fldname = trim(flds(n))
+       if (phase == 'advertise') then
+          if (is_local%wrap%comp_present(compocn) .and. is_local%wrap%comp_present(compatm)) then
+             call addfld_from(compocn , fldname)
+             call addfld_to(compatm   , fldname)
+          end if
+       else
+          if ( fldchk(is_local%wrap%FBexp(compatm)        , fldname, rc=rc) .and. &
+               fldchk(is_local%wrap%FBImp(compocn,compocn), fldname, rc=rc)) then
+             call addmap_from(compocn, fldname, compatm, maptype, 'ofrac', 'unset')
+             call addmrg_to(compatm, fldname, mrg_from=compocn, mrg_fld=fldname, mrg_type='copy')
+          end if
        end if
-    else
-       if ( fldchk(is_local%wrap%FBexp(compatm)        , 'So_t', rc=rc) .and. &
-            fldchk(is_local%wrap%FBImp(compocn,compocn), 'So_t', rc=rc)) then
-          call addmap_from(compocn, 'So_t', compatm, maptype, 'ofrac', 'unset')
-          call addmrg_to(compatm, 'So_t', mrg_from=compocn, mrg_fld='So_t', mrg_type='copy')
-       end if
-    end if
+    end do
+    deallocate(flds)
 
     ! to atm: unmerged flux components from lnd
     if (is_local%wrap%comp_present(complnd) .and. is_local%wrap%comp_present(compatm)) then
@@ -342,7 +348,7 @@ contains
        deallocate(flds)
     end if
 
-    ! to atm: unmerged from mediator, merge will be done under FV3/CCPP composite step
+    ! to atm: unmerged from mediator, merge will be done under UFSATM/CCPP composite step
     ! - zonal surface stress, meridional surface stress
     ! - surface latent heat flux,
     ! - surface sensible heat flux
@@ -394,7 +400,7 @@ contains
     else
        if ( fldchk(is_local%wrap%FBexp(compocn)        , 'Sa_pslv', rc=rc) .and. &
             fldchk(is_local%wrap%FBImp(compatm,compatm), 'Sa_pslv', rc=rc)) then
-          call addmap_from(compatm, 'Sa_pslv', compocn, maptype, 'one', 'unset')
+          call addmap_from(compatm, 'Sa_pslv', compocn, mapbilnr, 'one', a2oi_bilnr)
           call addmrg_to(compocn, 'Sa_pslv', mrg_from=compatm, mrg_fld='Sa_pslv', mrg_type='copy')
        end if
     end if
@@ -429,7 +435,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compocn)        , trim(oflds(n)), rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), trim(aflds(n)), rc=rc)) then
-             call addmap_from(compatm, trim(aflds(n)), compocn, maptype, 'one', 'unset')
+             call addmap_from(compatm, trim(aflds(n)), compocn, maptype, 'one', a2oi_consf)
           end if
        end if
     end do
@@ -464,7 +470,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compocn)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
-             call addmap_from(compatm, fldname, compocn, maptype, 'one', 'unset')
+             call addmap_from(compatm, fldname, compocn, maptype, 'one', a2oi_consf)
              call addmrg_to(compocn, fldname, &
                   mrg_from=compatm, mrg_fld=fldname, mrg_type='copy_with_weights', mrg_fracname='ofrac')
           end if
@@ -499,9 +505,9 @@ contains
                   fldchk(is_local%wrap%FBImp(compatm,compatm), 'Faxa_'//fldname, rc=rc)) then
                 call addmap_from(compice, 'Fioi_'//fldname, compocn, mapfcopy, 'unset', 'unset')
                 if (mapuv_with_cart3d) then
-                   call addmap_from(compatm, 'Faxa_'//fldname, compocn, mapconsf_uv3d, 'aofrac', atm2ocn_patchuv)
+                   call addmap_from(compatm, 'Faxa_'//fldname, compocn, mapconsf_uv3d, 'aofrac', a2oi_consf)
                 else
-                   call addmap_from(compatm, 'Faxa_'//fldname, compocn, mapconsf_aofrac, 'aofrac', 'unset')
+                   call addmap_from(compatm, 'Faxa_'//fldname, compocn, mapconsf_aofrac, 'aofrac', a2oi_consf)
                 end if
                 call addmrg_to(compocn, 'Foxx_'//fldname, &
                      mrg_from=compice, mrg_fld='Fioi_'//fldname, mrg_type='merge', mrg_fracname='ifrac')
@@ -535,7 +541,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compocn)        , 'Foxx_lwnet', rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), 'Faxa_lwnet', rc=rc)) then
-             call addmap_from(compatm, 'Faxa_lwnet', compocn, mapconsf_aofrac, 'aofrac', 'unset')
+             call addmap_from(compatm, 'Faxa_lwnet', compocn, mapconsf_aofrac, 'aofrac', a2oi_consf)
              call addmrg_to(compocn, 'Foxx_lwnet', &
                   mrg_from=compatm, mrg_fld='Faxa_lwnet', mrg_type='copy_with_weights', mrg_fracname='ofrac')
           end if
@@ -559,7 +565,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compocn)        , 'Foxx_sen', rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), 'Faxa_sen', rc=rc)) then
-             call addmap_from(compatm, 'Faxa_sen', compocn, mapconsf_aofrac, 'aofrac', 'unset')
+             call addmap_from(compatm, 'Faxa_sen', compocn, mapconsf_aofrac, 'aofrac', a2oi_consf)
              call addmrg_to(compocn, 'Foxx_sen', &
                   mrg_from=compatm, mrg_fld='Faxa_sen', mrg_type='copy_with_weights', mrg_fracname='ofrac')
           end if
@@ -583,7 +589,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compocn)        , 'Foxx_evap', rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), 'Faxa_evap' , rc=rc)) then
-             call addmap_from(compatm, 'Faxa_evap', compocn, mapconsf_aofrac, 'aofrac', 'unset')
+             call addmap_from(compatm, 'Faxa_evap', compocn, mapconsf_aofrac, 'aofrac', a2oi_consf)
              call addmrg_to(compocn, 'Foxx_evap', &
                   mrg_from=compatm, mrg_fld='Faxa_evap', mrg_type='copy_with_weights', mrg_fracname='ofrac')
           end if
@@ -627,8 +633,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compocn)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compwav,compwav), fldname, rc=rc)) then
-             !call addmap_from(compwav, fldname, compocn, mapbilnr_nstod, 'one', 'map.global_270k.to.mx100.bilnr_nstod.nc')
-             call addmap_from(compwav, fldname, compocn, mapbilnr_nstod, 'one', 'unset')
+             call addmap_from(compwav, fldname, compocn, mapbilnr_nstod, 'one', w2oi_bilnr_nstod)
              call addmrg_to(compocn, fldname, mrg_from=compwav, mrg_fld=fldname, mrg_type='copy')
           end if
        end if
@@ -661,7 +666,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compice)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
-             call addmap_from(compatm, fldname, compice, maptype, 'one', 'unset')
+             call addmap_from(compatm, fldname, compice, maptype, 'one', a2oi_consf)
              call addmrg_to(compice, fldname, mrg_from=compatm, mrg_fld=fldname, mrg_type='copy')
           end if
        end if
@@ -687,7 +692,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compice)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
-             call addmap_from(compatm, fldname, compice, mapbilnr, 'one', atm2ice_bilnr)
+             call addmap_from(compatm, fldname, compice, mapbilnr, 'one', a2oi_bilnr)
              call addmrg_to(compice, fldname, mrg_from=compatm, mrg_fld=fldname, mrg_type='copy')
           end if
        end if
@@ -707,9 +712,9 @@ contains
           if ( fldchk(is_local%wrap%FBexp(compice)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
              if (mapuv_with_cart3d) then
-                call addmap_from(compatm, fldname, compice, mappatch_uv3d, 'one', atm2ice_patchuv)
+                call addmap_from(compatm, fldname, compice, mappatch_uv3d, 'one', a2oi_patch)
              else
-                call addmap_from(compatm, fldname, compice, mappatch, 'one', 'unset')
+                call addmap_from(compatm, fldname, compice, mappatch, 'one', a2oi_patch)
              end if
              call addmrg_to(compice, fldname, mrg_from=compatm, mrg_fld=fldname, mrg_type='copy')
           end if
@@ -753,7 +758,7 @@ contains
     else
        if ( fldchk(is_local%wrap%FBExp(compice)        , 'Sw_elevation_spectrum', rc=rc) .and. &
             fldchk(is_local%wrap%FBImp(compwav,compwav), 'Sw_elevation_spectrum', rc=rc)) then
-          call addmap_from(compwav, 'Sw_elevation_spectrum', compice, mapbilnr_nstod, 'one', 'unset')
+          call addmap_from(compwav, 'Sw_elevation_spectrum', compice, mapbilnr_nstod, 'one', w2oi_bilnr_nstod)
           call addmrg_to(compice, 'Sw_elevation_spectrum', mrg_from=compwav, &
                mrg_fld='Sw_elevation_spectrum', mrg_type='copy')
        end if
@@ -778,8 +783,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compwav)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compatm,compatm), fldname, rc=rc)) then
-             !call addmap_from(compatm, fldname, compwav, mapbilnr, 'one', 'map.C96.to.global_270k.bilnr.nc')
-             call addmap_from(compatm, fldname, compwav, mapbilnr, 'one', 'unset')
+             call addmap_from(compatm, fldname, compwav, mapbilnr, 'one', a2w_bilnr)
              call addmrg_to(compwav, fldname, mrg_from=compatm, mrg_fld=fldname, mrg_type='copy')
           end if
        end if
@@ -802,8 +806,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compwav)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compice,compice), fldname, rc=rc)) then
-             !call addmap_from(compice, fldname, compwav, mapbilnr_nstod , 'one', 'map.mx100.to.global_270k.bilnr_nstod.nc')
-             call addmap_from(compice, fldname, compwav, mapbilnr_nstod , 'one', 'unset')
+             call addmap_from(compice, fldname, compwav, mapbilnr_nstod , 'one', oi2w_bilnr_nstod)
              call addmrg_to(compwav, fldname, mrg_from=compice, mrg_fld=fldname, mrg_type='copy')
           end if
        end if
@@ -826,8 +829,7 @@ contains
        else
           if ( fldchk(is_local%wrap%FBexp(compwav)        , fldname, rc=rc) .and. &
                fldchk(is_local%wrap%FBImp(compocn,compocn), fldname, rc=rc)) then
-             !call addmap_from(compocn, fldname, compwav, mapbilnr_nstod , 'one', 'map.mx100.to.global_270k.bilnr_nstod.nc')
-             call addmap_from(compocn, fldname, compwav, mapbilnr_nstod , 'one', 'unset')
+             call addmap_from(compocn, fldname, compwav, mapbilnr_nstod , 'one', oi2w_bilnr_nstod)
              call addmrg_to(compwav, fldname, mrg_from=compocn, mrg_fld=fldname, mrg_type='copy')
           end if
        end if
@@ -893,5 +895,29 @@ contains
     end if ! lm4
 
   end subroutine esmFldsExchange_ufs
+
+  function get_mapfile(gcomp, attribute_name, rc) result(mapfile)
+
+    type(ESMF_GridComp), intent(in)    :: gcomp
+    character(len=*)   , intent(in)    :: attribute_name
+    integer            , intent(inout) :: rc
+    character(len=CL)                  :: mapfile
+
+    logical           :: isPresent, isSet
+    character(len=CL) :: cvalue
+    !--------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    mapfile = 'unset'
+    call NUOPC_CompAttributeGet(gcomp, name=attribute_name, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       call NUOPC_CompAttributeGet(gcomp, name=attribute_name, value=cvalue, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       mapfile = trim(cvalue)
+    end if
+
+  end function get_mapfile
 
 end module esmFldsExchange_ufs_mod
