@@ -230,6 +230,14 @@ function setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
   n_active = count(requested)
   if (n_active == 0) return
 
+  do n = 1, nfreq
+    if (nml_fh(n) == 0 .and. len_trim(nml_fnameprefix(n)) > 0) then
+      ierr = 1
+      write(errmsg, '(A, I2)') 'MOM_outputlog: filename prefix provided for inactive slot ', n
+      return
+    endif
+  enddo
+
   ! default file prefix == 'ocn' for any single freq run
   if (n_active == 1) then
     do n = 1, nfreq
@@ -294,14 +302,6 @@ function setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
           endif
         endif
       enddo
-    endif
-  enddo
-
-  do n = 1, nfreq
-    if (nml_fh(n) == 0 .and. len_trim(nml_fnameprefix(n)) > 0) then
-      ierr = 1
-      write(errmsg, '(A, I2)') 'MOM_outputlog: filename prefix provided for inactive slot ', n
-      return
     endif
   enddo
 

@@ -113,6 +113,24 @@ program test_outputlog_methods
   ! ===========================================================================
 
   nt = nt+1
+  write(testname,'(A,I2.2,A)')'test ',nt,' settype: out-of-order inputs map correctly to canonical slots :'
+  nml_fh = (/24, 3, 0, 0/)
+  requested = (/.false., .true., .false., .true./)
+  nml_type = (/ character(len=12) :: 'average', 'none', '', '' /)
+
+  timereduce = settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr)
+
+  is_passing = (ierr == 0 .and. trim(timereduce(2)) == 'none' .and. trim(timereduce(4)) == 'average')
+  if (is_passing) then
+     npass = npass + 1
+     msg(nt) = trim(testname)//' PASS'
+  else
+     nfail = nfail + 1
+     msg(nt) = trim(testname)//' FAIL'
+  endif
+
+  ! ------------------
+  nt = nt+1
   write(testname,'(A,I2.2,A)')'test ',nt,' settype: lower-case strings map correctly :'
   nml_fh = (/1,6,0,0/)
   requested = (/.true., .false., .true., .false./)
@@ -189,7 +207,7 @@ program test_outputlog_methods
   write(testname,'(A,I2.2,A)')'test ',nt,' settype: mis-aligned type for active frequency :'
   nml_fh = (/1,6,0,0/)
   requested = (/ .true., .false., .true., .false. /)
-  nml_type = (/ character(len=12) :: 'none', 'average', '', '' /)
+  nml_type = (/ character(len=12) :: 'none', '', 'average', '' /)
 
   timereduce = settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr)
 
@@ -282,7 +300,7 @@ program test_outputlog_methods
   write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: misaligned file prefix on active slot fails :'
   nml_fh = (/1,24,0,0/)
   requested = (/ .true., .false., .false., .true. /)
-  nml_fnameprefix = (/ character(len=12) :: 'ocn_1h', 'ocn_daily', '', '' /)
+  nml_fnameprefix = (/ character(len=12) :: 'ocn_1h', '', 'ocn_daily', '' /)
 
   fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
 
@@ -302,7 +320,7 @@ program test_outputlog_methods
   requested = (/ .false., .false., .true., .false. /)
   longfileprefix = 'prefix_is_too_long_and_is_truncated'
   overlength_fnameprefix(:) = ''
-  overlength_fnameprefix(3) = longfileprefix
+  overlength_fnameprefix(1) = longfileprefix
 
   fnameroot = setprefix(validfreqs, requested, nml_fh, overlength_fnameprefix, errmsg, ierr)
 
