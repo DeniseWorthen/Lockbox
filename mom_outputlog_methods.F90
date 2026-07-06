@@ -15,29 +15,33 @@ use netcdf
 
 implicit none; private
 
-type :: outputlog_type
+type :: outputlog_config_type
   character(len=14)       :: alarm_name
   integer                 :: opt_n
   logical                 :: requested
   character(len=7)        :: timereduce
   character(len=12)       :: fnameprefix
-  character(len=12)       :: fnamesuffix
+  character(len=4)        :: fnamesuffix
+  type(ESMF_Alarm)        :: alarm
+  type(ESMF_TimeInterval) :: fhoffset
+  type(ESMF_TimeInterval) :: filename_fhoffset
+end type outputlog_config_type
+
+type :: outputlog_state_type
   logical                 :: chkfile_nextAdvance
   logical                 :: use_filesize
   character(len=256)      :: filename
   integer                 :: createsize
-  type(ESMF_Alarm)        :: alarm
-  type(ESMF_TimeInterval) :: fhoffset
-  type(ESMF_TimeInterval) :: filename_fhoffset
   type(ESMF_Time)         :: time_lastrestart
-end type outputlog_type
+end type outputlog_state_type
 
 character(len=*), parameter :: u_FILE_u = &
      __FILE__
 
-public :: file_is_complete, get_unlimited_len, get_timestr, get_importexport
+public :: get_file_state, file_is_complete, get_unlimited_len
+public :: get_timestr, get_importexport
 public :: readnml, debug_info, nf90_err
-public :: outputlog_type
+public :: outputlog_config_type, outputlog_state_type
 
 public :: setrequest, settype, setprefix
 
@@ -52,31 +56,31 @@ contains
 !! @param[out]    rc       return code
 subroutine readnml(fname, cf, debug, errmsg, rc)
 
-  character(len=*),     intent(in)    :: fname
-  type(outputlog_type), intent(inout) :: cf(:)
-  logical,              intent(out)   :: debug
-  character(len=*),     intent(out)   :: errmsg
-  integer,              intent(out)   :: rc
+  character(len=*),            intent(in)    :: fname
+  type(outputlog_config_type), intent(inout) :: cf(:)
+  logical,                     intent(out)   :: debug
+  character(len=*),            intent(out)   :: errmsg
+  integer,                     intent(out)   :: rc
 
   integer :: n, nn, nfreq, iounit, ierr
-  logical :: existflag, nml_debug
+  logical :: existflag, logdebug
 
-  integer, allocatable :: nml_fh(:)
-  character(len=7), allocatable :: nml_type(:)
-  character(len=24), allocatable :: nml_fnameprefix(:)
+  integer,           allocatable :: logfh(:)
+  character(len=7),  allocatable :: logtimereduce(:)
+  character(len=24), allocatable :: logfnameprefix(:)
 
-  namelist / MOM_outputlog_nml/ nml_fh, nml_fnameprefix, nml_type, nml_debug
+  namelist / MOM_lognml/ logfh, logfnameprefix, logtimereduce, logdebug
 
   rc = 0
   errmsg = ''
   nfreq = size(cf)
-  allocate(nml_fh(1:nfreq))
-  allocate(nml_type(1:nfreq))
-  allocate(nml_fnameprefix(1:nfreq))
-  nml_fh(:) = 0
-  nml_type(:) = cf(1:nfreq)%timereduce
-  nml_fnameprefix(:) = cf(1:nfreq)%fnameprefix
-  nml_debug = .false.
+  allocate(logfh(1:nfreq))
+  allocate(logtimereduce(1:nfreq))
+  allocate(logfnameprefix(1:nfreq))
+  logfh(:) = 0
+  logtimereduce(:) = cf(1:nfreq)%timereduce
+  logfnameprefix(:) = cf(1:nfreq)%fnameprefix
+  logdebug = .false.
 
   inquire(file=trim(fname), exist=existflag)
   if (.not. existflag) then
@@ -85,7 +89,7 @@ subroutine readnml(fname, cf, debug, errmsg, rc)
     return
   else
     open (action='read', file=trim(fname), iostat=ierr, newunit=iounit)
-    read (nml=MOM_outputlog_nml, iostat=ierr, unit=iounit)
+    read (nml=MOM_lognml, iostat=ierr, unit=iounit)
     close (iounit)
     if (ierr /= 0) then
       cf(:)%requested = .false.
@@ -94,13 +98,15 @@ subroutine readnml(fname, cf, debug, errmsg, rc)
     endif
   endif
 
-  cf%requested = setrequest(cf%opt_n, nml_fh, errmsg, ierr)
+  debug = logdebug
+
+  cf%requested = setrequest(cf%opt_n, logfh, errmsg, ierr)
   if (ierr /= 0) return
 
-  cf%timereduce = settype(cf%opt_n, cf%requested, nml_fh, nml_type, errmsg, ierr)
+  cf%timereduce = settype(cf%opt_n, cf%requested, logfh, logtimereduce, errmsg, ierr)
   if (ierr /= 0) return
 
-  cf%fnameprefix = setprefix(cf%opt_n, cf%requested, nml_fh, nml_fnameprefix, errmsg, ierr)
+  cf%fnameprefix = setprefix(cf%opt_n, cf%requested, logfh, logfnameprefix, errmsg, ierr)
   if (ierr /= 0) return
 
 end subroutine readnml
@@ -237,6 +243,13 @@ function setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
       return
     endif
   enddo
+  do n = 1, nfreq
+    if (nml_fh(n) /= 0 .and. len_trim(nml_fnameprefix(n)) > 12) then
+      ierr = 1
+      write(errmsg, '(A, I2)') 'MOM_outputlog: filename prefix too long for active slot ', n
+      return
+    endif
+  enddo
 
   ! default file prefix == 'ocn' for any single freq run
   if (n_active == 1) then
@@ -245,19 +258,11 @@ function setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
         do m = 1, size(nml_fh)
           if (nml_fh(m) == validfreqs(n)) then
             reqval = trim(adjustl(nml_fnameprefix(m)))
-
             if (reqval == '') then
-              fileprefixes(n) = 'ocn'
+              fileprefixes(n) = 'ocn_'
             else
-              if (len_trim(nml_fnameprefix(m)) > 12) then
-                ierr = 1
-                errmsg = "MOM_outputlog: nml_fnameprefix exceeds 12 characters."
-                return
-              endif
-              fileprefixes(n) = reqval
+              fileprefixes(n) = reqval//'_'
             endif
-            exit
-
           endif
         enddo
       endif
@@ -266,46 +271,85 @@ function setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
   endif
 
   ! multi-freq output; must provide fileprefixes
-  do n = 1, nfreq
-    if (requested(n)) then
-      do m = 1, size(nml_fh)
-        if (nml_fh(m) == validfreqs(n)) then
-          reqval = trim(adjustl(nml_fnameprefix(m)))
-          if (reqval == '') then
-            ierr = 1
-            write(errmsg, '(A, I0, A)') "MOM_outputlog: Multiple frequencies requested," // &
-                 " but nml_fnameprefix is missing for frequency ", validfreqs(n), "h."
-            return
+  if (n_active > 1) then
+    do n = 1, nfreq
+      if (requested(n)) then
+        do m = 1, size(nml_fh)
+          if (nml_fh(m) == validfreqs(n)) then
+            reqval = trim(adjustl(nml_fnameprefix(m)))
+            if (reqval == '') then
+              ierr = 1
+              write(errmsg, '(A, I0, A)') "MOM_outputlog: Multiple frequencies requested," // &
+                   " but nml_fnameprefix is missing for frequency ", validfreqs(n), "h."
+              return
+            endif
+            fileprefixes(n) = reqval//'_'
+            exit
           endif
-          if (len_trim(nml_fnameprefix(m)) > 12) then
-            ierr = 1
-            errmsg = "MOM_outputlog: nml_fnameprefix exceeds 12 characters."
-            return
-          endif
-          fileprefixes(n) = reqval
-          exit
-        endif
-      enddo
-    endif
-  enddo
+        enddo
+      endif
+    enddo
 
-  ! multi-freq output: must provide unique fileprefixes
-  do n = 1, nfreq
-    if (requested(n)) then
-      do m = n + 1, nfreq
-        if (requested(m)) then
-          if (fileprefixes(n) == fileprefixes(m)) then
-            ierr = 1
-            errmsg = "MOM_outputlog: Ambiguous nml_fnameprefix '" // trim(fileprefixes(n)) // &
-                     "'. Multiple active output streams cannot share the same filename root."
-            return
+    ! multi-freq output: must provide unique fileprefixes
+    do n = 1, nfreq
+      if (requested(n)) then
+        do m = n + 1, nfreq
+          if (requested(m)) then
+            if (fileprefixes(n) == fileprefixes(m)) then
+              ierr = 1
+              errmsg = "MOM_outputlog: Ambiguous nml_fnameprefix '" // trim(fileprefixes(n)) // &
+                   "'. Multiple active output streams cannot share the same filename root."
+              return
+            endif
           endif
-        endif
-      enddo
-    endif
-  enddo
+        enddo
+      endif
+    enddo
+  endif
 
 end function setprefix
+
+!> Retrieve the unlimited dimension length and file size, broadcasting to all PEs
+!! @param[in]   comm      the MPI communicator
+!! @param[in]   fname     the file name
+!! @param[out]  nlen      optional, the length of the unlimited dimension
+!! @param[out]  fsize     optional, the file size in bytes
+!! @param[out]  ierr      return code
+subroutine get_file_state(comm, isroot, rootpe, fname, nlen, fsize, rc)
+
+  type(MPI_Comm),    intent(in)  :: comm
+  logical,           intent(in)  :: isroot
+  integer,           intent(in)  :: rootpe
+  character(len=*),  intent(in)  :: fname
+  integer, optional, intent(out) :: nlen
+  integer, optional, intent(out) :: fsize
+  integer,           intent(out) :: rc
+
+  logical :: existflag
+  integer :: ierr, stats(2)
+
+  rc = 0
+  stats = nf90_fill_int
+
+  if (isroot) then
+    inquire(file=fname, exist=existflag)
+    if (existflag) then
+      if (present(nlen)) stats(1) = get_unlimited_len(trim(fname))
+      if (present(fsize)) inquire(file=fname, size=stats(2))
+    endif
+  endif
+
+  rc = ierr
+  call MPI_Bcast(stats, 2, MPI_INTEGER, rootpe, comm, ierr)
+  if (ierr /= MPI_SUCCESS) then
+    rc = ierr
+    return
+  endif
+
+  if (present(nlen)) nlen  = stats(1)
+  if (present(fsize)) fsize = stats(2)
+
+end subroutine get_file_state
 
 !> Determine if the netcdf output file is complete
 !!
@@ -326,39 +370,26 @@ logical function file_is_complete(comm, isroot, rootpe, fname, chk4size, creates
   integer,          intent(out) :: rc
 
   logical :: existflag
-  integer :: nlen(1), fsize(1), ierr
+  integer :: l_nlen, l_fsize, ierr
   !----------------------------------------------------------------------------
 
   rc = 0
-
   filecomplete = .false.
-  nlen(1) = nf90_fill_int
-  fsize(1) = nf90_fill_int
+  l_nlen = nf90_fill_int
+  l_fsize = nf90_fill_int
 
-  if (isroot) then
-    inquire(file=fname, exist=existflag)
-    if (existflag) then
-      nlen(1) = get_unlimited_len(trim(fname))
-      inquire(file=fname, size=fsize(1))
+  if (chk4size) then
+    call get_file_state(comm, isroot, rootpe, fname, nlen=l_nlen, fsize=l_fsize, rc=ierr)
+    if (ierr == 0) then
+      filecomplete = (l_nlen > 0 .and. l_fsize > createsize)
+    endif
+  else
+    call get_file_state(comm, isroot, rootpe, fname, nlen=l_nlen, rc=ierr)
+    if (ierr == 0) then
+      filecomplete = (l_nlen > 0)
     endif
   endif
 
-  call MPI_Bcast(nlen, 1, MPI_INTEGER, rootpe, comm, ierr)
-  if (ierr /= MPI_SUCCESS) then
-    rc = -1
-    return
-  endif
-  call MPI_Bcast(fsize, 1, MPI_INTEGER, rootpe, comm, ierr)
-  if (ierr /= MPI_SUCCESS) then
-    rc = -1
-    return
-  endif
-
-  if (chk4size) then
-    filecomplete = (nlen(1) > 0 .and. fsize(1) > createsize)
-  else
-    filecomplete = (nlen(1) > 0)
-  endif
 end function file_is_complete
 
 !> Return the length of the unlimited dimension
