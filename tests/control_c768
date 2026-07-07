@@ -1,0 +1,61 @@
+###############################################################################
+#
+#  global control test: GFSv16 atmosphere only at C768L127
+#
+###############################################################################
+
+TEST_DESCR="Compare global control C768L127 results with previous trunk version"
+
+CNTL_DIR=control_c768
+
+LIST_FILES="sfcf000.nc \
+                   sfcf003.nc \
+                   atmf000.nc \
+                   atmf003.nc \
+                   GFSFLX.GrbF00 \
+                   GFSFLX.GrbF03 \
+                   GFSPRS.GrbF00 \
+                   GFSPRS.GrbF03"
+
+ATMRES=C768
+
+export_fv3
+export_tiled
+export_ugwpv1
+CCPP_SUITE=FV3_GFS_v17_p8_ugwpv1
+
+DOMAINS_STACK_SIZE=16000000
+INPES=12
+JNPES=16
+atm_omp_num_threads=${THRD_c768}
+WRITE_GROUP=4
+WRTTASK_PER_GROUP=120
+FHMAX=03
+NPZ=127
+NPZP=128
+NPX=769
+NPY=769
+SYEAR=2021
+SMONTH=03
+SDAY=22
+SHOUR=06
+DT_ATMOS=150
+RESTART_INTERVAL=0
+CDMBGWD=${CDMBGWD_c768}
+OUTPUT_GRID='gaussian_grid'
+OUTPUT_FILE="'netcdf_parallel' 'netcdf_parallel'"
+NSTF_NAME='2,0,0,0,0'
+WRITE_DOPOST=.true.
+IAER=5111
+IOVR=3
+IMO=3072
+JMO=1536
+ZSTANDARD_LEVEL=5
+QUANTIZE_NSD=14
+ICHUNK3D=${IMO}
+JCHUNK3D=${JMO}
+KCHUNK3D=1
+OUTPUT_FH="3 -1"
+
+FV3_RUN=control_run.IN
+INPUT_NML=global_control.nml.IN

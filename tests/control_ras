@@ -1,0 +1,41 @@
+###############################################################################
+#
+#  Global with ras test
+#
+###############################################################################
+
+TEST_DESCR="Compare global with ras results with previous trunk version"
+
+CNTL_DIR=control_ras
+
+LIST_FILES="sfcf000.nc \
+                   sfcf024.nc \
+                   atmf000.nc \
+                   atmf024.nc \
+                   GFSFLX.GrbF00 \
+                   GFSFLX.GrbF24 \
+                   GFSPRS.GrbF00 \
+                   GFSPRS.GrbF24"
+
+export_fv3_v16
+NPZ=127
+NPZP=128
+DT_ATMOS=720
+SYEAR=2021
+SMONTH=03
+SDAY=22
+SHOUR=06
+OUTPUT_GRID='gaussian_grid'
+NSTF_NAME='2,0,0,0,0'
+WRITE_DOPOST=.true.
+IAER=5111
+IOVR=3
+
+RAS=.true.
+IMFDEEPCNV=-1
+CNVCLD=.false.
+RANDOM_CLDS=.true.
+
+FV3_RUN=control_run.IN
+CCPP_SUITE=FV3_GFS_v16_ras
+INPUT_NML=control.nml.IN

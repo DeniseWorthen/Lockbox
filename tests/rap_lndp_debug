@@ -1,0 +1,24 @@
+###############################################################################
+#
+#  RAP with land stochastic pert. debug test: atmosphere only at C96L127 in debug mode
+#
+###############################################################################
+
+TEST_DESCR="Compare RAP lndp debug results with previous trunk version"
+
+CNTL_DIR=rap_lndp_debug
+
+LIST_FILES="sfcf000.nc \
+                   sfcf001.nc \
+                   atmf000.nc \
+                   atmf001.nc"
+
+export_rap
+OUTPUT_FH='0 1'
+FHMAX=1
+WRITE_DOPOST=.false.
+
+LNDP_TYPE=2
+N_VAR_LNDP=6
+LNDP_MODEL_TYPE=2
+

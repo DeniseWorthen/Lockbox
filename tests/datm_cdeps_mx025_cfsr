@@ -1,0 +1,53 @@
+#
+#  DATM_CDEPS_MOM6_CICE_CMEPS_CFSR test
+#
+
+source ${PATHRT}/tests/datm_cdeps_control_cfsr
+
+TEST_DESCR+=" - 1/4deg ocean+ice"
+
+CNTL_DIR=datm_cdeps_mx025_cfsr
+
+LIST_FILES="RESTART/20111001.120000.MOM.res.nc \
+                   RESTART/20111001.120000.MOM.res_1.nc \
+                   RESTART/20111001.120000.MOM.res_2.nc \
+                   RESTART/20111001.120000.MOM.res_3.nc \
+                   RESTART/iced.2011-10-01-43200.nc \
+                   RESTART/DATM_CFSR.cpl.r.2011-10-01-43200.nc"
+
+DAYS=0.5
+FHMAX=12
+RESTART_N=${FHMAX}
+DT_DYNAM_MOM6=900
+DT_THERM_MOM6=1800
+
+ATM_compute_tasks=${ATM_compute_tasks_cdeps_025}
+OCN_tasks=${OCN_tasks_cdeps_025}
+ICE_tasks=${ICE_tasks_cdeps_025}
+
+# ocn/ice resolution
+OCNRES=025
+ICERES=0.25
+NX_GLB=1440
+NY_GLB=1080
+CICE_NPROC=48
+np2=`expr $CICE_NPROC / 2`
+CICE_BLCKX=`expr $NX_GLB / $np2`
+CICE_BLCKY=`expr $NY_GLB / 2`
+CICE_DIAGFREQ=`expr $((FHMAX-$FHROT)) \* 3600 / $DT_CICE`
+
+# resolution dependent files
+MOM6_INPUT=MOM_input_${OCNRES}.IN
+MESH_ICE=mesh.mx${OCNRES}.nc
+MESH_OCN=mesh.mx${OCNRES}.nc
+CICE_GRID=grid_cice_NEMS_mx${OCNRES}.nc
+CICE_MASK=kmtu_cice_NEMS_mx${OCNRES}.nc
+MOM6_CHLCLIM='"seawifs-clim-1997-2010.1440x1080.v20180328.nc"'
+MOM6_RIVER_RUNOFF=True
+MOM6_FRUNOFF=runoff.daitren.clim.1440x1080.v20180328.nc
+MOM6_RESTART_SETTING=r
+MOM6_GUST_CONST=0.0 
+
+# defaults back from source base test
+MOM6_TOPOEDITS=''
+MOM6_ALLOW_LANDMASK_CHANGES=False

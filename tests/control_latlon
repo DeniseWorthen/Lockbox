@@ -1,0 +1,44 @@
+###############################################################################
+#
+#  global control_latlon test: GFSv16 atmosphere only at C96L127 with latlon output
+#
+###############################################################################
+
+TEST_DESCR="Compare global control latlon results with previous trunk version"
+
+CNTL_DIR=control_latlon
+
+LIST_FILES="sfcf000.nc \
+                   sfcf024.nc \
+                   atmf000.nc \
+                   atmf024.nc \
+                   GFSFLX.GrbF00 \
+                   GFSFLX.GrbF24 \
+                   GFSPRS.GrbF00 \
+                   GFSPRS.GrbF24"
+
+export_fv3
+export_tiled
+export_ugwpv1
+CCPP_SUITE=FV3_GFS_v17_p8_ugwpv1
+
+NPZ=127
+NPZP=128
+SYEAR=2021
+SMONTH=03
+SDAY=22
+SHOUR=06
+OUTPUT_GRID='global_latlon'
+IMO=360
+JMO=181
+NSTF_NAME='2,0,0,0,0'
+WRITE_DOPOST=.true.
+IAER=5111
+IOVR=3
+OUTPUT_FH='0 24'
+
+K_SPLIT=2
+N_SPLIT=4
+
+FV3_RUN=control_run.IN
+INPUT_NML=global_control.nml.IN

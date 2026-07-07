@@ -1,0 +1,24 @@
+##############################################################################
+#
+#  HRRR debug control test: atmosphere only at C96L127
+#
+###############################################################################
+
+TEST_DESCR="Compare HRRR CLM Lake debug results with previous trunk version"
+
+CNTL_DIR=hrrr_gf_debug
+
+LIST_FILES="sfcf000.nc \
+                   sfcf001.nc \
+                   atmf000.nc \
+                   atmf001.nc"
+
+export_hrrr
+WRITE_DOPOST=.false.
+OUTPUT_FH='0 1'
+FHMAX=1
+CCPP_SUITE=FV3_HRRR_gf
+DO_DEEP=.true.
+SHAL_CNV=.true.
+IMFSHALCNV=3
+IMFDEEPCNV=3

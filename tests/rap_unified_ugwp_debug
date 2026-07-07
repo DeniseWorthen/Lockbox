@@ -1,0 +1,30 @@
+###############################################################################
+#
+#  RAP with Unified UGWP debug test: atmosphere only at C96L127 in debug mode
+#
+###############################################################################
+
+TEST_DESCR="Compare RAP with Unified UGWP debug results with previous trunk version"
+
+CNTL_DIR=rap_cires_ugwp_debug
+
+LIST_FILES="sfcf000.nc \
+                   sfcf001.nc \
+                   atmf000.nc \
+                   atmf001.nc"
+
+export_rap
+OUTPUT_FH='0 1'
+FHMAX=1
+WRITE_DOPOST=.false.
+CCPP_SUITE=FV3_RAP_unified_ugwp
+
+GWD_OPT=2
+DO_UGWP_V0=.true.
+DO_UGWP_V0_OROG_ONLY=.false.
+DO_GSL_DRAG_LS_BL=.false.
+DO_GSL_DRAG_SS=.false.
+DO_GSL_DRAG_TOFD=.false.
+DO_UGWP_V1=.false.
+DO_UGWP_V1_OROG_ONLY=.false.
+

@@ -1,0 +1,26 @@
+###############################################################################
+#
+#  RAP control test: lake coupled at C96L127 (debug mode)
+#
+###############################################################################
+
+TEST_DESCR="Compare RAP lake coupled results in debug mode with previous trunk version"
+
+CNTL_DIR=rap_clm_lake_debug
+
+LIST_FILES="sfcf000.nc \
+                   sfcf001.nc \
+                   atmf000.nc \
+                   atmf001.nc"
+
+export_rap
+OUTPUT_FH='0 1'
+FHMAX=1
+
+FV3_RUN=lake_control_run.IN
+CCPP_SUITE=FV3_RAP_clm_lake
+
+LKM=1
+IOPT_LAKE=2
+FRAC_ICE=.true.
+WRITE_DOPOST=.false.

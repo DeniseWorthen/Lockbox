@@ -1,0 +1,66 @@
+#
+#  DATM_CDEPS_NOAHMP_GSWP test
+#
+
+TEST_DESCR="DATM_CDEPS_NOAHMP_GSWP3 - control "
+
+CNTL_DIR=datm_cdeps_lnd_gswp3
+
+LIST_FILES="ufs.cpld.lnd.out.2000-01-02-00000.tile1.nc \
+                   ufs.cpld.lnd.out.2000-01-02-00000.tile2.nc \
+                   ufs.cpld.lnd.out.2000-01-02-00000.tile3.nc \
+                   ufs.cpld.lnd.out.2000-01-02-00000.tile4.nc \
+                   ufs.cpld.lnd.out.2000-01-02-00000.tile5.nc \
+                   ufs.cpld.lnd.out.2000-01-02-00000.tile6.nc"
+
+export_datm_cdeps
+
+SYEAR=2000
+SMONTH=01
+SDAY=01
+SHOUR=00
+
+DATM_IN_CONFIGURE=datm_in.IN
+MESH_ATM=fv1.9x2.5_141008_ESMFmesh.nc
+atm_datamode=CLMNCEP
+ATM_NX_GLB=144
+ATM_NY_GLB=96
+EXPORT_ALL=.true.
+
+DATM_STREAM_CONFIGURE=datm.streams.multi.IN
+MESH_ATM_DATA="INPUT/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.SCRIP.210520_ESMFmesh.nc"
+MESH_ATM_TOPO="INPUT/topodata_0.9x1.SCRIP.210520_ESMFmesh.nc"
+SDATE=1999
+EDATE=2000
+DATA_ATM01="\"INPUT/clmforc.GSWP3.c2011.0.5x0.5.Solr.1999-12.nc\" \"INPUT/clmforc.GSWP3.c2011.0.5x0.5.Solr.2000-01.nc\""
+DATA_ATM02="\"INPUT/clmforc.GSWP3.c2011.0.5x0.5.Prec.1999-12.nc\" \"INPUT/clmforc.GSWP3.c2011.0.5x0.5.Prec.2000-01.nc\""
+DATA_ATM03="\"INPUT/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.1999-12.nc\" \"INPUT/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.2000-01.nc\""
+DATA_ATM04="\"INPUT/topodata_0.9x1.25_USGS_070110_stream_c151201.nc\""
+
+UFS_CONFIGURE=ufs.configure.atm_lnd.IN
+med_model=cmeps
+atm_model=datm
+lnd_model=noahmp
+samegrid_atmlnd=.false.
+CPLMODE=ufs.nfrac.aoflux
+RUNTYPE=startup
+READRESTART=.false.
+ATM_compute_tasks=144
+OCN_tasks=0
+ICE_tasks=0
+LND_tasks=144
+lnd_ic_type='custom'
+lnd_input_dir='INPUT/'
+lnd_fixed_dir='INPUT/'
+CALC_SNET=.true.
+layout_x=3
+layout_y=8
+LNDRES=C96
+ATMRES=$LNDRES
+mosaic_file="INPUT/${LNDRES}_mosaic.nc"
+coupling_interval_sec=3600
+snow_albedo_option=1
+precip_partition_option=4
+initial_albedo=0.25
+TOPOEDITS=""
+FV3_RUN="lnd_datm_cdeps_gswp.IN noahmp_run.IN"

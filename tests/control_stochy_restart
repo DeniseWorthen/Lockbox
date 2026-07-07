@@ -1,0 +1,50 @@
+###############################################################################
+#
+#  Global control stochy restart test
+#
+###############################################################################
+
+TEST_DESCR="Compare global restart wth stochsatics results with previous trunk version"
+
+CNTL_DIR=control_stochy
+
+LIST_FILES="sfcf012.nc \
+                   atmf012.nc \
+                   GFSFLX.GrbF12 \
+                   GFSPRS.GrbF12 "
+
+export_fv3_v16
+NPZ=127
+NPZP=128
+DT_ATMOS=600
+SYEAR=2021
+SMONTH=03
+SDAY=22
+SHOUR=06
+FHMAX=12
+OUTPUT_GRID='gaussian_grid'
+NSTF_NAME='2,0,0,0,0'
+WRITE_DOPOST=.true.
+IAER=5111
+IOVR=3
+FHROT=06
+OUTPUT_FH="3 -1"
+
+WARM_START=.true.
+NGGPS_IC=.false.
+EXTERNAL_IC=.false.
+MAKE_NH=.false.
+MOUNTAIN=.true.
+NA_INIT=0
+DO_SPPT=.true.
+DO_SHUM=.true.
+DO_SKEB=.true.
+SKEB=0.3
+SHUM=0.003
+SPPT=0.2
+STOCHINI=.true.
+
+FV3_RUN=control_run.IN
+CCPP_SUITE=FV3_GFS_v16
+INPUT_NML=control.nml.IN
+RESTART_FILE_PREFIX="${SYEAR}${SMONTH}${SDAY}.$(printf "%02d" $(( ${SHOUR} + ${FHROT}  )))0000"

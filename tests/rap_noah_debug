@@ -1,0 +1,28 @@
+##########################################################################################
+#
+#  RAP with Noah debug test: atmosphere only at C96L127 in debug mode
+#
+##########################################################################################
+
+TEST_DESCR="Compare RAP with Noah debug results with previous trunk version"
+
+CNTL_DIR=rap_noah_debug
+
+LIST_FILES="sfcf000.nc \
+                   sfcf001.nc \
+                   atmf000.nc \
+                   atmf001.nc"
+
+export_rap
+OUTPUT_FH='0 1'
+FHMAX=1
+WRITE_DOPOST=.false.
+
+CCPP_SUITE=FV3_RAP_noah
+DIAG_TABLE=diag_table_rap_noah
+IALB=1
+IEMS=1
+KICE=2
+LSM=1
+LANDICE=.true.
+LSOIL_LSM=4

@@ -1,0 +1,116 @@
+###############################################################################
+#
+#  Global nest v1 physics suite test at C96 without a nest, debug mode
+#
+###############################################################################
+
+TEST_DESCR="Global nest v1 physics suite test at C96 without a nest, debug mode"
+
+CNTL_DIR=gnv1_c96_no_nest_debug
+
+LIST_FILES="sfcf000.nc \
+                   sfcf001.nc \
+                   sfcf002.nc \
+                   atmf000.nc \
+                   atmf001.nc \
+                   atmf002.nc \
+                   RESTART/20210322.070000.coupler.res \
+                   RESTART/20210322.070000.fv_core.res.nc \
+                   RESTART/20210322.070000.fv_core.res.tile1.nc \
+                   RESTART/20210322.070000.fv_core.res.tile2.nc \
+                   RESTART/20210322.070000.fv_core.res.tile3.nc \
+                   RESTART/20210322.070000.fv_core.res.tile4.nc \
+                   RESTART/20210322.070000.fv_core.res.tile5.nc \
+                   RESTART/20210322.070000.fv_core.res.tile6.nc \
+                   RESTART/20210322.070000.fv_srf_wnd.res.tile1.nc \
+                   RESTART/20210322.070000.fv_srf_wnd.res.tile2.nc \
+                   RESTART/20210322.070000.fv_srf_wnd.res.tile3.nc \
+                   RESTART/20210322.070000.fv_srf_wnd.res.tile4.nc \
+                   RESTART/20210322.070000.fv_srf_wnd.res.tile5.nc \
+                   RESTART/20210322.070000.fv_srf_wnd.res.tile6.nc \
+                   RESTART/20210322.070000.fv_tracer.res.tile1.nc \
+                   RESTART/20210322.070000.fv_tracer.res.tile2.nc \
+                   RESTART/20210322.070000.fv_tracer.res.tile3.nc \
+                   RESTART/20210322.070000.fv_tracer.res.tile4.nc \
+                   RESTART/20210322.070000.fv_tracer.res.tile5.nc \
+                   RESTART/20210322.070000.fv_tracer.res.tile6.nc \
+                   RESTART/20210322.070000.phy_data.tile1.nc \
+                   RESTART/20210322.070000.phy_data.tile2.nc \
+                   RESTART/20210322.070000.phy_data.tile3.nc \
+                   RESTART/20210322.070000.phy_data.tile4.nc \
+                   RESTART/20210322.070000.phy_data.tile5.nc \
+                   RESTART/20210322.070000.phy_data.tile6.nc \
+                   RESTART/20210322.070000.sfc_data.tile1.nc \
+                   RESTART/20210322.070000.sfc_data.tile2.nc \
+                   RESTART/20210322.070000.sfc_data.tile3.nc \
+                   RESTART/20210322.070000.sfc_data.tile4.nc \
+                   RESTART/20210322.070000.sfc_data.tile5.nc \
+                   RESTART/20210322.070000.sfc_data.tile6.nc"
+
+export_fv3_v16
+NPZ=127
+NPZP=128
+DT_ATMOS=300
+SYEAR=2021
+SMONTH=03
+SDAY=22
+SHOUR=06
+OUTPUT_GRID='gaussian_grid'
+NSTF_NAME='2,0,0,0,0'
+WRITE_DOPOST=.false.
+IAER=5111
+FHMAX=2
+
+FV_CORE_TAU=0.
+RF_CUTOFF=10.
+FAST_TAU_W_SEC=0.2
+
+RESTART_INTERVAL="1 -1"
+OUTPUT_FH='0 01 02'
+
+FV3_RUN=control_run.IN
+CCPP_SUITE=FV3_global_nest_v1
+INPUT_NML=rap.nml.IN
+FIELD_TABLE=field_table_thompson_aero_tke_progsigma
+NEW_DIAGTABLE=diag_table_rap
+
+SFCLAY_COMPUTE_FLUX=.false.
+
+PROGSIGMA=.true.
+BETASCU=8.0
+BETAMCU=1.5
+BETADCU=0.5
+
+LKM=0
+IMP_PHYSICS=8
+DNATS=0
+DO_SAT_ADJ=.false.
+HYBEDMF=.false.
+DO_MYNNEDMF=.true.
+DO_MYNNSFCLAY=.true.
+DO_DEEP=.true.
+SHAL_CNV=.true.
+IMFSHALCNV=5
+IMFDEEPCNV=5
+LSM=2
+LANDICE=.false.
+
+GWD_OPT=2
+DO_UGWP_V0=.false.
+DO_UGWP_V0_OROG_ONLY=.false.
+DO_GSL_DRAG_LS_BL=.true.
+DO_GSL_DRAG_SS=.true.
+DO_GSL_DRAG_TOFD=.true.
+DO_UGWP_V1=.true.
+DO_UGWP_V1_OROG_ONLY=.false.
+
+FV_CORE_TAU=0.
+RF_CUTOFF=10.
+FAST_TAU_W_SEC=0.2
+
+CDMBGWD=20.0,2.5,1.0,1.0
+KNOB_UGWP_DOKDIS=2
+KNOB_UGWP_NDX4LH=4
+KNOB_UGWP_VERSION=1
+KNOB_UGWP_PALAUNCH=275.0e2
+

@@ -1,0 +1,40 @@
+###############################################################################
+#
+#  Global control debug test with stochastic physics
+#
+###############################################################################
+
+TEST_DESCR="Compare global control debug stochy results with previous trunk version"
+
+CNTL_DIR=control_stochy_debug
+
+LIST_FILES="sfcf000.nc \
+                   sfcf001.nc \
+                   atmf000.nc \
+                   atmf001.nc"
+
+export_fv3_v16
+NPZ=127
+NPZP=128
+DT_ATMOS=600
+SYEAR=2021
+SMONTH=03
+SDAY=22
+SHOUR=06
+FHMAX=1
+OUTPUT_GRID='gaussian_grid'
+NSTF_NAME='2,0,0,0,0'
+IAER=5111
+IOVR=3
+OUTPUT_FH="0 1"
+DO_SPPT=.true.
+DO_SHUM=.true.
+DO_SKEB=.true.
+SKEB=0.3
+SHUM=0.003
+SPPT=0.2
+
+
+FV3_RUN=control_run.IN
+CCPP_SUITE=FV3_GFS_v16
+INPUT_NML=control.nml.IN

@@ -1,0 +1,108 @@
+###############################################################################
+#
+#  HAFS regional atmosphere-wave coupled with WW3
+#
+###############################################################################
+
+TEST_DESCR="Compare HAFS regional atmosphere-wave coupled results with previous trunk version"
+
+CNTL_DIR=hafs_regional_atm_wav
+
+LIST_FILES="atmf006.nc \
+                   sfcf006.nc \
+                   20190829.060000.out_grd.ww3 \
+                   20190829.060000.out_pnt.ww3.nc \
+                   ufs.hafs.ww3.r.2019-08-29-21600.nc \
+                   ufs.hafs.cpl.r.2019-08-29-21600.nc"
+
+export_fv3
+export_hafs
+export_hafs_regional
+
+HAFS=true
+FHMAX=6
+RESTART_N=${FHMAX}
+DT_ATMOS=180
+ZSTANDARD_LEVEL=5
+OUTPUT_FH='3 -1'
+OUTPUT_FILE="'netcdf' 'netcdf'"
+SDAY=29
+SHOUR=00
+SMONTH=08
+SYEAR=2019
+WRTTASK_PER_GROUP=60
+
+OUTPUT_GRID='regional_latlon'
+CEN_LON=-62.0
+CEN_LAT=22.0
+LON1=-116.90
+LAT1=-14.45
+LON2=-7.10
+LAT2=58.45
+DLON=0.1
+DLAT=0.1
+
+BLOCKSIZE=40
+CCPP_SUITE=FV3_HAFS_v1_gfdlmp_tedmf
+DEFLATE_LEVEL=-1
+INPES=20
+JNPES=12
+NPX=721
+NPY=601
+NPZ=91
+NPZP=$(($NPZ + 1))
+K_SPLIT=2
+N_SPLIT=5
+NWAT=6
+NA_INIT=1
+EXTERNAL_IC=.true.
+NGGPS_IC=.true.
+MOUNTAIN=.false.
+WARM_START=.false.
+TARGET_LAT="22.0"
+TARGET_LON="-62.0"
+STRETCH_FAC=1.0001
+REGIONAL=.true.
+BC_UPDATE_INTERVAL=3
+NROWS_BLEND=10
+FULL_ZS_FILTER=.false.
+N_ZS_FILTER=0
+
+GRID_PES="240"
+TILE_COARSE="0"
+NUM_TILE_TOP=1
+NEST_REFINE="0"
+NEST_IOFFSETS="999"
+NEST_JOFFSETS="999"
+
+FHCYC=0
+FHSWR=1800
+FHLWR=1800
+NSTF_NAME=2,0,0,0,0
+CPLFLX=.true.
+CPLOCN2ATM=.false.
+CPLWAV=.true.
+CPLWAV2ATM=.true.
+CPL_IMP_MRG=.true.
+
+CDEPS_DOCN=false
+OCEAN_START_DTG=43340.00000
+
+atm_model=fv3
+wav_model=ww3
+WAV_tasks=60
+coupling_interval_sec=360
+MESH_ATM=unset
+# ATM-WAV coupling only
+WW3_CUR='F'
+
+FIELD_TABLE=field_table_hafs
+DIAG_TABLE=diag_table_hafs_template.IN
+INPUT_NML=input_regional_hafs.nml.IN
+MODEL_CONFIGURE=model_configure_hafs.IN
+UFS_CONFIGURE=ufs.configure.hafs_atm_wav.IN
+FV3_RUN="hafs_fv3_run.IN hafs_ww3_run.IN"
+
+if [[ ${MACHINE_ID} = ursa ]]; then
+   WLCLK=50
+fi

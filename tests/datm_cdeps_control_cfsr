@@ -1,0 +1,23 @@
+#
+#  DATM_CDEPS_MOM6_CICE_CMEPS_CFSR test
+#
+
+TEST_DESCR="DATM_CDEPS-MOM6-CICE-CMEPS_CFSR - control "
+
+CNTL_DIR=datm_cdeps_control_cfsr
+
+LIST_FILES="RESTART/20111002.000000.MOM.res.nc \
+                   RESTART/iced.2011-10-02-00000.nc \
+                   RESTART/DATM_CFSR.cpl.r.2011-10-02-00000.nc"
+
+export_datm_cdeps
+DATM_SRC=CFSR
+FILEBASE_DATM=cfsr
+IATM=1760
+JATM=880
+RESTART_N=12
+eps_imesh=2.5e-1
+MOM6_TOPOEDITS=ufs.topo_edits_011818.nc
+MOM6_ALLOW_LANDMASK_CHANGES=True
+
+FV3_RUN=cpld_datm_cdeps.IN
