@@ -1,5 +1,0 @@
-
-### CDEPS Data Atmosphere tests ###
-COMPILE | datm_cdeps | intel | -DAPP=NG-GODAS | - wcoss2         | fv3 |
-RUN | datm_cdeps_control_gefs                           | - wcoss2                             | baseline |
-RUN | datm_cdeps_mx025_gefs                             | - wcoss2 noaacloud                   | baseline |

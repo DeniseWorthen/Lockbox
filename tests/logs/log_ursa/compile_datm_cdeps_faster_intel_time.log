@@ -1,1 +1,0 @@
-Compile datm_cdeps_faster_intel elapsed time 642 seconds. -DAPP=NG-GODAS -DFASTER=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release

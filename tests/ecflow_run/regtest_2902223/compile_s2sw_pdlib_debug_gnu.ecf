@@ -1,7 +1,0 @@
-%include <head.h>
-(
-cd "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa"
-ln -sf "compile_s2sw_pdlib_debug_gnu.log.${ECF_TRYNO}" "compile_s2sw_pdlib_debug_gnu.log"
-)
-/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/run_compile.sh "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests" "/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223" "-DAPP=S2SW -DCCPP_SUITES=FV3_GFS_v17_coupled_p8_ugwpv1 -DPDLIB=ON -DDEBUG=ON" "s2sw_pdlib_debug_gnu" > "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa/compile_s2sw_pdlib_debug_gnu.log.${ECF_TRYNO}" 2>&1 &
-%include <tail.h>

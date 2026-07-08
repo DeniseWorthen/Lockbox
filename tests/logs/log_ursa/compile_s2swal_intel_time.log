@@ -1,1 +1,0 @@
-Compile s2swal_intel elapsed time 845 seconds. -DAPP=S2SWAL -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_ugwpv1 -DMPI=ON -DCMAKE_BUILD_TYPE=Release

@@ -1,7 +1,0 @@
-%include <head.h>
-(
-cd "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa"
-ln -sf "run_datm_cdeps_restart_cfsr_intel.log.${ECF_TRYNO}" "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa/run_datm_cdeps_restart_cfsr_intel.log"
-)
-/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/run_test.sh "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests" "/scratch4/NCEPDEV/stmp/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2902223" "datm_cdeps_restart_cfsr" "datm_cdeps_restart_cfsr_intel" "datm_cdeps_intel" > "/scratch4/NCEPDEV/nems/Denise.Worthen/ufs_dw/tests/logs/log_ursa/run_datm_cdeps_restart_cfsr_intel.log.${ECF_TRYNO}" 2>&1 &
-%include <tail.h>
