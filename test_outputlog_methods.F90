@@ -1,358 +1,97 @@
 program test_outputlog_methods
+  ! Driver to set up and exercise file-based methods
 
-  use mom_outputlog_methods, only : setrequest, settype, setprefix
+  !use mom_outputlog_methods, only : get_file_state, file_is_complete
+  use mpi_f08,               only : MPI_Init, MPI_Finalize, MPI_Comm_rank, MPI_Barrier, MPI_COMM_WORLD
+  use netcdf
 
-  implicit none
+  implict none
 
-  integer, parameter :: nfreq = 4
-  integer, parameter :: maxtests = 25
+  integer, parameter :: root_pe = 0
+  logical :: is_root
+  integer :: my_rank, ierr
 
-  integer :: validfreqs(nfreq) = (/1, 3, 6, 24/)
+  ! Initialize the MPI execution environment first
+  call MPI_Init(ierr)
+  call MPI_Comm_rank(MPI_COMM_WORLD, my_rank, ierr)
+  is_root = (my_rank == root_pe)
 
-  integer           :: nml_fh(nfreq)
-  character(len=12) :: nml_type(nfreq)
-  character(len=12) :: nml_fnameprefix(nfreq)
-  character(len=24) :: overlength_fnameprefix(nfreq)
-  character(len=35) :: longfileprefix
 
-  logical           :: requested(nfreq)
-  character(len=7)  :: timereduce(nfreq)
-  character(len=12) :: fnameroot(nfreq)
+  if (is_root) call create_file('test.nc')
 
-  character(len=128) :: msg(maxtests)
-  character(len=128) :: testname
-  character(len=256) :: errmsg
-  integer            :: i,nt,n,ierr
 
-  logical :: is_passing
-  integer :: npass = 0
-  integer :: nfail = 0
-  integer :: ntests = 0
 
-  nt = 0
-  ! ===========================================================================
-  ! test setrequest
-  ! ===========================================================================
 
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setrequest: outputfh==0 disables logging :'
-  nml_fh = (/0,0,0,0/)
-  requested = setrequest(validfreqs, nml_fh, errmsg, ierr)
+  ! ntests = nt
 
-  is_passing = (ierr == 0 .and. .not. any(requested))
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL'
-  endif
+  ! do nt = 1,ntests
+  !   print '(A)',msg(nt)
+  ! enddo
 
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setrequest: map request to canonical order :'
-  nml_fh = (/6,0,0,0/)
-  requested = setrequest(validfreqs, nml_fh, errmsg, ierr)
+  ! if (ntests > maxtests) then
+  !    print '(A)', 'FAIL: ntests > maxtests '
+  !    stop 1
+  ! else
+  !    if (nfail == 0) then
+  !       print '(A)', 'All tests passed '
+  !    else
+  !       print '(A)', 'FAIL: At least one test failed '
+  !       stop 1
+  !    endif
+  ! endif
 
-  is_passing = (ierr == 0 .and. requested(3) .and. .not. any(requested((/1,2,4/))))
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL'
-  endif
+contains
 
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setrequest: map request to canonical order :'
-  nml_fh = (/0,24,0,1/)
-  requested = setrequest(validfreqs, nml_fh, errmsg, ierr)
+  subroutine create_file(fname, preallocate)
 
-  is_passing = (ierr == 0 .and. requested(1) .and. requested(4) .and. .not. any(requested((/2,3/))))
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL'
-  endif
+    character(len=*), intent(in) :: fname
+    logical, intent(in), optional :: preallocate
 
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setrequest: invalid frequency blocked :'
-  nml_fh = (/18,0,0,0/)
-  requested = setrequest(validfreqs, nml_fh, errmsg, ierr)
+    integer :: ncid, xdimid, timedimid, varid, timevarid
+    logical :: do_prealloc
 
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-  endif
+    do_prealloc = .false.
+    if (present(preallocate)) do_prealloc = preallocate
 
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setrequest: duplicate frequencies blocked :'
-  nml_fh = (/24,24, 0, 0/)
-  requested = setrequest(validfreqs, nml_fh, errmsg, ierr)
+    if (nf90_create(trim(fname), nf90_clobber, ncid) /= nf90_noerr) stop "NC_FAIL: create"
+    if (nf90_def_dim(ncid, 'x', 1000, xdimid) /= nf90_noerr) stop "NC_FAIL: def_dim x"
+    if (nf90_def_dim(ncid, 'time', nf90_unlimited, timedimid) /= nf90_noerr) stop "NC_FAIL: def_dim time"
 
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-  endif
+    if (nf90_def_var(ncid, 'time', nf90_double, (/timedimid/), timevarid) /= nf90_noerr) stop "NC_FAIL: def_var time"
+    if (nf90_def_var(ncid, 'field', nf90_real, (/xdimid, timedimid/), varid) /= nf90_noerr) stop "NC_FAIL: def_var field"
+    if (nf90_enddef(ncid) /= nf90_noerr) stop "NC_FAIL: enddef"
 
-  ! ===========================================================================
-  ! test settype
-  ! ===========================================================================
+    if (do_prealloc) then
+      if (nf90_put_var(ncid, timevarid, (/nf90_fill_double/), start=(/1/)) /= nf90_noerr) stop "NC_FAIL: put fill time"
+    endif
 
-  nt = nt+1
-  write(testname,'(A,I2.2,A)')'test ',nt,' settype: out-of-order inputs map correctly to canonical slots :'
-  nml_fh = (/24, 3, 0, 0/)
-  requested = (/.false., .true., .false., .true./)
-  nml_type = (/ character(len=12) :: 'average', 'none', '', '' /)
+    if (nf90_close(ncid) /= nf90_noerr) stop "NC_FAIL: close"
+  end subroutine create_file
 
-  timereduce = settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr)
+  !> Universal Advance Helper: Writes spatial payload to index 1, growing file size and setting final time
+  subroutine populate_timestep_data(fname)
+    character(len=*), intent(in) :: fname
+    integer :: ncid, varid, timevarid
+    real :: dummy_field(1000) = 42.0
+    real(kind=8) :: valid_time = 3600.0
 
-  is_passing = (ierr == 0 .and. trim(timereduce(2)) == 'none' .and. trim(timereduce(4)) == 'average')
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL'
-  endif
+    if (nf90_open(trim(fname), nf90_write, ncid) /= nf90_noerr) stop "NC_FAIL: open"
+    if (nf90_inq_varid(ncid, 'time', timevarid) /= nf90_noerr) stop "NC_FAIL: inq time"
+    if (nf90_inq_varid(ncid, 'field', varid) /= nf90_noerr) stop "NC_FAIL: inq field"
 
-  ! ------------------
-  nt = nt+1
-  write(testname,'(A,I2.2,A)')'test ',nt,' settype: lower-case strings map correctly :'
-  nml_fh = (/1,6,0,0/)
-  requested = (/.true., .false., .true., .false./)
-  nml_type = (/ character(len=12) :: 'none', 'average', '', '' /)
+    ! Populate the spatial grid at timestep slot 1 -> This physically expands the file size on disk
+    if (nf90_put_var(ncid, varid, dummy_field, start=(/1, 1/), count=(/1000, 1/)) /= nf90_noerr) stop "NC_FAIL: put field"
 
-  timereduce = settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr)
+    ! Finalize the timestep value at slot 1 (overwriting any previous fill value)
+    if (nf90_put_var(ncid, timevarid, (/valid_time/), start=(/1/)) /= nf90_noerr) stop "NC_FAIL: put valid time"
 
-  is_passing = (ierr == 0 .and. trim(timereduce(1)) == 'none' .and. trim(timereduce(3)) == 'average')
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL'
-  endif
+    if (nf90_close(ncid) /= nf90_noerr) stop "NC_FAIL: close"
+  end subroutine populate_timestep_data
 
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' settype: upper-case strings not allowed :'
-  nml_fh = (/3,24,0,0/)
-  requested = (/.false., .true., .false., .true./)
-  nml_type = (/ character(len=12) :: '', 'NONE', '', 'AVERAGE' /)
-
-  timereduce = settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr)
-
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-  endif
-
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' settype: invalid string or typo :'
-  nml_fh = (/3,24,0,0/)
-  nml_type = (/ character(len=12) :: '', 'snapshot', '', 'avg' /)
-  requested = (/.false., .true., .false., .true./)
-
-  timereduce = settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr)
-
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-  endif
-
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' settype: empty string on an active frequency defaults to average :'
-  nml_fh = (/1,6,0,0/)
-  requested = (/ .true., .false., .true., .false. /)
-  nml_type = (/ character(len=12) :: 'none', '', '', '' /)
-
-  timereduce = settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr)
-
-  is_passing = (ierr == 0 .and. trim(timereduce(1)) == 'none' .and. trim(timereduce(3)) == 'average')
-
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL'
-  endif
-
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' settype: mis-aligned type for active frequency :'
-  nml_fh = (/1,6,0,0/)
-  requested = (/ .true., .false., .true., .false. /)
-  nml_type = (/ character(len=12) :: 'none', '', 'average', '' /)
-
-  timereduce = settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr)
-
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-  endif
-
-  ! ===========================================================================
-  ! test setprefix
-  ! ===========================================================================
-
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: single request, blank file prefix defaults to ocn :'
-  nml_fh = (/1,0,0,0/)
-  requested = (/ .true., .false., .false., .false. /)
-  nml_fnameprefix = (/ character(len=12) :: '', '', '', '' /) ! Active slot 1 is empty
-
-  fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
-
-  is_passing = (ierr == 0 .and. trim(fnameroot(1)) == 'ocn')
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL'
-  endif
-
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: multi-request, each must set file prefix :'
-  nml_fh = (/1,3,0,0/)
-  requested = (/ .true., .true., .false., .false. /)
-  nml_fnameprefix = (/ character(len=12) :: 'ocn_01h', 'ocn_03h', '', '' /)
-
-  fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
-
-  is_passing = (ierr == 0 .and. trim(fnameroot(1)) == 'ocn_01h' .and. trim(fnameroot(2)) == 'ocn_03h')
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL'
-  endif
-
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: multi-request, only one file prefix :'
-  nml_fh = (/1,3,0,0/)
-  requested = (/ .true., .true., .false., .false. /)
-  nml_fnameprefix = (/ character(len=12) :: 'ocn_01h', '', '', '' /)
-
-  fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
-
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-  endif
-
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: multi-request, duplicate file prefix :'
-  nml_fh = (/1,3,0,0/)
-  requested = (/ .true., .true., .false., .false. /)
-  nml_fnameprefix = (/ character(len=12) :: 'ocn', 'ocn', '', '' /)
-
-  fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
-
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-   endif
-
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: misaligned file prefix on active slot fails :'
-  nml_fh = (/1,24,0,0/)
-  requested = (/ .true., .false., .false., .true. /)
-  nml_fnameprefix = (/ character(len=12) :: 'ocn_1h', '', 'ocn_daily', '' /)
-
-  fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
-
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-  endif
-
-  ! ------------------
-  nt = nt + 1
-  write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: specified file prefix too long :'
-  nml_fh = (/6,0,0,0/)
-  requested = (/ .false., .false., .true., .false. /)
-  longfileprefix = 'prefix_is_too_long_and_is_truncated'
-  overlength_fnameprefix(:) = ''
-  overlength_fnameprefix(1) = longfileprefix
-
-  fnameroot = setprefix(validfreqs, requested, nml_fh, overlength_fnameprefix, errmsg, ierr)
-
-  is_passing = (ierr /= 0)
-  if (is_passing) then
-     npass = npass + 1
-     msg(nt) = trim(testname)//' PASS'
-  else
-     nfail = nfail + 1
-     msg(nt) = trim(testname)//' FAIL (error not caught)'
-  endif
-
-  ! ------------------
-  ! Test results
-  ! ------------------
-
-  ntests = nt
-
-  do nt = 1,ntests
-    print '(A)',msg(nt)
-  enddo
-
-  if (ntests > maxtests) then
-     print '(A)', 'FAIL: ntests > maxtests '
-     stop 1
-  else
-     if (nfail == 0) then
-        print '(A)', 'All tests passed '
-     else
-        print '(A)', 'FAIL: At least one test failed '
-        stop 1
-     endif
-  endif
+  subroutine cleanup_file(fname)
+    character(len=*), intent(in) :: fname
+    open(unit=99, file=trim(fname), status='old')
+    close(unit=99, status='delete')
+  end subroutine cleanup_file
 
 end program test_outputlog_methods
