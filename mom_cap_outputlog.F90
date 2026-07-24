@@ -138,7 +138,7 @@ subroutine outputlog_init(gcomp, mclock, ocean_grid, rc)
 
   ! local variables
   type(ESMF_Time)         :: mcurrTime
-  type(ESMF_TimeInterval) :: alarmoffset, ringinterval
+  type(ESMF_TimeInterval) :: alarmoffset
   type(directories)       :: dirs
   logical                 :: isPresent, isSet
   integer                 :: n, int_mpic, io_layout(2)
@@ -159,6 +159,8 @@ subroutine outputlog_init(gcomp, mclock, ocean_grid, rc)
   call get_MOM_input(dirs=dirs)
   restartdir = trim(dirs%restart_output_dir)
   outputdir = trim(dirs%output_directory)
+  !print *,'XXX restart dirs = '//trim(restartdir)
+  !print *,'XXX output dirs = '//trim(outputdir)
 
   io_layout = mpp_get_io_domain_layout(ocean_grid%Domain%mpp_domain)
   nfiles = io_layout(1) * io_layout(2)
@@ -191,8 +193,8 @@ subroutine outputlog_init(gcomp, mclock, ocean_grid, rc)
     else
       cf(n)%fnamesuffix     = '.000'
     endif
-    cf(n)%fhoffset          = 60*freq(n)*tincrement
-    cf(n)%filename_fhoffset = 90*freq(n)*tincrement
+    cf(n)%fhoffset          = 0*tincrement
+    cf(n)%filename_fhoffset = 0*tincrement
 
     state(n)%chkfile_nextAdvance = .false.
     state(n)%use_filesize        = .false.
@@ -208,9 +210,9 @@ subroutine outputlog_init(gcomp, mclock, ocean_grid, rc)
     endif
 
     call AlarmInit(mclock,                  &
-         alarm     = cf(n)%alarm,         &
+         alarm     = cf(n)%alarm,           &
          option    = 'nhours',              &
-         opt_n     = cf(n)%opt_n,         &
+         opt_n     = cf(n)%opt_n,           &
          opt_ymd   = -999,                  &
          RefTime   = mcurrTime+alarmoffset, &
          alarmname = cf(n)%alarm_name, rc=rc)
@@ -227,17 +229,36 @@ subroutine outputlog_init(gcomp, mclock, ocean_grid, rc)
   if (ChkErr(rc,__LINE__,u_FILE_u)) return
   if (is_root_pe() .and. len_trim(errmsg) > 0) print '(A)',trim(subname)//trim(errmsg)
 
-  if (debug .and. is_root_pe()) then
+  do n = 1,n_freq
+    if (trim(cf(n)%timereduce) == 'none') then
+      cf(n)%filename_fhoffset   = 60*freq(n)*tincrement
+    else
+      cf(n)%filename_fhoffset   = 90*freq(n)*tincrement
+    endif
+  enddo
+
+  ! Snapshots and IO_Layout not yet implemented
+  if (nfiles > 1) then
+    cf(:)%requested = .false.
+    if (is_root_pe())print '(A)',trim(subname)//' output logging unavailable when IO_LAYOUT is used '
+  endif
+  ! do n = 1,n_freq
+  !   if (trim(cf(n)%timereduce) == 'none') then
+  !     cf(n)%requested = .false.
+  !     if (is_root_pe())print '(A)',trim(subname)//' output logging unavailable when Snapshots are requested '
+  !   endif
+  ! enddo
+
+  if (is_root_pe()) then
     do n = 1,n_freq
       print '(A,i8)',trim(subname)//' toffset = ',toffset
       call ESMF_TimeIntervalPrint(cf(n)%filename_fhoffset, options="string", rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call ESMF_AlarmPrint(cf(n)%alarm, options="ringInterval", rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     enddo
+
     do n = 1,n_freq
-      if (cf(n)%requested) print '(A,i6,A)',trim(subname)//' output requested: hours(freq), type  ',&
-           cf(n)%opt_n,'  '//cf(n)%timereduce
+      if (cf(n)%requested) print '(A,i6,A)',trim(subname)//' output requested: freq (hours)= ' &
+           ,cf(n)%opt_n,', time_reduction= '//cf(n)%timereduce
     enddo
   endif
 
@@ -262,6 +283,8 @@ subroutine outputlog_run(mclock, atStopTime, rc)
   character(len=40)  :: importexport
   character(len=16)  :: timestr
   character(len=256) :: subname='MOM_cap:(outputlog_run)'
+  !debug
+  character(len=256) :: tmpname
   !----------------------------------------------------------------------------
 
   rc = ESMF_SUCCESS
@@ -279,6 +302,39 @@ subroutine outputlog_run(mclock, atStopTime, rc)
   endif
   fsize = nf90_fill_int
   nlen  = nf90_fill_int
+
+  !! suggestions
+  ! ... inside outputlog_run ...
+      if (cf(n)%requested) then
+
+        ! 1. Ask ESMF for transient status
+        call ESMF_ClockGetAlarm(mclock, alarmname=trim(cf(n)%alarm_name), alarm=cf(n)%alarm, rc=rc)
+        ringing = ESMF_AlarmIsRinging(cf(n)%alarm, rc=rc)
+
+        if (ringing) then
+          call ESMF_AlarmRingerOff(cf(n)%alarm, rc=rc )
+          ! ... set state(n)%filename ...[cite: 3]
+        end if
+
+        ! 2. Only hit the disk if we need to (either the alarm just rang, or we are actively tracking a file)
+        if (ringing .or. state(n)%chkfile_nextAdvance) then
+           call get_file_state(mpicomm, is_root_pe(), root_pe(), state(n)%filename, nlen=nlen, &
+                fsize=fsize, rc=rc)
+
+           ! 3. Call the PURE Fortran state machine
+           call advance_outputlog_state(state(n), ringing, nlen, fsize, filecomplete)
+
+           ! 4. Handle ESMF restart logging if it just finished[cite: 3]
+           if (filecomplete) then
+             state(n)%time_lastrestart = lastrestart
+             if (is_root_pe()) then
+               call log_restart_fh(currTime-cf(n)%fhoffset, startTime, 'mom6.'//chour, prefixtime=.true., &
+                    lastrestart=state(n)%time_lastrestart, lastoutput=state(n)%filename, rc=rc)
+             endif
+           endif
+        end if
+      endif
+   !
 
   do n = 1,n_freq
     write(chour,'(I2.2,A)')freq(n),'h'
@@ -316,6 +372,97 @@ subroutine outputlog_run(mclock, atStopTime, rc)
                state(n)%use_filesize, '  ',state(n)%createsize,nlen
         endif
       endif ! ESMF_AlarmIsRinging
+
+        ! tmpname = "MOM6_OUTPUT/ocn_2021_03_22_06_30.nc"
+        ! importexport = get_importexport(currTime, nextTime, rc=rc)
+        ! call get_file_state(mpicomm, is_root_pe(), root_pe(), trim(tmpname), nlen=nlen, &
+        !      fsize=fsize, rc=rc)
+        ! rc = merge(ESMF_SUCCESS, ESMF_FAILURE, rc == 0)
+        ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        ! if(is_root_pe()) then
+        !   inquire(file=trim(tmpname), exist=existflag)
+        !   if (existflag) then
+        !     print '(a,i6,i16)','XXX  '//trim(tmpname)//' exist '//trim(importexport)//' ',nlen,fsize
+        !   endif
+        ! endif
+
+        ! tmpname = "MOM6_OUTPUT/ocn_2021_03_22_07_00.nc"
+        ! importexport = get_importexport(currTime, nextTime, rc=rc)
+        ! call get_file_state(mpicomm, is_root_pe(), root_pe(), trim(tmpname), nlen=nlen, &
+        !      fsize=fsize, rc=rc)
+        ! rc = merge(ESMF_SUCCESS, ESMF_FAILURE, rc == 0)
+        ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        ! if(is_root_pe()) then
+        !   inquire(file=trim(tmpname), exist=existflag)
+        !   if (existflag) then
+        !     print '(a,i6,i16)','XXX  '//trim(tmpname)//' exist '//trim(importexport)//' ',nlen,fsize
+        !   endif
+        ! endif
+
+        ! tmpname = "MOM6_OUTPUT/ocn_2021_03_22_07_30.nc"
+        ! importexport = get_importexport(currTime, nextTime, rc=rc)
+        ! call get_file_state(mpicomm, is_root_pe(), root_pe(), trim(tmpname), nlen=nlen, &
+        !      fsize=fsize, rc=rc)
+        ! rc = merge(ESMF_SUCCESS, ESMF_FAILURE, rc == 0)
+        ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        ! if(is_root_pe()) then
+        !   inquire(file=trim(tmpname), exist=existflag)
+        !   if (existflag) then
+        !     print '(a,i6,i16)','XXX  '//trim(tmpname)//' exist '//trim(importexport)//' ',nlen,fsize
+        !   endif
+        ! endif
+
+        ! tmpname = "MOM6_OUTPUT/ocn_2021_03_22_08_00.nc"
+        ! importexport = get_importexport(currTime, nextTime, rc=rc)
+        ! call get_file_state(mpicomm, is_root_pe(), root_pe(), trim(tmpname), nlen=nlen, &
+        !      fsize=fsize, rc=rc)
+        ! rc = merge(ESMF_SUCCESS, ESMF_FAILURE, rc == 0)
+        ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        ! if(is_root_pe()) then
+        !   inquire(file=trim(tmpname), exist=existflag)
+        !   if (existflag) then
+        !     print '(a,i6,i16)','XXX  '//trim(tmpname)//' exist '//trim(importexport)//' ',nlen,fsize
+        !   endif
+        ! endif
+
+        ! tmpname = "MOM6_OUTPUT/ocn_2021_03_22_08_30.nc"
+        ! importexport = get_importexport(currTime, nextTime, rc=rc)
+        ! call get_file_state(mpicomm, is_root_pe(), root_pe(), trim(tmpname), nlen=nlen, &
+        !      fsize=fsize, rc=rc)
+        ! rc = merge(ESMF_SUCCESS, ESMF_FAILURE, rc == 0)
+        ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        ! if(is_root_pe()) then
+        !   inquire(file=trim(tmpname), exist=existflag)
+        !   if (existflag) then
+        !     print '(a,i6,i16)','XXX  '//trim(tmpname)//' exist '//trim(importexport)//' ',nlen,fsize
+        !   endif
+        ! endif
+
+        ! tmpname = "MOM6_OUTPUT/ocn_2021_03_22_09_00.nc"
+        ! importexport = get_importexport(currTime, nextTime, rc=rc)
+        ! call get_file_state(mpicomm, is_root_pe(), root_pe(), trim(tmpname), nlen=nlen, &
+        !      fsize=fsize, rc=rc)
+        ! rc = merge(ESMF_SUCCESS, ESMF_FAILURE, rc == 0)
+        ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        ! if(is_root_pe()) then
+        !   inquire(file=trim(tmpname), exist=existflag)
+        !   if (existflag) then
+        !     print '(a,i6,i16)','XXX  '//trim(tmpname)//' exist '//trim(importexport)//' ',nlen,fsize
+        !   endif
+        ! endif
+
+        ! tmpname = "MOM6_OUTPUT/ocn_2021_03_22_09_30.nc"
+        ! importexport = get_importexport(currTime, nextTime, rc=rc)
+        ! call get_file_state(mpicomm, is_root_pe(), root_pe(), trim(tmpname), nlen=nlen, &
+        !      fsize=fsize, rc=rc)
+        ! rc = merge(ESMF_SUCCESS, ESMF_FAILURE, rc == 0)
+        ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        ! if(is_root_pe()) then
+        !   inquire(file=trim(tmpname), exist=existflag)
+        !   if (existflag) then
+        !     print '(a,i6,i16)','XXX  '//trim(tmpname)//' exist '//trim(importexport)//' ',nlen,fsize
+        !   endif
+        ! endif
 
       if (state(n)%chkfile_nextAdvance) then
         filecomplete = file_is_complete(mpicomm, is_root_pe(), root_pe(), state(n)%filename, &
