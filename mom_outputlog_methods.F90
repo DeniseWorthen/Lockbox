@@ -110,6 +110,138 @@ subroutine readnml(fname, cf, debug, errmsg, rc)
   if (ierr /= 0) return
 
 end subroutine readnml
+!> Retrieve the unlimited dimension length and file size, broadcasting to all PEs
+!! @param[in]   comm      the MPI communicator
+!! @param[in]   isroot    logical flag for root PE
+!! @param[in]   rootpe    root rank in communicator
+!! @param[in]   fname     the file name
+!! @param[out]  nlen      optional, the length of the unlimited dimension
+!! @param[out]  fsize     optional, the file size in bytes
+!! @param[out]  rc        return code
+subroutine get_file_state(comm, isroot, rootpe, fname, nlen, fsize, rc)
+
+  type(MPI_Comm),    intent(in)  :: comm
+  logical,           intent(in)  :: isroot
+  integer,           intent(in)  :: rootpe
+  character(len=*),  intent(in)  :: fname
+  integer, optional, intent(out) :: nlen
+  integer, optional, intent(out) :: fsize
+  integer,           intent(out) :: rc
+
+  logical :: existflag
+  integer :: ierr, stats(2)
+
+  rc = 0
+  stats = nf90_fill_int
+
+  if (isroot) then
+    inquire(file=fname, exist=existflag)
+    if (existflag) then
+      if (present(nlen)) stats(1) = get_unlimited_len(trim(fname))
+      if (present(fsize)) inquire(file=fname, size=stats(2))
+    endif
+  endif
+
+  call MPI_Bcast(stats, 2, MPI_INTEGER, rootpe, comm, ierr)
+  if (ierr /= MPI_SUCCESS) then
+    rc = ierr
+    return
+  endif
+
+  if (present(nlen)) nlen  = stats(1)
+  if (present(fsize)) fsize = stats(2)
+
+end subroutine get_file_state
+
+!! Code suggestion
+subroutine check_completion(state, ringing, nlen, fsize, filecomplete)
+  type(outputlog_state_type), intent(inout) :: state
+  logical,                    intent(in)    :: ringing
+  integer,                    intent(in)    :: nlen
+  integer,                    intent(in)    :: fsize
+  logical,                    intent(out)   :: filecomplete
+
+  ierr = 0
+  filecomplete = .false.
+
+  ! PHASE 1: Transient Alarm rings (Executes ONLY on the exact timestep the interval is crossed)
+  if (ringing) then
+    state%chkfile_nextAdvance = .true.
+    state%createsize = fsize
+
+    if (nlen == 0) then
+      state%use_filesize = .false.
+    else
+      state%use_filesize = .true.
+    endif
+  endif
+
+  ! PHASE 2: Check for completion (Executes on the alarm timestep, AND all subsequent non-alarm timesteps until complete)
+  if (state%chkfile_nextAdvance) then
+    if (state%use_filesize) then
+      ! Complete when unlimited dim > 0 AND file has grown larger than creation size
+      if (nlen > 0 .and. fsize > state%createsize) then
+        filecomplete = .true.
+      endif
+    else
+      ! Complete as soon as the unlimited dim is > 0
+      if (nlen > 0) then
+        filecomplete = .true.
+      endif
+    endif
+
+    ! If complete, stop checking on future advances
+    if (filecomplete) then
+      state%chkfile_nextAdvance = .false.
+    endif
+  endif
+
+end subroutine check_completion
+
+
+!> Determine if the netcdf output file is complete
+!!
+!! @param[in]   comm          the MPI communicator
+!! @param[in]   isroot        logical flag for root PE
+!! @param[in]   rootpe        root rank in communicator
+!! @param[in]   fname         the file name
+!! @param[in]   chk4size      logical flag for check method in use
+!! @param[in]   createsize    the filesize at creation
+!! @param[out]  rc            return code
+!! @return                    logical flag, true if the file is complete
+! logical function file_is_complete(comm, isroot, rootpe, fname, chk4size, createsize, rc) result(filecomplete)
+
+!   type(MPI_Comm),   intent(in)  :: comm
+!   logical,          intent(in)  :: isroot
+!   integer,          intent(in)  :: rootpe
+!   character(len=*), intent(in)  :: fname
+!   logical,          intent(in)  :: chk4size
+!   integer,          intent(in)  :: createsize
+!   integer,          intent(out) :: rc
+
+!   logical :: existflag
+!   integer :: l_nlen, l_fsize, ierr
+!   !----------------------------------------------------------------------------
+
+!   rc = 0
+!   filecomplete = .false.
+!   l_nlen = nf90_fill_int
+!   l_fsize = nf90_fill_int
+
+!   if (chk4size) then
+!     call get_file_state(comm, isroot, rootpe, fname, nlen=l_nlen, fsize=l_fsize, rc=ierr)
+!     if (ierr == 0) then
+!       filecomplete = (l_nlen > 0 .and. l_fsize > createsize)
+!     endif
+!   else
+!     call get_file_state(comm, isroot, rootpe, fname, nlen=l_nlen, rc=ierr)
+!     if (ierr == 0) then
+!       filecomplete = (l_nlen > 0)
+!     endif
+!   endif
+!   rc = ierr
+
+! end function file_is_complete
 
 !> Validate requested output frequencies from namelist entries
 !!
@@ -163,7 +295,6 @@ function setrequest(validfreqs, requested_fh, errmsg, ierr) result(is_requested)
   enddo
 
 end function setrequest
-
 !> Determine output reduction type for each requested frequency
 !!
 !! @param[in]   validfreqs   supported output frequencies (hours)
@@ -230,7 +361,6 @@ function settype(validfreqs, requested, nml_fh, nml_type, errmsg, ierr) result(f
   enddo
 
 end function settype
-
 !> Determine filename prefixes for each requested frequency
 !!
 !! @param[in]   validfreqs       supported output frequencies (hours)
@@ -333,139 +463,7 @@ function setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
       endif
     enddo
   endif
-
 end function setprefix
-
-
-!! Code suggestion
-subroutine advance_outputlog_state(state, alarm_ringing, current_nlen, current_fsize, filecomplete)
-  type(outputlog_state_type), intent(inout) :: state
-  logical,                    intent(in)    :: alarm_ringing
-  integer,                    intent(in)    :: current_nlen
-  integer,                    intent(in)    :: current_fsize
-  logical,                    intent(out)   :: filecomplete
-
-  filecomplete = .false.
-
-  ! PHASE 1: Transient Alarm rings (Executes ONLY on the exact timestep the interval is crossed)
-  if (alarm_ringing) then
-    state%chkfile_nextAdvance = .true.
-    state%createsize = current_fsize
-    if (current_nlen == 0) then
-      state%use_filesize = .false.
-    else
-      state%use_filesize = .true.
-    end if
-  end if
-
-  ! PHASE 2: Check for completion (Executes on the alarm timestep, AND all subsequent non-alarm timesteps until complete)
-  if (state%chkfile_nextAdvance) then
-    if (state%use_filesize) then
-      ! Complete when unlimited dim > 0 AND file has grown larger than creation size
-      if (current_nlen > 0 .and. current_fsize > state%createsize) then
-        filecomplete = .true.
-      end if
-    else
-      ! Complete as soon as the unlimited dim is > 0
-      if (current_nlen > 0) then
-        filecomplete = .true.
-      end if
-    end if
-
-    ! If complete, stop checking on future advances
-    if (filecomplete) then
-      state%chkfile_nextAdvance = .false.
-    end if
-  end if
-
-end subroutine advance_outputlog_state
-
-!> Retrieve the unlimited dimension length and file size, broadcasting to all PEs
-!! @param[in]   comm      the MPI communicator
-!! @param[in]   isroot    logical flag for root PE
-!! @param[in]   rootpe    root rank in communicator
-!! @param[in]   fname     the file name
-!! @param[out]  nlen      optional, the length of the unlimited dimension
-!! @param[out]  fsize     optional, the file size in bytes
-!! @param[out]  rc        return code
-subroutine get_file_state(comm, isroot, rootpe, fname, nlen, fsize, rc)
-
-  type(MPI_Comm),    intent(in)  :: comm
-  logical,           intent(in)  :: isroot
-  integer,           intent(in)  :: rootpe
-  character(len=*),  intent(in)  :: fname
-  integer, optional, intent(out) :: nlen
-  integer, optional, intent(out) :: fsize
-  integer,           intent(out) :: rc
-
-  logical :: existflag
-  integer :: ierr, stats(2)
-
-  rc = 0
-  stats = nf90_fill_int
-
-  if (isroot) then
-    inquire(file=fname, exist=existflag)
-    if (existflag) then
-      if (present(nlen)) stats(1) = get_unlimited_len(trim(fname))
-      if (present(fsize)) inquire(file=fname, size=stats(2))
-    endif
-  endif
-
-  call MPI_Bcast(stats, 2, MPI_INTEGER, rootpe, comm, ierr)
-  if (ierr /= MPI_SUCCESS) then
-    rc = ierr
-    return
-  endif
-
-  if (present(nlen)) nlen  = stats(1)
-  if (present(fsize)) fsize = stats(2)
-
-end subroutine get_file_state
-
-!> Determine if the netcdf output file is complete
-!!
-!! @param[in]   comm          the MPI communicator
-!! @param[in]   isroot        logical flag for root PE
-!! @param[in]   rootpe        root rank in communicator
-!! @param[in]   fname         the file name
-!! @param[in]   chk4size      logical flag for check method in use
-!! @param[in]   createsize    the filesize at creation
-!! @param[out]  rc            return code
-!! @return                    logical flag, true if the file is complete
-logical function file_is_complete(comm, isroot, rootpe, fname, chk4size, createsize, rc) result(filecomplete)
-
-  type(MPI_Comm),   intent(in)  :: comm
-  logical,          intent(in)  :: isroot
-  integer,          intent(in)  :: rootpe
-  character(len=*), intent(in)  :: fname
-  logical,          intent(in)  :: chk4size
-  integer,          intent(in)  :: createsize
-  integer,          intent(out) :: rc
-
-  logical :: existflag
-  integer :: l_nlen, l_fsize, ierr
-  !----------------------------------------------------------------------------
-
-  rc = 0
-  filecomplete = .false.
-  l_nlen = nf90_fill_int
-  l_fsize = nf90_fill_int
-
-  if (chk4size) then
-    call get_file_state(comm, isroot, rootpe, fname, nlen=l_nlen, fsize=l_fsize, rc=ierr)
-    if (ierr == 0) then
-      filecomplete = (l_nlen > 0 .and. l_fsize > createsize)
-    endif
-  else
-    call get_file_state(comm, isroot, rootpe, fname, nlen=l_nlen, rc=ierr)
-    if (ierr == 0) then
-      filecomplete = (l_nlen > 0)
-    endif
-  endif
-  rc = ierr
-
-end function file_is_complete
 
 !> Return the length of the unlimited dimension
 !!
