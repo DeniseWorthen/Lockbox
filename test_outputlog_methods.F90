@@ -1,97 +1,126 @@
-program test_outputlog_methods
-  ! Driver to set up and exercise file-based methods
+program test_time_axis_log
+  use outputlog_tracker_mod
+  implicit none
 
-  !use mom_outputlog_methods, only : get_file_state, file_is_complete
-  use mpi_f08,               only : MPI_Init, MPI_Finalize, MPI_Comm_rank, MPI_Barrier, MPI_COMM_WORLD
-  use netcdf
+  type(output_file_state) :: tracker
+  integer :: num_errors = 0
 
-  implict none
+  ! Time variables (in seconds)
+  integer :: dt
+  integer :: current_time, end_time, start_time, start_hour
+  integer :: elapsed_sec, time_in_window, window_index
+  integer :: curr_hour, curr_min, next_time, next_hour, next_min
 
-  integer, parameter :: root_pe = 0
-  logical :: is_root
-  integer :: my_rank, ierr
+  ! Mock file variables
+  character(len=256) :: mock_filename, timestring
 
-  ! Initialize the MPI execution environment first
-  call MPI_Init(ierr)
-  call MPI_Comm_rank(MPI_COMM_WORLD, my_rank, ierr)
-  is_root = (my_rank == root_pe)
+  integer :: mock_size
+  integer :: file_hour
+  integer :: freq
 
+  ! 1. Setup the Time Axis
+  dt = 1800 !
+  start_time = 6 * 3600 ! Start at 06:00:00
+  end_time = start_time + (18 * 3600) ! Run for 18 hours
+  freq = 6 ! output frequency in hours
 
-  if (is_root) call create_file('test.nc')
+  start_hour = start_time / 3600
 
+  print *, "Starting Time-Axis Simulation..."
+  print *, "dt = ", dt, " seconds. Running for 18 hours."
+  print *, "--------------------------------------------------------"
 
+  current_time = start_time
 
+  ! 2. The Main Model Advance Loop
+  do while (current_time <= end_time)
 
-  ! ntests = nt
+     ! Current time breakdown
+     curr_hour = mod(current_time / 3600, 24)
+     curr_min  = mod(current_time, 3600) / 60
 
-  ! do nt = 1,ntests
-  !   print '(A)',msg(nt)
-  ! enddo
+     ! Advance (next) time breakdown
+     next_time = current_time + dt
+     next_hour = mod(next_time / 3600, 24)
+     next_min  = mod(next_time, 3600) / 60
 
-  ! if (ntests > maxtests) then
-  !    print '(A)', 'FAIL: ntests > maxtests '
-  !    stop 1
-  ! else
-  !    if (nfail == 0) then
-  !       print '(A)', 'All tests passed '
-  !    else
-  !       print '(A)', 'FAIL: At least one test failed '
-  !       stop 1
-  !    endif
-  ! endif
+     ! --- A. Mock the FMS/Disk Environment ---
+     elapsed_sec = current_time - start_time
+
+     ! A freq-hour history file changes every (freq * 3600) seconds
+     window_index = elapsed_sec / (freq * 3600)
+     time_in_window = mod(elapsed_sec, freq * 3600)
+
+     ! Construct the filename for a TIME AVERAGE.
+     ! It is named at the midpoint of the current window.
+     ! e.g., Start=6, freq=6 -> window_start=6, midpoint=6+(6/2)=9
+     file_hour = mod(start_hour + (window_index * freq) + (freq / 2), 24)
+
+     write(mock_filename, '("./MOM6_OUTPUT/ocn_2021_03_22_", I2.2, "_00.nc")') file_hour
+
+     ! Mock the file size: small at the exact start of the window, large afterwards
+     if (time_in_window == 0) then
+        mock_size = 199276
+     else
+        mock_size = 90532460
+     end if
+
+     ! --- B. Call the Feature Being Tested ---
+     call update_file_state(tracker, mock_filename, mock_size)
+
+     write(timestring,'(4(A,I2.2))') "Time: ", curr_hour, ":", curr_min, " -> ", next_hour, ":", next_min
+
+     ! Print the log exactly like your MOM_cap output (currTime -> advanceTime)
+     print '(A, L1, A, I10)', trim(timestring)//" | " //trim(mock_filename)// " | chkflag: ", &
+          tracker%chkflag, " | size: ", mock_size
+
+     ! --- C. Dynamic Assertions ---
+     if (time_in_window == 0) then
+        ! Exactly at the new 6-hour boundary: file just appeared
+        call assert_false(tracker%is_complete, "File should NOT be complete on creation", num_errors)
+        call assert_true(tracker%chkflag, "chkflag MUST be true on new file", num_errors)
+     else
+        ! Any subsequent step in the 6-hour window: file has grown and should be locked
+        call assert_true(tracker%is_complete, "File should be complete after first step", num_errors)
+        call assert_false(tracker%chkflag, "chkflag MUST flip to false", num_errors)
+     end if
+
+     ! Advance the clock
+     current_time = current_time + dt
+
+  end do
+
+  ! 3. Final Report
+  print *, "--------------------------------------------------------"
+  if (num_errors == 0) then
+     print *, "SUCCESS: Time-axis simulation passed with zero errors!"
+     stop 0
+  else
+     print *, "FAILURE: ", num_errors, " tests failed during simulation."
+     stop 1
+  end if
 
 contains
 
-  subroutine create_file(fname, preallocate)
+  ! Lightweight assertion routines
+  subroutine assert_true(condition, msg, err_count)
+    logical, intent(in) :: condition
+    character(len=*), intent(in) :: msg
+    integer, intent(inout) :: err_count
+    if (.not. condition) then
+       print *, "  -> ASSERTION FAILED: ", trim(msg)
+       err_count = err_count + 1
+    end if
+  end subroutine assert_true
 
-    character(len=*), intent(in) :: fname
-    logical, intent(in), optional :: preallocate
+  subroutine assert_false(condition, msg, err_count)
+    logical, intent(in) :: condition
+    character(len=*), intent(in) :: msg
+    integer, intent(inout) :: err_count
+    if (condition) then
+       print *, "  -> ASSERTION FAILED: ", trim(msg)
+       err_count = err_count + 1
+    end if
+  end subroutine assert_false
 
-    integer :: ncid, xdimid, timedimid, varid, timevarid
-    logical :: do_prealloc
-
-    do_prealloc = .false.
-    if (present(preallocate)) do_prealloc = preallocate
-
-    if (nf90_create(trim(fname), nf90_clobber, ncid) /= nf90_noerr) stop "NC_FAIL: create"
-    if (nf90_def_dim(ncid, 'x', 1000, xdimid) /= nf90_noerr) stop "NC_FAIL: def_dim x"
-    if (nf90_def_dim(ncid, 'time', nf90_unlimited, timedimid) /= nf90_noerr) stop "NC_FAIL: def_dim time"
-
-    if (nf90_def_var(ncid, 'time', nf90_double, (/timedimid/), timevarid) /= nf90_noerr) stop "NC_FAIL: def_var time"
-    if (nf90_def_var(ncid, 'field', nf90_real, (/xdimid, timedimid/), varid) /= nf90_noerr) stop "NC_FAIL: def_var field"
-    if (nf90_enddef(ncid) /= nf90_noerr) stop "NC_FAIL: enddef"
-
-    if (do_prealloc) then
-      if (nf90_put_var(ncid, timevarid, (/nf90_fill_double/), start=(/1/)) /= nf90_noerr) stop "NC_FAIL: put fill time"
-    endif
-
-    if (nf90_close(ncid) /= nf90_noerr) stop "NC_FAIL: close"
-  end subroutine create_file
-
-  !> Universal Advance Helper: Writes spatial payload to index 1, growing file size and setting final time
-  subroutine populate_timestep_data(fname)
-    character(len=*), intent(in) :: fname
-    integer :: ncid, varid, timevarid
-    real :: dummy_field(1000) = 42.0
-    real(kind=8) :: valid_time = 3600.0
-
-    if (nf90_open(trim(fname), nf90_write, ncid) /= nf90_noerr) stop "NC_FAIL: open"
-    if (nf90_inq_varid(ncid, 'time', timevarid) /= nf90_noerr) stop "NC_FAIL: inq time"
-    if (nf90_inq_varid(ncid, 'field', varid) /= nf90_noerr) stop "NC_FAIL: inq field"
-
-    ! Populate the spatial grid at timestep slot 1 -> This physically expands the file size on disk
-    if (nf90_put_var(ncid, varid, dummy_field, start=(/1, 1/), count=(/1000, 1/)) /= nf90_noerr) stop "NC_FAIL: put field"
-
-    ! Finalize the timestep value at slot 1 (overwriting any previous fill value)
-    if (nf90_put_var(ncid, timevarid, (/valid_time/), start=(/1/)) /= nf90_noerr) stop "NC_FAIL: put valid time"
-
-    if (nf90_close(ncid) /= nf90_noerr) stop "NC_FAIL: close"
-  end subroutine populate_timestep_data
-
-  subroutine cleanup_file(fname)
-    character(len=*), intent(in) :: fname
-    open(unit=99, file=trim(fname), status='old')
-    close(unit=99, status='delete')
-  end subroutine cleanup_file
-
-end program test_outputlog_methods
+end program test_time_axis_log
