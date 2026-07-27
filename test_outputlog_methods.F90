@@ -5,9 +5,9 @@ program test_outputlog_methods
   implicit none
 
   integer :: total_errors = 0
-  logical :: verbose = .false.
+  logical :: verbose = .true.
 
-  integer :: nt, testdt, testfrq, teststart, testhours
+  integer :: nt, testdt, testfrq, teststart, testhours, testfilecnt
   logical :: test_nleninit
 
   character(len= 32) :: testtype
@@ -19,55 +19,66 @@ program test_outputlog_methods
   print *, " Starting Generalized Outputlog Test Suite"
   print *, "========================================================"
 
-  ! Test 1: 6-hourly average, dt=720, start=06, run=24h
+  ! ! Test: 6-hourly average, dt=720, start=06, run=24h
+  ! nt = nt + 1
+  ! testfrq = 6; teststart=6; testhours = 24; testdt = 720
+  ! testtype = 'average'; test_nleninit = .false.
+  ! testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
+
+  ! call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
+  !      init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
+  !      err_count = total_errors)
+
+  ! ! Test: 1-hourly snapshot, dt=1800 (30 mins), start=00Z, run=6h
+  ! nt = nt + 1
+  ! testfrq = 1; teststart=0; testhours = 6; testdt = 1800
+  ! testtype = 'snapshot'; test_nleninit = .true.
+  ! testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
+
+  ! call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
+  !      init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
+  !      err_count = total_errors)
+
+  ! ! Test: 3-hourly snapshot, dt=3600 (1 hour), start=12Z, run=12h
+  ! nt = nt + 1
+  ! testfrq = 3; teststart=12; testhours = 12; testdt = 3600
+  ! testtype = 'snapshot'; test_nleninit = .true.
+  ! testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
+
+  ! call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
+  !      init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
+  !      err_count = total_errors)
+
+  ! Test: 24-hourly average, dt=7200 (2 hours), start=00Z, run=48h
+  ! nt = nt + 1
+  ! testfrq = 24; teststart=0; testhours = 48; testdt = 7200
+  ! testtype = 'average'; test_nleninit = .false.
+  ! testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
+
+  ! call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
+  !      init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
+  !      err_count = total_errors)
+
+  ! Test: 6-hourly average, dt=720 (12 mins), start=06, run=24h (End-of-period naming)
+  ! nt = nt + 1
+  ! testfrq = 6; teststart=6; testhours = 24; testdt = 720
+  ! testtype = 'average_end_named'; test_nleninit = .false.
+  ! testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
+
+  ! call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
+  !      init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
+  !      err_count = total_errors)
+
+
+  ! Test: 24-hourly average, dt=7200 (2 hours), start=00Z, run=54h
   nt = nt + 1
-  testfrq = 6; teststart=6; testhours = 24; testdt = 720
-  testtype = 'average'; test_nleninit = .false.
-  testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
+  testfrq = 24; teststart=0; testhours = 54; testdt = 7200
+  testtype = 'average'; test_nleninit = .false.; testfilecnt = testhours/testfrq
+  testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit, testfilecnt)
 
   call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
        init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
-       err_count = total_errors)
-
-  ! Test 2: 1-hourly snapshot, dt=1800 (30 mins), start=00Z, run=6h
-  nt = nt + 1
-  testfrq = 1; teststart=0; testhours = 6; testdt = 1800
-  testtype = 'snapshot'; test_nleninit = .true.
-  testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
-
-  call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
-       init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
-       err_count = total_errors)
-
-  ! Test 3: 3-hourly snapshot, dt=3600 (1 hour), start=12Z, run=12h
-  nt = nt + 1
-  testfrq = 3; teststart=12; testhours = 12; testdt = 3600
-  testtype = 'snapshot'; test_nleninit = .true.
-  testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
-
-  call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
-       init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
-       err_count = total_errors)
-
-  ! Test 4: 24-hourly average, dt=7200 (2 hours), start=00Z, run=48h
-  nt = nt + 1
-  testfrq = 24; teststart=0; testhours = 48; testdt = 7200
-  testtype = 'average'; test_nleninit = .false.
-  testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
-
-  call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
-       init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
-       err_count = total_errors)
-
-  ! Test 5: 6-hourly average, dt=720 (12 mins), start=06, run=24h (End-of-period naming)
-  nt = nt + 1
-  testfrq = 6; teststart=6; testhours = 24; testdt = 720
-  testtype = 'average_end_named'; test_nleninit = .false.
-  testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
-
-  call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
-       init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
-       err_count = total_errors)
+       expected_completions = testfilecnt, err_count = total_errors)
 
   print *, "========================================================"
   if (total_errors == 0) then
@@ -81,7 +92,7 @@ program test_outputlog_methods
 contains
 
   !> A generalized routine to run a specific simulation configuration
-  subroutine run_test(test_name, dt, freq, file_type, init_nlen_zero, start_hour, run_hours, err_count)
+  subroutine run_test(test_name, dt, freq, file_type, init_nlen_zero, start_hour, run_hours, expected_completions, err_count)
 
     character(len=*), intent(in)    :: test_name
     integer,          intent(in)    :: dt
@@ -90,6 +101,7 @@ contains
     logical,          intent(in)    :: init_nlen_zero
     integer,          intent(in)    :: start_hour
     integer,          intent(in)    :: run_hours
+    integer,          intent(in)    :: expected_completions
     integer,          intent(inout) :: err_count
 
     type(outputlog_state_type) :: tracker
@@ -103,12 +115,9 @@ contains
     character(len=256) :: filename, timestring
     integer            :: ierr
     integer            :: num_completions
-    integer            :: expected_completions
 
     ierr = 0
     num_completions = 0
-    expected_completions = run_hours / freq
-
     is_valid_file = .false.
 
     start_time = start_hour * 3600
@@ -220,7 +229,7 @@ contains
     ! Call 1: Standard outputlog_run equivalent (catches stranded file)
     tracker%isringing = .false.
     tracker%atstop = .false.
-    write(timestring,'(A)') "Time: Finalize (Call 1)"
+    write(timestring,'(A)') "Time: Finalize   "
     size = 90532460
     nlen = 1
     call check_completion(tracker, nlen, size, .false., timestring, filecomplete)
@@ -245,7 +254,7 @@ contains
     write(filename, '("./MOM6_OUTPUT/ocn_2021_03_", I2.2, "_", I2.2, "_00.nc")') file_day, file_hour
     tracker%filename = trim(filename)
 
-    write(timestring,'(A)') "Time: Finalize (Call 2 - atStopTime)"
+    write(timestring,'(A)') "Time: StopTime"
     call check_completion(tracker, nlen, size, .false., timestring, filecomplete)
     if (verbose) call test_loginfo(timestring, filename, tracker%chkfile_nextAdvance, size, filecomplete)
 
@@ -323,19 +332,22 @@ contains
 
   end subroutine test_loginfo
 
-  function set_testmsg(num, dt, freq, start, hours, atype, nleninit0) result(testmsg)
+  function set_testmsg(num, dt, freq, start, hours, atype, nleninit0, nfiles) result(testmsg)
 
     integer,          intent(in) :: num, dt, freq, start, hours
     character(len=*), intent(in) :: atype
     logical,          intent(in) :: nleninit0
+    integer,          intent(in) :: nfiles
 
-    character(len=64)  :: cnum, cdt, cstart, chours, freqtype, initype
+    character(len=64)  :: cnum, cdt, cstart, chours, freqtype, initype, cfilecnt
+
     character(len=256) :: testmsg
 
-    write(cnum,  '(I2.2)') num
-    write(cdt,   '(I4.4,A)') dt, ' secs'
-    write(cstart,'(I2.2,A)') start, 'Z'
-    write(chours,'(I2.2,A)') hours, 'h'
+    write(cnum, '(I2.2)') num
+    write(cdt, '(I4.4,A)') dt, ' secs'
+    write(cstart, '(I2.2,A)') start, 'Z'
+    write(chours, '(I2.2,A)') hours, 'h'
+    write(cfilecnt,'(I4.2,A)')nfiles,' expected file competions'
 
     if (trim(atype) == 'average' .or. trim(atype) == 'average_end_named') then
        write(freqtype,'(I2.2,A)') freq, 'h Avg'
@@ -353,7 +365,8 @@ contains
          //',  start : ' // trim(cstart)                      &
          //', fhmax : ' // trim(chours)                       &
          //', dt : ' // trim(cdt)                             &
-         //', ' // trim(initype)
+         //', ' // trim(initype)                              &
+         //', ' // trim(cfilecnt)
 
   end function set_testmsg
 
