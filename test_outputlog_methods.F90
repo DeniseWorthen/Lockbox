@@ -5,15 +5,32 @@ program test_outputlog_methods
   implicit none
 
   integer :: total_errors = 0
+  logical :: verbose = .false.
+  integer :: nt = 0
+  integer :: testdt, testfrq, teststart, testhours
+  logical :: test_nleninit
+  character(len= 10) :: testtype
+  character(len=256) :: testmsg
 
   print *, "========================================================"
   print *, " Starting Generalized Outputlog Test Suite"
   print *, "========================================================"
 
-  ! Test 1: 6-hourly average, dt=720 (12 mins), start=06, run=24h
-  call run_test_case("Test 1: 6h Avg, dt=720, start=06Z, run=24h", &
-       dt=720, freq=6, file_type="average", init_nlen_zero=.false., &
-       start_hour=6, run_hours=18, err_count=total_errors)
+  nt = nt + 1
+
+
+  ! Test 1: 6-hourly average, dt=720, start=06, run=24h
+  testfrq = 6; teststart=6; testhours = 24; testdt = 720
+  testtype = 'average'; test_nleninit = .false.
+  testmsg = set_testmsg(nt, testdt, testfrq, teststart, testhours, testtype, test_nleninit)
+
+  call run_test(trim(testmsg), dt=testdt, freq=testfrq, file_type=testtype,         &
+       init_nlen_zero=test_nleninit, start_hour = teststart, run_hours = testhours, &
+       err_count = total_errors)
+
+  !call run_test_case("Test 1: 6h Avg, dt=720, start=06Z, run=24h", &
+  !     dt=720, freq=6, file_type="average", init_nlen_zero=.false., &
+  !     start_hour=6, run_hours=24, err_count=total_errors)
 
   ! ! Test 2: 1-hourly snapshot, dt=1800 (30 mins), start=00Z, run=6h
   ! call run_test_case("Test 2: 1h Snap, dt=1800, start=00Z, run=6h", &
@@ -25,10 +42,15 @@ program test_outputlog_methods
   !      dt=3600, freq=3, file_type="snapshot", init_nlen_zero=.true., &
   !      start_hour=12, run_hours=12, err_count=total_errors)
 
-  ! ! Test 4: 24-hourly average, dt=7200 (2 hours), start=00Z, run=48h (Probing dt > freq edge cases)
+  ! ! Test 4: 24-hourly average, dt=7200 (2 hours), start=00Z, run=48h
   ! call run_test_case("Test 4: 24h Avg, dt=7200, start=00Z, run=48h", &
   !      dt=7200, freq=24, file_type="average", init_nlen_zero=.false., &
   !      start_hour=0, run_hours=48, err_count=total_errors)
+
+  ! ! Test 5: 6-hourly average, dt=720 (12 mins), start=06, run=24h (End-of-period naming)
+  ! call run_test_case("Test 5: 6h Avg (End-Named), dt=720, start=06Z, run=24h", &
+  !      dt=720, freq=6, file_type="average_end_named", init_nlen_zero=.false., &
+  !      start_hour=6, run_hours=24, err_count=total_errors)
 
   print *, "========================================================"
   if (total_errors == 0) then
@@ -42,7 +64,7 @@ program test_outputlog_methods
 contains
 
   !> A generalized routine to run a specific simulation configuration
-  subroutine run_test_case(test_name, dt, freq, file_type, init_nlen_zero, start_hour, run_hours, err_count)
+  subroutine run_test(test_name, dt, freq, file_type, init_nlen_zero, start_hour, run_hours, err_count)
 
     character(len=*), intent(in)    :: test_name
     integer,          intent(in)    :: dt
@@ -54,19 +76,24 @@ contains
     integer,          intent(inout) :: err_count
 
     type(outputlog_state_type) :: tracker
-    integer                    :: current_time, end_time, start_time
-    integer                    :: alarm_window_index, next_alarm_time
-    integer                    :: curr_hour, curr_min, next_time, next_hour, next_min
-    integer                    :: size, nlen, file_hour
-    logical                    :: filecomplete
-    character(len=256)         :: filename, timestring
-    integer                    :: local_errors
-    integer :: num_completions
-    integer :: expected_completions
 
-    local_errors = 0
-    num_completions = 0  ! Initialize the counter
-    expected_completions = run_hours / freq ! Calculate expected files
+    integer            :: current_time, next_time, end_time, start_time
+    integer            :: current_alarm_time, alarm_hour
+    integer            :: file_time_hours, file_day, file_hour
+    integer            :: size, nlen
+    logical            :: filecomplete, is_valid_file
+    character(len=5)   :: curr_hm, next_hm
+    character(len=256) :: filename, timestring
+    integer            :: ierr
+    integer            :: num_completions
+    integer            :: expected_completions
+
+    ierr = 0
+    num_completions = 0
+    expected_completions = run_hours / freq
+
+    is_valid_file = .false.
+
     start_time = start_hour * 3600
     end_time = start_time + (run_hours * 3600)
 
@@ -75,148 +102,159 @@ contains
     tracker%chkfile_nextAdvance = .false.
     tracker%isringing = .false.
     tracker%atstop = .false.
+    tracker%filename = ""
 
-    next_alarm_time = start_time
+    ! FMS offset: The first alarm rings one full frequency block after the start
+    current_alarm_time = start_time + (freq * 3600)
     current_time = start_time
 
     print *, ""
-    print *, "--- Running: ", trim(test_name), " ---"
+    print *, "--- ", trim(test_name), " ---"
 
-    do while (current_time <= end_time)
+    do while (current_time < end_time)
 
        ! Time formatting
-       curr_hour = mod(current_time / 3600, 24)
-       curr_min  = mod(current_time, 3600) / 60
        next_time = current_time + dt
-       next_hour = mod(next_time / 3600, 24)
-       next_min  = mod(next_time, 3600) / 60
+       curr_hm = set_timestr(current_time)
+       next_hm = set_timestr(next_time)
 
        ! --- A. Mock ESMF Environment ---
-       ! Check if the alarm should ring (triggers at or past the target interval)
-       if (current_time >= next_alarm_time) then
+       if (current_time >= current_alarm_time) then
+          current_alarm_time = current_alarm_time + (freq * 3600)
+       end if
+
+       if (next_time >= current_alarm_time) then
           tracker%isringing = .true.
-          alarm_window_index = (next_alarm_time - start_time) / (freq * 3600)
-          ! Advance the alarm to the next frequency window
-          next_alarm_time = next_alarm_time + (freq * 3600)
+          alarm_hour = current_alarm_time / 3600
+
+          ! 1. Calculate absolute hours offset for the file target
+          if (trim(file_type) == "average") then
+             file_time_hours = alarm_hour - (freq + (freq / 2))
+          else if (trim(file_type) == "average_end_named" .or. trim(file_type) == "snapshot") then
+             file_time_hours = alarm_hour - freq
+          end if
+
+          ! 2. Calculate the Day and the Hour
+          file_day = 22 + floor(real(file_time_hours) / 24.0)
+          file_hour = modulo(file_time_hours, 24)
+
+          write(filename, '("./MOM6_OUTPUT/ocn_2021_03_", I2.2, "_", I2.2, "_00.nc")') file_day, file_hour
+          tracker%filename = trim(filename)
+
+          ! Validate if this file is a no-op (i.e., its interval began before start_time)
+          if ((alarm_hour - (2 * freq)) >= start_hour) then
+             is_valid_file = .true.
+          else
+             is_valid_file = .false.
+          end if
+
        else
           tracker%isringing = .false.
+          filename = trim(tracker%filename)
        end if
 
-       ! Construct the filename based on Average vs Snapshot and the current ALARM window
-       if (trim(file_type) == "average") then
-          file_hour = mod(start_hour + (alarm_window_index * freq) + (freq / 2), 24)
+       ! Mock the file state based on ringing status and NO-OP status
+       if (.not. is_valid_file) then
+          ! Mimic nf90_fill_int for non-existent files
+          size = -2147483647
+          nlen = -2147483647
        else
-          file_hour = mod(start_hour + (alarm_window_index * freq) + freq, 24)
-       end if
-       write(filename, '("./MOM6_OUTPUT/ocn_2021_03_22_", I2.2, "_00.nc")') file_hour
-       tracker%filename = trim(filename)
-
-       ! Mock the file state based on the ringing status
-       if (tracker%isringing) then
-          size = 199276
-          if (init_nlen_zero) then
-             nlen = 0  ! Will trigger use_filesize = .false. inside check_completion
+          if (tracker%isringing) then
+             size = 199276
+             if (init_nlen_zero) then
+                nlen = 0
+             else
+                nlen = 1
+             end if
           else
-             nlen = 1  ! Will trigger use_filesize = .true. inside check_completion
+             size = 90532460
+             nlen = 1
           end if
-       else
-          size = 90532460
-          nlen = 1
        end if
 
        ! --- B. Call the REAL Feature ---
-       write(timestring,'(4(A,I2.2))') "Time: ", curr_hour, ":", curr_min, " -> ", next_hour, ":", next_min
-       call check_completion(tracker, nlen, size, .false., timestring, filecomplete)
+       write(timestring,'(4(A,I2.2))') "Time: "//trim(curr_hm)//" -> "//trim(next_hm)
 
-       ! Print log output for visual verification
-       print '(A, L1, A, I10, A, L1)', trim(timestring)//" | " //trim(filename)// " | chkflag: ", &
-            tracker%chkfile_nextAdvance, " | size: ", size, " | complete: ", filecomplete
+       if (len_trim(tracker%filename) > 0) then
+          call check_completion(tracker, nlen, size, .false., timestring, filecomplete)
+          if (verbose) call test_loginfo(timestring, filename, tracker%chkfile_nextAdvance, size, filecomplete)
 
-       ! --- C. Generalized Dynamic Assertions ---
-       if (tracker%isringing) then
-          call assert_false(filecomplete, "Ringing: filecomplete must be false", local_errors)
-          call assert_true(tracker%chkfile_nextAdvance, "Ringing: chkfile_nextAdvance must trigger true", local_errors)
-       end if
+          ! --- C. Generalized Dynamic Assertions ---
+          if (tracker%isringing) then
+             call assert_false(filecomplete, "Ringing: filecomplete must be false", ierr)
+             call assert_true(tracker%chkfile_nextAdvance, "Ringing: chkfile_nextAdvance must trigger true", ierr)
+          end if
 
-       ! If the file just completed, ensure the tracking flag turned off
-       if (filecomplete) then
-          call assert_false(tracker%chkfile_nextAdvance, "Complete: chkfile_nextAdvance must flip false", local_errors)
-       end if
-
-       ! Increment our macro-assertion counter
-       if (filecomplete) then
-          num_completions = num_completions + 1
+          if (filecomplete) then
+             call assert_false(tracker%chkfile_nextAdvance, "Complete: chkfile_nextAdvance must flip false", ierr)
+             num_completions = num_completions + 1
+          end if
        end if
 
        current_time = current_time + dt
     end do
 
-    ! ! ==================================================================
-    ! ! --- D. Simulate ocean_model_finalize (Double Call Sequence) ---
-    ! ! ==================================================================
+    ! ==================================================================
+    ! --- D. Simulate ocean_model_finalize (Double Call Sequence) ---
+    ! ==================================================================
 
-    ! print *, "--- Simulating ocean_model_finalize ---"
+    print *, "--- Simulating ocean_model_finalize ---"
 
-    ! ! Call 1: Standard outputlog_run equivalent
-    ! tracker%isringing = .false.
-    ! tracker%atstop = .false.
-    ! write(timestring,'(A)') "Time: Finalize (Call 1)"
+    ! Call 1: Standard outputlog_run equivalent (catches stranded file)
+    tracker%isringing = .false.
+    tracker%atstop = .false.
+    write(timestring,'(A)') "Time: Finalize (Call 1)"
+    size = 90532460
+    nlen = 1
+    call check_completion(tracker, nlen, size, .false., timestring, filecomplete)
+    if (filecomplete) num_completions = num_completions + 1
+    if (verbose) call test_loginfo(timestring, filename, tracker%chkfile_nextAdvance, size, filecomplete)
 
-    ! call check_completion(tracker, nlen, size, .false., timestring, filecomplete)
-    ! if (filecomplete) num_completions = num_completions + 1
+    ! Call 2: atStopTime = .true. equivalent (Forces final file)
+    tracker%isringing = .false.
+    tracker%atstop = .true.
+    tracker%chkfile_nextAdvance = .true.
 
-    ! ! Call 2: atStopTime = .true. equivalent
-    ! tracker%isringing = .false.
-    ! tracker%atstop = .true.
+    ! Finalize Math using absolute hours
+    alarm_hour = end_time / 3600
+    if (trim(file_type) == "average") then
+       file_time_hours = alarm_hour - (freq / 2)
+    else
+       file_time_hours = alarm_hour
+    end if
 
-    ! ! The cap manually forces the check flag to true for the final file before calling check_completion
-    ! tracker%chkfile_nextAdvance = .true.
+    file_day = 22 + floor(real(file_time_hours) / 24.0)
+    file_hour = modulo(file_time_hours, 24)
+    write(filename, '("./MOM6_OUTPUT/ocn_2021_03_", I2.2, "_", I2.2, "_00.nc")') file_day, file_hour
+    tracker%filename = trim(filename)
 
-    ! ! Mock that FMS has now flushed the final interval's file to disk
-    ! size = 90532460
-    ! nlen = 1
+    write(timestring,'(A)') "Time: Finalize (Call 2 - atStopTime)"
+    call check_completion(tracker, nlen, size, .false., timestring, filecomplete)
+    if (verbose) call test_loginfo(timestring, filename, tracker%chkfile_nextAdvance, size, filecomplete)
 
-    ! write(timestring,'(A)') "Time: Finalize (Call 2 - atStopTime)"
-    ! call check_completion(tracker, nlen, size, .false., timestring, filecomplete)
+    if (filecomplete) then
+       num_completions = num_completions + 1
+       call assert_true(filecomplete, "Finalize: atStopTime must trigger a final file completion", ierr)
+    end if
 
-    ! print '(A, L1, A, I10, A, L1)', trim(timestring)//" | " //trim(filename)// " | chkflag: ", &
-    !      tracker%chkfile_nextAdvance, " | size: ", size, " | complete: ", filecomplete
+    ! --- Final Macro Assertion ---
+    call assert_equal(expected_completions, num_completions, "Total completed files must match run_hours / freq", ierr)
 
-    ! ! Increment if the final forced check successfully completed
-    ! if (filecomplete) then
-    !    num_completions = num_completions + 1
-    !    call assert_true(filecomplete, "Finalize: atStopTime must trigger a final file completion", local_errors)
-    ! end if
+    if (ierr == 0) then
+       print *, "  -> Passed. Expected number of files detected as complete"
+    else
+       print *, "  -> FAILED with ", ierr, " errors."
+    end if
 
-    ! ! --- Final Macro Assertion ---
-    ! call assert_equal(expected_completions, num_completions, "Total completed files must exactly match run_hours / freq", local_errors)
-    ! call assert_equal(expected_completions, num_completions, "Total completed files must match run_hours / freq", local_errors)
+    err_count = err_count + ierr
 
-    ! if (local_errors == 0) then
-    !    print *, "  -> Passed. Expected number of files detected as complete"
-    ! else
-    !    print *, "  -> FAILED with ", local_errors, " errors."
-    ! end if
-
-    ! err_count = err_count + local_errors
-
-    ! if (local_errors == 0) then
-    !    print *, "  -> Passed."
-    ! else
-    !    print *, "  -> FAILED with ", local_errors, " errors."
-    ! end if
-
-    ! err_count = err_count + local_errors
-
-  end subroutine run_test_case
+  end subroutine run_test
 
   ! --- Assertion Helpers ---
   subroutine assert_true(condition, msg, err_count)
-
     logical,          intent(in)    :: condition
     character(len=*), intent(in)    :: msg
     integer,          intent(inout) :: err_count
-
     if (.not. condition) then
        print *, "  -> ASSERTION FAILED: ", trim(msg)
        err_count = err_count + 1
@@ -224,11 +262,9 @@ contains
   end subroutine assert_true
 
   subroutine assert_false(condition, msg, err_count)
-
     logical          , intent(in)    :: condition
     character(len=*) , intent(in)    :: msg
     integer          , intent(inout) :: err_count
-
     if (condition) then
        print *, "  -> ASSERTION FAILED: ", trim(msg)
        err_count = err_count + 1
@@ -236,15 +272,71 @@ contains
   end subroutine assert_false
 
   subroutine assert_equal(expected, actual, msg, err_count)
-
     integer,          intent(in)    :: expected, actual
     character(len=*), intent(in)    :: msg
     integer,          intent(inout) :: err_count
-
     if (expected /= actual) then
        print *, "  -> ASSERTION FAILED: ", trim(msg), " (Expected: ", expected, ", Got: ", actual, ")"
        err_count = err_count + 1
     end if
   end subroutine assert_equal
 
+  function set_timestr(time) result(ctime)
+
+    integer, intent(in) :: time  ! elapsed secs
+    character(len=5)    :: ctime
+
+    integer :: hour, min
+
+    hour = mod(time / 3600, 24)
+    min =  mod(time, 3600) / 60
+
+    write(ctime,'(I2.2,A,I2.2)')hour,':',min
+  end function set_timestr
+
+  subroutine test_loginfo(timestr, fname, chknext, size, complete)
+
+    character(len=*), intent(in) :: timestr
+    character(len=*), intent(in) :: fname
+    logical,          intent(in) :: chknext
+    integer,          intent(in) :: size
+    logical,          intent(in) :: complete
+
+    print '(A, L1, A, I15, A, L1)', trim(timestr)//" | " //trim(fname)// " | chkflag: ", &
+         chknext, " | size: ", size, " | complete: ", complete
+
+  end subroutine test_loginfo
+
+  function set_testmsg(num, dt, freq, start, hours, atype, nleninit0) result(testmsg)
+
+    integer,          intent(in) :: num, dt, freq, start, hours
+    character(len=*), intent(in) :: atype
+    logical,          intent(in) :: nleninit0
+
+    character(len= 2) :: cnum
+    character(len= 9) :: cdt
+    character(len= 3) :: cstart, chours
+    character(len= 8) :: freqtype
+    character(len=28) :: initype
+
+    character(len=120) :: testmsg
+
+    write(cnum,  '(I2.2)')num
+    write(cdt,   '(I4.4,A)')dt,' secs'
+    write(cstart,'(I2.2,A)')start,'Z'
+    write(chours,'(I2.2,A)')hours,'h'
+
+    if (atype == 'average') then
+       write(freqtype,'(I2.2,A)')freq,'h Avg '
+    else
+       write(freqtype,'(I2.2,A)')freq,'h Inst'
+    endif
+    if (nleninit0) then
+       write(initype,'(A)')'unlimdim len = 0 at creation'
+    else
+       write(initype,'(A)')'unlimdim len = 1 at creation'
+    endif
+
+    testmsg = 'Test '//cnum//': '//freqtype//',  start : '//cstart//', fhmax : '//chours//', dt : '//cdt//', '//initype
+  end function set_testmsg
 end program test_outputlog_methods
