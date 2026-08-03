@@ -1,5 +1,6 @@
 module test_utils
 
+  use ESMF, only : ESMF_SUCCESS
   implicit none
 
   private
@@ -12,12 +13,16 @@ module test_utils
   public :: testsummary, addresult
   public :: assert_equal
 
+  type :: msg_type
+     character(len=:), allocatable :: str
+  end type msg_type
+
   type testsummary
      integer :: count = 0
      integer :: npass = 0
      integer :: nfail = 0
-     logical,          allocatable :: teststatus(:)
-     character(len=:), allocatable :: testmessage(:)
+     logical,        allocatable :: teststatus(:)
+     type(msg_type), allocatable :: testmessages(:)
    contains
      procedure :: init => init_summary
   end type testsummary
@@ -33,13 +38,6 @@ module test_utils
   interface addresult
      module procedure add_test_result
   end interface addresult
-  ! if (is_passing) then
-  !    npass = npass + 1
-  !    msg(nt) = trim(testname)//' PASS'
-  ! else
-  !    nfail = nfail + 1
-  !    msg(nt) = trim(testname)//' FAIL'
-  ! endif
 
 contains
 
@@ -49,7 +47,8 @@ contains
     integer,            intent(in)    :: maxtests
 
     allocate(this%teststatus(maxtests))
-    allocate(character(len=0) :: this%testmessage(max_tests)
+    allocate(this%testmessage(maxtests))
+
   end subroutine init_summary
 
   subroutine add_test_result(summary, passed, message)
@@ -66,7 +65,7 @@ contains
     end if
 
     summary%teststatus(summary%count) = passed
-    summary%messages(summary%count) = message
+    summary%testmessage(summary%count)%str = message
   end subroutine add_test_result
 
   subroutine assert_logical(actual, expected, msg, rc, returnmsg)
@@ -76,13 +75,12 @@ contains
     logical,          intent(out) :: rc
     character(len=*), intent(out) :: returnmsg
 
-    rc = (actual == expected)
+    rc = (actual .eqv. expected)
     if (rc) then
        returnmsg = "Pass: "// trim(msg)
     else
        write(returnmsg, '(2(a,L2))') "Fail: " // trim(msg) // " | Expected ", expected, ", got ", actual
     endif
-
   end subroutine assert_logical
 
   subroutine assert_int_scalar(actual, expected, msg, rc, returnmsg)
@@ -140,7 +138,6 @@ contains
        returnmsg = "Fail: " // trim(msg) // " | At least one element mismatched."
     end if
   end subroutine assert_double_1d
-end module assertion_mod
 
 
   ! ! --- Assertion helpers ---
@@ -177,6 +174,7 @@ end module assertion_mod
   function itoa(i) result(s)
     integer, intent(in) :: i
     character(len=4) :: s
+
     write(s,'(I0)') i
   end function itoa
 
