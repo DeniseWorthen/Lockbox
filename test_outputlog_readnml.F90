@@ -266,6 +266,19 @@ program test_outputlog_readnml
 
   ! ------------------
   nt = nt + 1
+  write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: file prefix with invalid characters is rejected'
+  nml_fh = (/6,0,0,0/)
+  requested = (/ .false., .false., .true., .false. /)
+  nml_fnameprefix = (/ character(len=12) :: '', '', 'ocn daily', '' /)   ! space is not allowed
+
+  fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
+  is_passing = (ierr /= 0)
+
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(nmltests, assertrc, trim(assertmsg), trim(errmsg))
+
+  ! ------------------
+  nt = nt + 1
   write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: single request, non-default prefix is honored'
   nml_fh = (/6,0,0,0/)
   requested = (/ .false., .false., .true., .false. /)

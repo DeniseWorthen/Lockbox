@@ -378,17 +378,6 @@ function setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
       return
     endif
   enddo
-  do n = 1, nfreq
-    if (nml_fh(n) /= 0 .and. len_trim(nml_fnameprefix(n)) > 0) then
-      if (verify(trim(nml_fnameprefix(n)), &
-           'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_') > 0) then
-        ierr = 1
-        write(errmsg, '(A, I2, A)') 'MOM_outputlog: filename prefix for active slot ', n, &
-             ' contains invalid characters (letters, digits, underscore only)'
-        return
-      endif
-    endif
-  enddo
 
   ! default file prefix == 'ocn' for any single freq run
   if (n_active == 1) then
