@@ -25,7 +25,7 @@ program test_outputlog_readnml
 
   logical           :: requested(nfreq)
   character(len=7)  :: timereduce(nfreq)
-  character(len=12) :: fnameroot(nfreq)
+  character(len=13) :: fnameroot(nfreq)
 
   character(len=128) :: testname
   character(len=256) :: errmsg
@@ -96,6 +96,28 @@ program test_outputlog_readnml
 
   requested = setrequest(validfreqs, nml_fh, errmsg, ierr)
   is_passing = (ierr /= 0)
+
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(nmltests, assertrc, trim(assertmsg), trim(errmsg))
+
+  ! ------------------
+  nt = nt + 1
+  write(testname,'(A,I2.2,A)')'test ',nt,' setrequest: all four frequencies active simultaneously'
+  nml_fh = (/1,3,6,24/)
+
+  requested = setrequest(validfreqs, nml_fh, errmsg, ierr)
+  is_passing = (ierr == 0 .and. all(requested))
+
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(nmltests, assertrc, trim(assertmsg), trim(errmsg))
+
+  ! ------------------
+  nt = nt + 1
+  write(testname,'(A,I2.2,A)')'test ',nt,' setrequest: all four frequencies active simultaneously'
+  nml_fh = (/1,3,6,24/)
+
+  requested = setrequest(validfreqs, nml_fh, errmsg, ierr)
+  is_passing = (ierr == 0 .and. all(requested))
 
   call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
   call addresult(nmltests, assertrc, trim(assertmsg), trim(errmsg))
@@ -205,7 +227,7 @@ program test_outputlog_readnml
   nml_fnameprefix = (/ character(len=12) :: 'ocn_01h', 'ocn_03h', '', '' /)
 
   fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
-  is_passing = (ierr == 0 .and. trim(fnameroot(1)) == 'ocn_01h' .and. trim(fnameroot(2)) == 'ocn_03h')
+  is_passing = (ierr == 0 .and. trim(fnameroot(1)) == 'ocn_01h_' .and. trim(fnameroot(2)) == 'ocn_03h_')
 
   call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
   call addresult(nmltests, assertrc, trim(assertmsg), trim(errmsg))
@@ -280,7 +302,7 @@ program test_outputlog_readnml
   ! ------------------
   nt = nt + 1
   write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: single request, non-default prefix is honored'
-  nml_fh = (/6,0,0,0/)
+  nml_fh = (/0,0,6,0/)
   requested = (/ .false., .false., .true., .false. /)
   nml_fnameprefix = (/ character(len=12) :: '', '', 'myprefix', '' /)
 
@@ -293,27 +315,23 @@ program test_outputlog_readnml
   ! ------------------
   nt = nt + 1
   write(testname,'(A,I2.2,A)')'test ',nt,' setprefix: file prefix of exactly 12 characters is allowed'
-  nml_fh = (/6,0,0,0/)
+  nml_fh = (/0,0,6,0/)
   requested = (/ .false., .false., .true., .false. /)
   nml_fnameprefix = (/ character(len=12) :: '', '', 'twelve_chars', '' /)  ! exactly 12 chars
 
   fnameroot = setprefix(validfreqs, requested, nml_fh, nml_fnameprefix, errmsg, ierr)
   is_passing = (ierr == 0 .and. trim(fnameroot(3)) == 'twelve_chars_')
-
   call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
   call addresult(nmltests, assertrc, trim(assertmsg), trim(errmsg))
 
   ! ===========================================================================
-  ! end-to-end: setrequest -> settype -> setprefix chained with ONE shared,
-  ! realistic namelist configuration (each function above is otherwise only
-  ! tested in isolation, with requested/nml_fh hand-crafted independently for
-  ! each call -- this confirms they compose correctly using setrequest's own
-  ! real output, matching how production actually invokes them in sequence)
+  ! test end-to-end: setrequest -> settype -> setprefix
   ! ===========================================================================
 
   nt = nt + 1
   write(testname,'(A,I2.2,A)')'test ',nt,' end-to-end: setrequest -> settype -> setprefix compose correctly'
   nml_fh = (/0,0,6,24/)
+
   nml_type = (/ character(len=12) :: '', '', 'average', 'none' /)
   nml_fnameprefix = (/ character(len=12) :: '', '', 'ocn_06h', 'ocn_24h' /)
 
@@ -337,7 +355,6 @@ program test_outputlog_readnml
   ! Test results
   ! ------------------
 
-  print '(3(A,I0))','Total tests = ',nmltests%count,' Passing = ',nmltests%npass,' Failing = ',nmltests%nfail
   if (nmltests%nfail > 0) then
      print '(A)', 'FAIL: At least one test failed '
      do n = 1,nmltests%count
@@ -354,5 +371,6 @@ program test_outputlog_readnml
         endif
      enddo
   endif
+  print '(3(A,I0))','Total tests = ',nmltests%count,' Passing = ',nmltests%npass,' Failing = ',nmltests%nfail
 
 end program test_outputlog_readnml

@@ -16,6 +16,7 @@ program test_alarminit
   use ESMF,  only : ESMF_Time, ESMF_TimeSet, ESMF_TimeGet, ESMF_TimeInterval, ESMF_TimeIntervalSet
   use ESMF,  only : operator(==), operator(/=), operator(+), operator(-), operator(*)
   use MOM_cap_time, only : AlarmInit
+  use mom_outputlog_methods, only : set_toffset
 
   implicit none
 
@@ -44,6 +45,75 @@ program test_alarminit
   call esmf_err(rc, subname, "ESMF_Initialize")
 
   nt = 0
+  ! ===========================================================================
+  ! test set_toffset directly -- pure integer function, no ESMF/clock needed.
+  ! Fast, isolated check of the REAL production formula (mom_outputlog_methods)
+  ! against every literal already confirmed via full ring-detection below.
+  ! A failure here localizes the problem to the formula itself, independent
+  ! of whether AlarmInit/ring-detection machinery is also working correctly.
+  ! ===========================================================================
+
+  nt = nt + 1
+  teststart = 21; testfreq = 6
+  write(testname,'(3(A,I2.2))')'test ',nt,' set_toffset: start_hour ',teststart,' freq ',testfreq
+  is_passing = (set_toffset(teststart, testfreq) == 3)
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), 'expected toffset=3')
+
+  nt = nt + 1
+  teststart = 15; testfreq = 6
+  write(testname,'(3(A,I2.2))')'test ',nt,' set_toffset: start_hour ',teststart,' freq ',testfreq
+  is_passing = (set_toffset(teststart, testfreq) == 3)
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), 'expected toffset=3')
+
+  nt = nt + 1
+  teststart = 11; testfreq = 6
+  write(testname,'(3(A,I2.2))')'test ',nt,' set_toffset: start_hour ',teststart,' freq ',testfreq
+  is_passing = (set_toffset(teststart, testfreq) == 1)
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), 'expected toffset=1')
+
+  nt = nt + 1
+  teststart = 10; testfreq = 3
+  write(testname,'(3(A,I2.2))')'test ',nt,' set_toffset: start_hour ',teststart,' freq ',testfreq
+  is_passing = (set_toffset(teststart, testfreq) == 2)
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), 'expected toffset=2')
+
+  ! already-aligned cases: mod(hour,freq)==0, toffset must stay 0
+  nt = nt + 1
+  teststart = 9; testfreq = 3
+  write(testname,'(3(A,I2.2))')'test ',nt,' set_toffset: start_hour ',teststart,' freq ',testfreq
+  is_passing = (set_toffset(teststart, testfreq) == 0)
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), 'expected toffset=0 (already aligned)')
+
+  nt = nt + 1
+  teststart = 6; testfreq = 6
+  write(testname,'(3(A,I2.2))')'test ',nt,' set_toffset: start_hour ',teststart,' freq ',testfreq
+  is_passing = (set_toffset(teststart, testfreq) == 0)
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), 'expected toffset=0 (already aligned)')
+
+  ! freq=1/24: explicitly excluded regardless of start hour (see
+  ! set_toffset's docstring) -- pick a deliberately non-aligned start hour
+  ! for both, so a passing result actually demonstrates the exclusion
+  ! rather than coincidentally landing on the mod==0 branch.
+  nt = nt + 1
+  teststart = 5; testfreq = 1
+  write(testname,'(3(A,I2.2))')'test ',nt,' set_toffset: start_hour ',teststart,' freq ',testfreq
+  is_passing = (set_toffset(teststart, testfreq) == 0)
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), 'expected toffset=0 (freq=1 always excluded)')
+
+  nt = nt + 1
+  teststart = 5; testfreq = 24
+  write(testname,'(3(A,I2.2))')'test ',nt,' set_toffset: start_hour ',teststart,' freq ',testfreq
+  is_passing = (set_toffset(teststart, testfreq) == 0)
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), 'expected toffset=0 (freq=24 always excluded)')
+
   ! ===========================================================================
   ! test capture of ringtime via test -- deliberately uses a small dt so that
   ! the fixed max_steps bound (200 steps) covers LESS real time than the 6h
@@ -244,10 +314,32 @@ program test_alarminit
   call addresult(alarmtests, assertrc, trim(assertmsg), trim(errmsg))
 
   ! ------------------
+  ! freq=24 has no external grid to align to -- confirmed via a real run
+  ! (ncdump of the actual FMS-averaged output file showed an unshifted
+  ! [start,start+24h] window; applying any toffset correction rang the
+  ! alarm 10h before that window's real close, producing no log output at
+  ! all). Ring must land at exactly start+24h, same as if toffset were
+  ! always 0, regardless of start_hour.
+  nt = nt + 1
+  teststart = 10; testfreq = 24
+  write(testname,'(3(A,I2.2))')'test ',nt,' literal check: start_hour ',teststart,' freq ',testfreq
+
+  call find_ring_time(testfreq, teststart, ringTime, startTime, toffset, ierr, errmsg)
+  if (ierr == 0) then
+     call ESMF_TimeSet(expectedTime, yy=base_yy, mm=base_mm, dd=base_dd+1, h=teststart, rc=rc)
+     call esmf_err(rc, subname, "ESMF_TimeSet(expectedTime)")
+     is_passing = (ringTime == expectedTime)
+  else
+     is_passing = .false.
+  endif
+
+  call assert_equal(is_passing, .true., testname, assertrc, assertmsg)
+  call addresult(alarmtests, assertrc, trim(assertmsg), trim(errmsg))
+
+  ! ------------------
   ! Test results
   ! ------------------
 
-  print '(3(A,I0))','Total tests = ',alarmtests%count,' Passing = ',alarmtests%npass,' Failing = ',alarmtests%nfail
   if (alarmtests%nfail > 0) then
      print '(A)', 'FAIL: At least one test failed '
      do n = 1,alarmtests%count
@@ -264,6 +356,8 @@ program test_alarminit
         endif
      enddo
   endif
+  print '(3(A,I0))','Total tests = ',alarmtests%count,' Passing = ',alarmtests%npass,' Failing = ',alarmtests%nfail
+
 
   call ESMF_Finalize(rc=rc)
   call esmf_err(rc, subname, "ESMF_Finalize")
@@ -319,11 +413,13 @@ contains
     call ESMF_TimeIntervalSet(tincrement, m=1, rc=rc)
     call esmf_err(rc, subname,  "ESMF_TimeIntervalSet(tincrement)")
 
-    if (mod(start_hour, freq) /= 0) then
-       toffset = freq - mod(start_hour, freq)
-    else
-       toffset = 0
-    endif
+    ! Real production logic, not a reimplementation -- closes the
+    ! reimplementation gap this whole test file used to carry: every ring
+    ! detected here now depends on the SAME toffset computation outputlog_init
+    ! actually uses, not a hand-typed duplicate of it. See set_toffset's own
+    ! docstring (mom_outputlog_methods.F90) and test_set_toffset (in this
+    ! program) for why freq=1/24 are excluded.
+    toffset = set_toffset(start_hour, freq)
 
     alarmoffset = toffset*60*tincrement
     refTime = startTime + alarmoffset
@@ -376,8 +472,8 @@ contains
     character(len=*),  intent(out) :: errmsg
     integer, optional, intent(in)  :: dt
 
-    type(ESMF_Time)         :: startTime, ringTime, regressionTime
-    type(ESMF_TimeInterval) :: regressionInterval
+    type(ESMF_Time)         :: startTime, ringTime, regressionTime, expectedTime
+    type(ESMF_TimeInterval) :: regressionInterval, freqInterval
 
     integer :: rc
     integer :: toffset, ring_day, ring_hour
@@ -390,16 +486,30 @@ contains
     call esmf_err(rc, subname,  "ESMF_TimeGet(ringTime)")
 
     ! --- PRIMARY: independent structural check (the code's own stated intent).
-    ! Any freq must land on a multiple of that freq, regardless of start
-    ! time -- a single uniform property across all frequencies, not branched
-    ! by freq size. Deliberately coarse: for freq=1 this is vacuously true
-    ! (nothing to misalign), and it can't distinguish "off by one interval"
-    ! from "off by several" -- pinning down the exact instant is secondary's
-    ! job. Primary only guarantees the alarm cycles at the right cadence.
-    primary_ok = (mod(ring_hour, freq) == 0)
-    if (.not. primary_ok) then
-       errmsg = trim(errmsg)//'PRIMARY FAIL: ring hour '//itoa(ring_hour)//' is not a multiple of freq='// &
-            itoa(freq)//'. '
+    ! For freq=3/6, "ring hour is a multiple of freq" is meaningful -- there
+    ! are multiple valid nonzero remainders within a day (e.g. 6,12,18 for
+    ! freq=6). For freq=1 it's vacuously true (every hour is a valid 1h
+    ! boundary). For freq=24 it is NOT meaningful: ring_hour is bounded to
+    ! 0-23, and 24 can never appear as a nonzero remainder in that range --
+    ! mod(ring_hour,24)==0 can only ever be satisfied by ring_hour=0 exactly,
+    ! regardless of whether the ring landed on the correct day. freq=24's
+    ! real invariant (confirmed via real production runs -- see set_toffset's
+    ! docstring) is that it has no external grid at all: the ring must land
+    ! EXACTLY 24h after start, checked as a full ESMF_Time instant instead.
+    if (freq == 24) then
+       call ESMF_TimeIntervalSet(freqInterval, h=freq, rc=rc)
+       call esmf_err(rc, subname, "ESMF_TimeIntervalSet(freqInterval)")
+       expectedTime = startTime + freqInterval
+       primary_ok = (ringTime == expectedTime)
+       if (.not. primary_ok) then
+          errmsg = trim(errmsg)//'PRIMARY FAIL: ring did not occur at exactly start+24h. '
+       endif
+    else
+       primary_ok = (mod(ring_hour, freq) == 0)
+       if (.not. primary_ok) then
+          errmsg = trim(errmsg)//'PRIMARY FAIL: ring hour '//itoa(ring_hour)//' is not a multiple of freq='// &
+               itoa(freq)//'. '
+       endif
     endif
 
     ! --- SECONDARY: regression check only -- re-derives AlarmInit's own
