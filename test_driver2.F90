@@ -193,7 +193,7 @@ contains
     integer :: ierr, rc
     integer :: toffset, count
     logical :: phantom_file, lstop
-    logical :: firstcompletion = .false.   ! want only the first time the file completes to count
+    logical :: found_firstcompletion = .false.   ! want only the first time the file completes to count
     logical :: pending = .false.
 
     character(len=16)  :: timestr
@@ -313,16 +313,15 @@ contains
              endif
           endif
        endif
-
        ! ======================================================================
        ! end of file preparation for continuous polling
        ! ======================================================================
 
        call track_freqn(modeltime, cf_n, state_n, comm, isroot, rootpe, outputdir, lastrestart, &
             debug_onroot, .false., rc)
-       if (state_n%filecomplete .and. .not.firstcompletion) then
+       if (state_n%filecomplete .and. .not.found_firstcompletion) then
           completions = completions + 1
-          firstcompletion = .true.
+          found_firstcompletion = .true.
        endif
 
 

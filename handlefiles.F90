@@ -5,9 +5,9 @@ subroutine handlefiles(isroot, fname, use_filesize, mode, rc=rc)
   character, len=(*), intent(in)  :: fname
   logical,            intent(in)  :: use_filesize
   character(len=*),   intent(in)  :: mode
-  integer,            intent(out) :: rc
+  !integer,            intent(out) :: rc
 
-  rc = 0
+  !rc = 0
 
   select case (mode)
 
@@ -43,7 +43,10 @@ subroutine handlefiles(isroot, fname, use_filesize, mode, rc=rc)
      endif
 
   case default
-     ierr = 1
+     if (isroot) then
+        print '(A)',' ERROR: unknown case '
+        stop
+     endif
   end select
 
 end subroutine handlefiles
