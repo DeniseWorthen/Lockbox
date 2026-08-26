@@ -193,11 +193,10 @@ contains
     integer :: ierr, rc
     integer :: toffset, count
     logical :: phantom_file, lstop
-    logical :: found_firstcompletion = .false.   ! want only the first time the file completes to count
+    logical :: found_firstcompletion = .false.   ! count only the first time the file completes
     logical :: pending = .false.
 
     character(len=16)  :: timestr
-
     character(len=40)  :: importexport
     character(len=20)  :: subname = 'run_case'
 
@@ -280,7 +279,6 @@ contains
        if (pending) then
           call handlefiles(isroot, state_n%filename, l_use_filesize, 'complete', rc=rc)
           pending = .false.
-
           if (debug_onroot) then
              call get_file_state(comm, isroot, rootpe, state_n%filename, nlen=nlen, fsize=fsize, rc=rc)
              print '(A,i4,i12,2(A,L))',trim(subname)//' complete file '//state_n%filename//'  '//importexport, &
@@ -300,12 +298,11 @@ contains
           if (phantom_file) then
              pending = .false.
              if (debug_onroot) then
-                print '(A)',' file '//timestr//' is phantom'
+                print '(A)',' file '//state_n%filename//' is phantom'
              endif
           else
-             call handlefiles(isroot, state_n%filename, l_use_filesize, 'complete', rc=rc)
+             call handlefiles(isroot, state_n%filename, l_use_filesize, 'create', rc=rc)
              pending = .true.
-
              if (debug_onroot) then
                call get_file_state(comm, isroot, rootpe, state_n%filename, nlen=nlen, fsize=fsize, rc=rc)
                print '(A,i4,i12,2(A,L))',trim(subname)//' create file '//state_n%filename//'  '//importexport,  &
@@ -323,6 +320,29 @@ contains
           completions = completions + 1
           found_firstcompletion = .true.
        endif
+
+
+       !! ?? does this work
+       ! ? model stops w/ pending file present; run one last time, which simulates first call during finalize
+       if (modeltime%nextTime == stopTime) then
+          if (pending) then
+             call handlefiles(isroot, state_n%filename, l_use_filesize, 'complete', rc=rc)
+             pending = .false.
+             if (debug_onroot) then
+                call get_file_state(comm, isroot, rootpe, state_n%filename, nlen=nlen, fsize=fsize, rc=rc)
+                print '(A,i4,i12,2(A,L))',trim(subname)//' complete file '//state_n%filename//'  '//importexport, &
+                     nlen,fsize,' pending ',pending,' ringing ',state_n%ringing
+             endif
+
+             call track_freqn(modeltime, cf_n, state_n, comm, isroot, rootpe, outputdir, lastrestart, &
+                  debug_onroot, .false., rc)
+             if (state_n%filecomplete .and. .not.found_firstcompletion) then
+                completions = completions + 1
+                found_firstcompletion = .true.
+             endif
+
+             ! else ? need to check for file which lands complete when stop time is on interval
+
 
 
        ! if (lstop) then
